@@ -3,106 +3,157 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區 公眾通行道路及維修透明圖資</title>
+<title>臺南市山上區公眾通行道路圖資 (查詢邏輯分流版)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
 <style>
-  /* === 全局設定 === */
-  body { margin:0; font-family:"Microsoft JhengHei", "Heiti TC", sans-serif; display:flex; height:100vh; overflow:hidden; position: relative; }
-  
-  /* === 懸浮漢堡按鈕 === */
+  /* === 1. 全局設定 === */
+  :root {
+    --primary-color: #004080; /* 深藍 */
+    --accent-color: #ff9800;  /* 橘黃 */
+    --bg-light: #f8faff;
+    --text-dark: #333;
+    --sidebar-width: 350px;
+  }
+  body { margin:0; font-family:"Microsoft JhengHei", "Heiti TC", sans-serif; display:flex; height:100vh; overflow:hidden; position: relative; background: var(--bg-light); }
+   
+  /* === 2. 懸浮漢堡按鈕 === */
   #toggleSidebarBtn {
-    position: absolute; top: 10px; left: 10px;
-    width: 44px; height: 44px;
-    background: #fff; color: #333;
-    border: 2px solid rgba(0,0,0,0.2); border-radius: 8px;
+    position: absolute; top: 10px; 
+    left: 360px; 
+    width: 40px; height: 40px;
+    background: #fff; color: var(--text-dark);
+    border: 2px solid rgba(0,0,0,0.1); border-radius: 8px;
     cursor: pointer; z-index: 2000;
     display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.3); transition: background 0.2s;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    transition: left 0.3s ease; 
   }
   #toggleSidebarBtn:hover { background: #f4f4f4; }
   #toggleSidebarBtn i { font-size: 20px; }
+  body.collapsed #toggleSidebarBtn { left: 10px; }
 
-  /* === 側邊欄樣式 === */
+  /* === 3. 側邊欄樣式 === */
   #sidebar {
-    width: 340px; background: #f8faff; border-right: 1px solid #ccc;
-    padding: 60px 12px 12px 12px; /* 上方留白給按鈕 */
-    box-sizing: border-box; overflow-y: auto;
-    display: flex; flex-direction: column; gap: 10px;
-    transition: transform 0.3s ease, width 0.3s ease;
-    z-index: 1500; box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+    width: var(--sidebar-width); min-width: var(--sidebar-width);
+    background: #fff; border-right: 1px solid #eee;
+    display: flex; flex-direction: column;
+    z-index: 1500; box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+    margin-left: 0; transition: margin-left 0.3s ease;
+    position: relative;
   }
+  body.collapsed #sidebar { margin-left: calc(var(--sidebar-width) * -1); }
 
-  /* === 地圖區塊 === */
-  #map { flex: 1; position: relative; z-index: 1; }
+  /* 標題與分頁 */
+  .sidebar-header { padding: 15px; background: var(--primary-color); color: white; text-align: center; flex-shrink: 0; }
+  .sidebar-header h3 { margin: 0; font-size: 16px; font-weight: bold; line-height: 1.4; }
+  .tabs-nav { display: flex; background: #eef2f6; padding: 5px 5px 0 5px; flex-shrink: 0; }
+  .tab-btn { flex: 1; padding: 10px 0; border: none; background: transparent; cursor: pointer; font-size: 14px; font-weight: bold; color: #666; border-radius: 8px 8px 0 0; transition: all 0.2s; }
+  .tab-btn.active { background: #fff; color: var(--primary-color); box-shadow: 0 -2px 5px rgba(0,0,0,0.05); position: relative; top: 1px; }
+  .tab-content-container { flex: 1; overflow-y: auto; padding: 15px; background: #fff; position: relative; }
+  .tab-pane { display: none; animation: fadeIn 0.3s; }
+  .tab-pane.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-  /* === 響應式設計邏輯 === */
-  @media (min-width: 769px) {
-    #sidebar { position: relative; transform: translateX(0); }
-    body.collapsed #sidebar { margin-left: -340px; }
+  /* 卡片樣式 */
+  .card-section { background: #fff; border-radius: 12px; padding: 12px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: 1px solid #f0f0f0; }
+  .card-title { font-size: 14px; font-weight: bold; color: var(--primary-color); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 2px solid #f0f0f0; }
+  select, textarea, input[type="text"] { width: 100%; padding: 10px; margin-top: 5px; font-size: 14px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+  
+  /* 按鈕樣式 */
+  button.primary { width: 100%; padding: 10px; margin-top: 8px; cursor: pointer; border-radius: 6px; border: none; background: var(--primary-color); color: #fff; font-size: 14px; font-weight: bold; }
+  button.primary:hover { background: #003366; }
+  button.secondary { width: 100%; padding: 8px; margin-top: 8px; cursor: pointer; border-radius: 6px; border: 1px solid #ddd; background: #fff; color: #555; font-size: 13px; }
+  button.secondary:hover { background: #f5f5f5; }
+
+  /* === 4. 地圖區 === */
+  #map { flex: 1; position: relative; z-index: 1; transition: width 0.3s ease; }
+
+  .map-floating-controls { position: absolute; top: 20px; right: 20px; z-index: 1000; display: flex; flex-direction: column; gap: 10px; }
+  .float-btn { width: 40px; height: 40px; border-radius: 50%; background: #fff; border: none; color: #444; box-shadow: 0 2px 8px rgba(0,0,0,0.2); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; position: relative; }
+  .float-btn:hover { background: #f0f0f0; color: var(--primary-color); transform: scale(1.1); }
+  .float-btn.active { background: var(--accent-color); color: #000; }
+  .float-btn::after { content: attr(data-title); position: absolute; right: 50px; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.7); color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 12px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+  .float-btn:hover::after { opacity: 1; }
+
+  /* === 5. 年度摺疊選單 === */
+  .year-group { margin-bottom: 8px; border: 1px solid #eee; border-radius: 6px; overflow: hidden; }
+  .year-header { background: #f8fafc; padding: 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 13px; color: #475569; user-select: none; }
+  .year-header:hover { background: #e2e8f0; }
+  .year-content { display: none; padding: 8px 12px; background: #fff; border-top: 1px solid #eee; }
+  .year-group.open .year-content { display: block; }
+  .year-group.open .toggle-icon { transform: rotate(90deg); }
+  .toggle-icon { display:inline-block; transition: transform 0.2s; width:12px; margin-right:5px;}
+  .year-select-all { font-size: 12px; color: var(--primary-color); cursor: pointer; }
+  .checkbox-item { margin-bottom: 6px; display: flex; align-items: center; gap: 6px; font-size: 13px; }
+  .checkbox-item input { margin: 0; accent-color: var(--primary-color); }
+
+  /* === 6. 底部時間軸面板 (回復功能) === */
+  #bottomPanel {
+      position: absolute; bottom: 0; left: var(--sidebar-width); right: 0; 
+      height: 140px; 
+      background: rgba(255, 255, 255, 0.98);
+      box-shadow: 0 -4px 16px rgba(0,0,0,0.1); z-index: 1400; 
+      display: flex; flex-direction: column;
+      transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), left 0.3s ease;
+      border-top: 1px solid #e0e0e0;
   }
+  body.collapsed #bottomPanel { left: 0; } 
+  #bottomPanel.open { transform: translateY(0); }
+  #bottomPanelHeader { padding: 8px 20px; background: var(--primary-color); color: white; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+  #timelineContainer { flex: 1; overflow-x: auto; padding: 15px 20px; display: flex; align-items: flex-start; gap: 0; }
+  
+  .h-item { width: 80px; text-align: center; cursor: pointer; position: relative; transition: transform 0.2s; }
+  .h-item:hover { transform: translateY(-5px); }
+  .h-date { font-size: 12px; font-weight: bold; color: #333; margin-bottom: 5px; }
+  .h-line-container { position: relative; height: 20px; display: flex; align-items: center; justify-content: center; }
+  .h-line-container::before { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 2px; background: #ddd; z-index: 0; }
+  .h-dot { width: 12px; height: 12px; background: #fff; border: 3px solid var(--primary-color); border-radius: 50%; z-index: 1; position: relative; transition: all 0.2s; }
+  .h-item:hover .h-dot { transform: scale(1.4); }
+  .h-icon { margin-top: 5px; font-size: 16px; }
+  .icon-urgent { color: #d32f2f; }
+  .icon-normal { color: #1976d2; }
+
+  /* === 7. 右鍵選單 === */
+  #contextMenu { 
+      display: none; position: absolute; z-index: 5000; 
+      background: #fff; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); 
+      overflow: hidden; min-width: 160px; border: 1px solid #ddd; 
+      top: 0; left: 0;
+  }
+  .ctx-item { padding: 10px 15px; cursor: pointer; font-size: 14px; color: #333; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #f0f0f0; }
+  .ctx-item:hover { background: #f5faff; color: var(--primary-color); }
+
+  /* === 8. 泡泡窗 (Popup) === */
+  .custom-popup .leaflet-popup-content-wrapper { padding: 0; border-radius: 8px; overflow: hidden; box-shadow: 0 3px 10px rgba(0,0,0,0.2); }
+  .custom-popup .leaflet-popup-content { margin: 0; width: 300px !important; }
+  .info-header { background: var(--primary-color); color: white; padding: 10px 12px; font-weight: bold; font-size: 15px; display: flex; justify-content: space-between; align-items: center; }
+  .info-body { padding: 12px; background: #fff; font-size: 14px; color: #333; }
+  .info-row { margin-bottom: 6px; display: flex; border-bottom: 1px dashed #eee; padding-bottom: 4px; }
+  .info-row:last-of-type { border-bottom: none; }
+  .info-label { width: 85px; font-weight: bold; color: #555; flex-shrink: 0; }
+  .info-val { color: #222; word-break: break-all; flex: 1; }
+  .btn-group-popup { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+  .popup-btn { display: flex; align-items: center; justify-content: center; gap: 5px; background: var(--accent-color); color: #000; padding: 8px; border-radius: 4px; text-decoration: none; font-size: 13px; font-weight: bold; box-shadow: 0 1px 3px rgba(0,0,0,0.15); transition: background 0.2s; }
+  .popup-btn:hover { background: #e68a00; }
+
+  #floatingCoords { position:absolute; pointer-events:none; background:rgba(255,255,255,0.9); border:1px solid #ccc; border-radius:4px; padding:4px 8px; font-size:11px; display:none; z-index:1300; bottom: 10px; right: 10px; }
+
   @media (max-width: 768px) {
     #sidebar {
-      position: absolute; top: 0; left: 0; height: 100%;
-      width: 85%; max-width: 340px; transform: translateX(-100%);
+      position: absolute; bottom: 0; left: 0; width: 100%; height: 60%; 
+      top: auto; border-radius: 20px 20px 0 0; border-right: none;
+      transform: translateY(100%); margin-left: 0; 
     }
-    body.sidebar-open #sidebar { transform: translateX(0); }
-    #overlay-mask {
-      display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.4); z-index: 1400;
-    }
+    body.sidebar-open #sidebar { transform: translateY(0); }
+    #overlay-mask { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 1400; }
     body.sidebar-open #overlay-mask { display: block; }
+    
+    #toggleSidebarBtn { left: 10px; top: 10px; }
+    #bottomPanel { left: 0; height: 160px; z-index: 2100; }
+    .map-floating-controls { top: 70px; right: 10px; }
   }
-
-  /* === 內容樣式 === */
-  h3 { margin:0 0 5px 0; font-size:18px; color:#2c3e50; font-weight:bold; border-bottom: 2px solid #007bff; padding-bottom: 5px; }
-  .section { background:#fff; padding:10px; border:1px solid #e0e0e0; border-radius:6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-  .section h4 { margin:0 0 8px 0; font-size:15px; color:#007bff; }
-  .small { font-size:13px; color:#666; line-height:1.4; }
-  
-  select, textarea { width:100%; padding:8px; margin-top:5px; font-size:14px; border:1px solid #ccc; border-radius:4px; box-sizing:border-box; }
-  button { width:100%; padding:8px; margin-top:5px; cursor:pointer; border-radius:4px; border:1px solid #ccc; background:#f0f0f0; font-size:14px; }
-  button.primary { background:#007bff; color:#fff; border:none; }
-  button.primary:hover { background:#0056b3; }
-  /* 地籍圖按鈕樣式 */
-  button.cadastral { background:#ff9800; color:#fff; border:none; font-weight:bold; }
-  button.cadastral:hover { background:#e68a00; }
-  button.cadastral.active { background:#d84315; box-shadow: inset 0 3px 5px rgba(0,0,0,0.2); }
-  
-  #floatingCoords { position:absolute; pointer-events:none; background:rgba(255,255,255,0.95); border:1px solid #999; border-radius:4px; padding:5px 8px; font-size:12px; display:none; z-index:1300; box-shadow: 0 2px 5px rgba(0,0,0,0.2); bottom: 20px; right: 10px; top: auto !important; left: auto !important; }
-
-  /* === 泡泡窗格樣式 === */
-  .custom-popup .leaflet-popup-content-wrapper { padding: 0; overflow: hidden; border-radius: 6px; }
-  .custom-popup .leaflet-popup-content { margin: 0; width: 300px !important; }
-  .info-card { font-size: 14px; line-height: 1.5; color: #333; }
-  .info-header { background: #004080; color: white; padding: 8px 12px; font-weight: bold; font-size: 16px; }
-  .info-body { padding: 10px 12px; background: #fff; }
-  .info-row { margin-bottom: 6px; display: flex; border-bottom: 1px dashed #eee; padding-bottom: 4px; align-items: baseline;}
-  .info-row:last-child { border-bottom: none; }
-  .info-label { font-weight: bold; color: #555; width: 90px; flex-shrink: 0; }
-  .info-val { color: #222; word-break: break-all; }
-  
-  /* 按鈕群組樣式 */
-  .btn-group-popup { display: flex; gap: 5px; margin-top: 10px; flex-wrap: wrap;}
-  .popup-btn { 
-    flex: 1; display: flex; align-items: center; justify-content: center; gap: 5px;
-    text-align: center; color: white; text-decoration: none; 
-    padding: 8px; border-radius: 4px; font-weight: bold; font-size: 12px; min-width: 70px;
-  }
-  .google-btn { background: #d32f2f; }
-  .google-btn:hover { background: #b71c1c; }
-  .pano-btn { background: #00897b; }
-  .pano-btn:hover { background: #00695c; }
-  /* 測繪雲按鈕樣式 (紫色) */
-  .nlsc-btn { background: #6f42c1; }
-  .nlsc-btn:hover { background: #5a32a3; }
-
-  /* 時間軸樣式 */
-  .timeline { position:relative; margin:0; padding-left:18px; border-left:3px solid #007bff; }
-  .timeline-item { margin:8px 0; padding-left:6px; position:relative; }
-  .timeline-item::before { content:""; position:absolute; left:-10px; top:5px; width:10px; height:10px; background:#007bff; border-radius:50%; }
-  .timeline-item:hover { background:#eef6ff; cursor:pointer; }
 </style>
 </head>
 <body>
@@ -110,50 +161,81 @@
 <div id="overlay-mask"></div>
 <button id="toggleSidebarBtn" title="切換選單"><i class="fas fa-bars"></i></button>
 
+<div class="map-floating-controls">
+    <button class="float-btn" id="locateBtn" data-title="我的位置"><i class="fas fa-crosshairs"></i></button>
+    <button class="float-btn" id="toggleMapBtn" data-title="切換衛星/地圖"><i class="fas fa-layer-group"></i></button>
+    <button class="float-btn" id="toggleCadastralBtn" data-title="地籍圖開關"><i class="fas fa-map"></i></button>
+</div>
+
+<div id="contextMenu">
+    <div class="ctx-item" id="ctxStreetView"><i class="fas fa-street-view"></i> Google 街景</div>
+    <div class="ctx-item" id="ctxGoogleNav"><i class="fas fa-location-arrow"></i> Google 導航</div>
+    <div class="ctx-item" id="ctxClearMarker" style="color:#d32f2f;"><i class="fas fa-trash-alt" style="color:#d32f2f;"></i> 移除標記</div>
+</div>
+
+<!-- 底部時間軸 -->
+<div id="bottomPanel">
+    <div id="bottomPanelHeader">
+        <span id="panelTitle"><i class="fas fa-history"></i> 路線維修紀錄</span>
+        <button id="closePanelBtn" style="background:none; border:none; color:#fff; font-size:18px; cursor:pointer;"><i class="fas fa-times"></i></button>
+    </div>
+    <div id="timelineContainer">
+        <div style="padding:20px; color:#777;">請點選地圖上的藍色路線以檢視紀錄。</div>
+    </div>
+</div>
+
 <div id="sidebar">
-  <h3>臺南市山上區公眾通行道路及維修透明圖資</h3>
-
-  <div class="section">
-    <h4>1. 路線查詢 (農路)</h4>
-    <select id="roadSelect"><option>讀取圖資中...</option></select>
+  <div class="sidebar-header">
+      <h3>臺南市山上區<br>公眾通行道路圖資及施工/維修案件透明</h3>
   </div>
 
-  <div class="section">
-    <h4>2. 案件公告 (施工點位)</h4>
-    <div class="small" style="margin-bottom:5px;">勾選批次，顯示該批次之施工位置。(<span style="color:#004080">●</span>近 / <span style="color:red">●</span>遠)</div>
-    <div id="repairCheckboxes" class="small" style="max-height:150px; overflow-y:auto; border:1px solid #eee; padding:5px;"></div>
-    <button id="clearRepairBtn" style="margin-top:8px;">清除所有案件顯示</button>
+  <div class="tabs-nav">
+      <button class="tab-btn active" onclick="switchTab('tab-layers')"><i class="fas fa-layer-group"></i> 圖層</button>
+      <button class="tab-btn" onclick="switchTab('tab-search')"><i class="fas fa-search"></i> 搜尋</button>
+      <button class="tab-btn" onclick="switchTab('tab-tools')"><i class="fas fa-tools"></i> 工具</button>
   </div>
 
-  <div class="section">
-    <h4>3. 座標查詢工具</h4>
-    <div class="small">輸入 TWD97 座標 (X,Y)，每行一組</div>
-    <textarea id="coordsInput" rows="3" placeholder="例如：181924,2555825"></textarea>
-    <div style="display:flex; gap:5px;">
-      <button id="plotBtn" class="primary">顯示</button>
-      <button id="clearBtn">清除</button>
-    </div>
+  <div id="tab-layers" class="tab-content-container tab-pane active">
+      <div class="card-section">
+          <div class="card-title"><i class="fas fa-road"></i> 施工/維修案件公告</div>
+          <div class="small" style="margin-bottom:8px; color:#666;">勾選年份批次顯示位置 (<span style="color:#004080">●</span>近 / <span style="color:red">●</span>遠)</div>
+          <div id="repairCheckboxes" style="max-height:400px; overflow-y:auto;"></div>
+          <button class="secondary" id="clearRepairBtn"><i class="fas fa-eraser"></i> 清除所有顯示</button>
+      </div>
   </div>
 
-  <div class="section">
-    <h4>4. 路線維修紀錄（按完工時間排序）</h4>
-    <div id="routeRepairs" class="small" style="max-height:200px; overflow-y:auto; border:1px solid #eee; padding:5px;">
-        請點選地圖上任一路線，查看該路線的維修時間軸與點位。
-    </div>
+  <div id="tab-search" class="tab-content-container tab-pane">
+      <div class="card-section">
+          <div class="card-title"><i class="fas fa-route"></i> 1. 公眾通行道路圖資查詢</div>
+          <select id="roadSelect"><option>載入中...</option></select>
+      </div>
+
+      <div class="card-section">
+          <div class="card-title"><i class="fas fa-search-plus"></i> 2. 案件進階搜尋</div>
+          <div class="search-block-label"><i class="fas fa-filter"></i> 依廠商快篩</div>
+          <select id="contractorSelect" style="margin-bottom:10px;">
+              <option value="">(讀取系統資料中...)</option>
+          </select>
+          <div style="text-align:center; font-size:12px; color:#999; margin:5px 0;">- 或 -</div>
+          <div class="search-block-label"><i class="fas fa-keyboard"></i> 關鍵字搜尋</div>
+          <input type="text" id="keywordInput" placeholder="例如：案件編號(113001) 案件名稱 廠商名稱">
+          <button id="searchBtn" class="primary"><i class="fas fa-search"></i> 開始搜尋</button>
+          <button id="clearSearchBtn" class="secondary" style="display:none; background:#ffebee; border-color:#ffcdd2; color:#d32f2f;"><i class="fas fa-times"></i> 清除結果</button>
+          <div id="searchStatus" class="small" style="margin-top:8px; color:#004080; font-weight:bold;"></div>
+      </div>
   </div>
 
-  <div class="section">
-    <h4>5. 其他功能</h4>
-    <button id="locateBtn" class="primary">📍 我的位置 (GPS)</button>
-    <div style="display:flex; gap:5px; margin-top:5px;">
-        <button id="toggleMapBtn" style="flex:1">切換底圖</button>
-        <button id="toggleCadastralBtn" class="cadastral" style="flex:1">顯示地籍圖</button>
-    </div>
-    <div class="small" style="color:#e65100; margin-top:4px; font-size:12px;">* 地籍圖由內政部國土測繪中心提供，僅供參考。</div>
-  </div>
-  
-  <div class="small" style="text-align:center; margin-top:auto; color:#999;">
-    臺南市山上區公所
+  <div id="tab-tools" class="tab-content-container tab-pane">
+      <div class="card-section">
+          <div class="card-title"><i class="fas fa-map-marker-alt"></i> 座標查詢工具</div>
+          <div class="small" style="margin-bottom:5px;">輸入 TWD97 座標 (X,Y)，每行一組</div>
+          <textarea id="coordsInput" rows="4" placeholder="例如：181924,2555825"></textarea>
+          <div style="display:flex; gap:5px; margin-top:5px;">
+            <button id="plotBtn" class="primary" style="margin-top:0;">顯示點位</button>
+            <button id="clearBtn" class="secondary" style="margin-top:0;">清除</button>
+          </div>
+      </div>
+      <div style="text-align:center; color:#999; font-size:12px; margin-top:20px;">臺南市山上區公所</div>
   </div>
 </div>
 
@@ -165,211 +247,82 @@
 <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
 
 <script>
-// =========================================================
-// 【設定區：案件批次】
-// =========================================================
-const REPAIR_CONFIG = [
-    { label: "114年第1批搶險搶修", value: "11401" },
-    { label: "114年第2批搶險搶修", value: "11402" },
-    { label: "114年第3批搶險搶修", value: "11403" }
-];
-// =========================================================
+let REPAIR_CONFIG = []; 
+let roadsLayer = null;  
+let roadLayersArray = [];
+let REPAIR_DATA_CACHE = {}; 
+let ALL_CONTRACTORS = new Set(); 
 
 const DEEP_BLUE = '#004080'; 
 const LIGHT_BLUE = '#0066cc'; 
 const ROUTE_MATCH_THRESHOLD = 50; 
 const NEAR_ROAD_THRESHOLD = 30; 
+const POINT_RADIUS = 14; 
 
 proj4.defs("EPSG:3826","+proj=tmerc +lat_0=0 +lon_0=121 +k=0.9999 +x_0=250000 +y_0=0 +ellps=WGS84 +units=m +no_defs");
 proj4.defs("EPSG:4326","+proj=longlat +datum=WGS84 +no_defs");
 
-function twd97FromWgs84(lat,lng){ const p = proj4('EPSG:4326','EPSG:3826',[lng,lat]); return {x:Math.round(p[0]),y:Math.round(p[1])}; }
-
-function distToRoad(latlng, roadsLayer) {
-    if (!roadsLayer || typeof turf === 'undefined') return NaN;
-    let minDistance = Infinity;
-    roadsLayer.eachLayer(l => {
-        if (!l.feature || !l.feature.geometry) return;
-        const geom = l.feature.geometry;
-        const line = geom.type === "LineString" ? turf.lineString(geom.coordinates) : geom.type === "MultiLineString" ? turf.multiLineString(geom.coordinates) : null;
-        if (line) {
-            const point = turf.point([latlng.lng, latlng.lat]);
-            const distance = turf.pointToLineDistance(point, line, { units: 'meters' });
-            if (distance < minDistance) minDistance = distance;
-        }
-    });
-    return minDistance;
+function twd97FromWgs84(lat,lng){ 
+    const p = proj4('EPSG:4326','EPSG:3826',[lng,lat]); 
+    return {x:Math.round(p[0]),y:Math.round(p[1])}; 
 }
 
-// === 地圖初始化 (關閉 ZoomControl 以避免遮擋) ===
+window.switchTab = function(tabId) {
+    document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    const btn = document.querySelector(`button[onclick="switchTab('${tabId}')"]`);
+    if(btn) btn.classList.add('active');
+};
+
 const map = L.map('map', { zoomControl:false }).setView([23.1025,120.3538], 13);
+const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(map);
+const sat = L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', { attribution: '© Google Maps' });
+let isSat = false; 
 
-const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution:'© OpenStreetMap'});
-const sat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {attribution:'© Esri'});
-sat.addTo(map); 
-let isSat = true;
-
-// 國土測繪中心地籍圖 WMTS
-const cadastralLayer = L.tileLayer('https://wmts.nlsc.gov.tw/wmts/LAND_OPENDATA/default/GoogleMapsCompatible/{z}/{y}/{x}', {
-    attribution: '© 內政部國土測繪中心', opacity: 0.8, maxZoom: 20
-});
+const cadastralLayer = L.tileLayer('https://wmts.nlsc.gov.tw/wmts/LAND_OPENDATA/default/GoogleMapsCompatible/{z}/{y}/{x}', { attribution: '© 國土測繪中心', opacity: 0.8, maxZoom: 20 });
 let isCadastralVisible = false;
 
 const boundaryLayer = L.layerGroup().addTo(map); 
 const pointLayer = L.layerGroup().addTo(map);   
 const repairLayer = L.layerGroup().addTo(map);  
-const routeMatchLayer = L.layerGroup().addTo(map); 
+const routeMatchLayer = L.layerGroup().addTo(map);
+const searchResultLayer = L.featureGroup().addTo(map);
 
-let roadsLayer = null;
-let roadLayersArray = [];
-
-// === 側邊欄控制 ===
 const toggleBtn = document.getElementById('toggleSidebarBtn');
 const overlayMask = document.getElementById('overlay-mask');
+const bottomPanel = document.getElementById('bottomPanel');
+
 function toggleSidebar() {
     const isMobile = window.innerWidth <= 768;
     if (isMobile) document.body.classList.toggle('sidebar-open');
-    else {
-        document.body.classList.toggle('collapsed');
-        setTimeout(() => map.invalidateSize(), 300);
-    }
+    else document.body.classList.toggle('collapsed');
+    setTimeout(() => map.invalidateSize(), 300);
 }
-toggleBtn.addEventListener('click', (e) => { e.stopPropagation(); toggleSidebar(); });
-overlayMask.addEventListener('click', () => { document.body.classList.remove('sidebar-open'); });
+toggleBtn.addEventListener('click', toggleSidebar);
+overlayMask.addEventListener('click', () => document.body.classList.remove('sidebar-open'));
 
-// === 載入行政區邊界 ===
-function loadBoundaries() {
-    fetch('tainan_districts.geojson').then(r=>r.json()).then(data => {
-        const districtLayer = L.geoJSON(data, {
-            interactive: false, 
-            style: function(feature) {
-                const townName = feature.properties.TOWN || feature.properties.TOWNNAME || "";
-                const isShanshang = townName.includes('山上區');
-                return {
-                    color: '#000000', weight: isShanshang ? 5 : 2, 
-                    opacity: 0.8, dashArray: '', fillColor: 'transparent', fillOpacity: 0 
-                };
-            }
-        }).addTo(boundaryLayer);
-        districtLayer.bringToBack();
-    }).catch(err => console.log("行政區載入失敗:", err));
-}
-loadBoundaries();
+document.getElementById('closePanelBtn').addEventListener('click', () => {
+    bottomPanel.classList.remove('open');
+    routeMatchLayer.clearLayers();
+});
 
-// === 修正：移除泡泡窗的地籍屬性欄位，保留按鈕 ===
-function createRepairPopupContent({ fileName, caseNo, date, x, y, lat, lng, distance, isTimelineMatch, props }) {
-    const distanceText = isNaN(distance) ? '計算失敗' : `${distance.toFixed(1)} 公尺`;
-    let distanceColor = '#222';
-    if (distance <= NEAR_ROAD_THRESHOLD && !isTimelineMatch) distanceColor = '#008000'; 
-    else if (distance > NEAR_ROAD_THRESHOLD && !isTimelineMatch) distanceColor = '#d32f2f'; 
-    else if (isTimelineMatch) distanceColor = DEEP_BLUE; 
+fetch('tainan_districts.geojson').then(r=>r.json()).then(data=>{
+    L.geoJSON(data, { interactive: false, style: f => ({ color: '#000', weight: (f.properties.TOWNNAME||f.properties.TOWN).includes('山上')?5:2, opacity: 0.8, fillOpacity: 0 }) }).addTo(boundaryLayer).bringToBack();
+}).catch(e=>console.warn(e));
 
-    // 環景連結處理
-    const customPanoUrl = props['環景連結'];
-    const panoUrl = customPanoUrl ? customPanoUrl : `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${lat},${lng}`;
-    const panoBtnText = customPanoUrl ? '查看 360° 環景' : 'Google 街景';
-    
-    // 測繪雲定位網址
-    const nlscUrl = `https://maps.nlsc.gov.tw/go/${lng}/${lat}`;
-
-    return `
-        <div class="info-card">
-            <div class="info-header">檔案編號：${fileName}</div> 
-            <div class="info-body">
-                <div class="info-row"><div class="info-label">案件編號</div><div class="info-val">${caseNo}</div></div>
-                <div class="info-row"><div class="info-label">TWD97座標</div><div class="info-val">${x}, ${y}</div></div>
-                <div class="info-row"><div class="info-label">WGS84座標</div><div class="info-val">${lat.toFixed(6)}, ${lng.toFixed(6)}</div></div>
-                <div class="info-row"><div class="info-label">完工日期</div><div class="info-val">${date}</div></div>
-                
-                <div class="info-row" style="padding:6px 0; border:none;">
-                    <div class="info-label" style="color:${distanceColor}; font-weight:bold;">距最近路線</div>
-                    <div class="info-val" style="color:${distanceColor}; font-weight:bold;">${distanceText}</div>
-                </div>
-                
-                <div class="btn-group-popup">
-                     <a href="${nlscUrl}" target="_blank" class="popup-btn nlsc-btn" title="前往國土測繪圖資服務雲"><i class="fas fa-map"></i> 測繪雲查地籍</a>
-                     <a href="${panoUrl}" target="_blank" class="popup-btn pano-btn"><i class="fas fa-street-view"></i> ${panoBtnText}</a>
-                     <a href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}" target="_blank" class="popup-btn google-btn"><i class="fas fa-location-arrow"></i> 導航</a>
-                </div>
-            </div>
-        </div>
-    `;
-}
-
-function createGPSPopupContent(lat, lng) {
-    const twd = twd97FromWgs84(lat, lng);
-    const nlscUrl = `https://maps.nlsc.gov.tw/go/${lng}/${lat}`;
-
-    return `
-        <div class="info-card">
-            <div class="info-header" style="background:#007bff;">📍 我的目前位置 (GPS)</div> 
-            <div class="info-body">
-                <div class="info-row"><div class="info-label">TWD97座標</div><div class="info-val">${twd.x}, ${twd.y}</div></div>
-                <div class="info-row"><div class="info-label">WGS84座標</div><div class="info-val">${lat.toFixed(6)}, ${lng.toFixed(6)}</div></div>
-                <div class="btn-group-popup">
-                     <a href="${nlscUrl}" target="_blank" class="popup-btn nlsc-btn"><i class="fas fa-map"></i> 測繪雲</a>
-                     <a href="https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${lat},${lng}" target="_blank" class="popup-btn pano-btn"><i class="fas fa-street-view"></i> 街景</a>
-                     <a href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}" target="_blank" class="popup-btn google-btn"><i class="fas fa-location-arrow"></i> 導航</a>
-                </div>
-            </div>
-        </div>
-    `;
-}
-
-function resetRouteInteractions() {
-    roadsLayer.eachLayer(l => {
-        l.setStyle({ color: DEEP_BLUE, weight: 3 });
-        l.closePopup();
-        l.unbindPopup();
-    });
-    routeMatchLayer.clearLayers(); 
-    document.getElementById('routeRepairs').innerHTML = '請點選地圖上任一路線，查看該路線的維修時間軸與點位。';
-}
-
-function handleDropdownSelection(index) {
-    resetRouteInteractions();
-    if (index === "" || index === null) return;
-    const target = roadLayersArray[index];
-    if (target) {
-        target.setStyle({ color: 'red', weight: 6 }); 
-        map.fitBounds(target.getBounds());
-        if(window.innerWidth <= 768) document.body.classList.remove('sidebar-open');
-    }
-}
-
-function handleMapClickSelection(index) {
-    resetRouteInteractions();
-    if (index === "" || index === null) return;
-    const target = roadLayersArray[index];
-    if (target) {
-        const name = target.feature.properties?.name || "未命名道路";
-        target.setStyle({ color: 'red', weight: 6 }); 
-        target.bindPopup(`<div style="text-align:center; font-weight:bold; color:#d32f2f;">路線名稱：${name}</div>`, {closeButton:false}).openPopup();
-        showRouteRepairsForLayer(target, name);
-    }
-}
-
-fetch('farmroads.geojson').then(r => r.json()).then(data => {
+fetch('farmroads.geojson').then(r=>r.json()).then(data=>{
     roadsLayer = L.geoJSON(data, {
         style: { color: DEEP_BLUE, weight: 3, opacity: 0.9 }, 
-        onEachFeature: (feature, layer) => {
-            const roadName = feature.properties?.name || "未命名道路";
-            layer.bindTooltip(roadName, { sticky: true, direction: 'top' });
-            layer.on('mouseover', () => {
-                if(layer.options.color !== 'red') layer.setStyle({ weight: 5, color: LIGHT_BLUE });
-                map.getContainer().style.cursor = 'pointer';
-            });
-            layer.on('mouseout', () => {
-                if(layer.options.color !== 'red') layer.setStyle({ weight: 3, color: DEEP_BLUE });
-                map.getContainer().style.cursor = 'default';
-            });
-            layer.on('click', (e) => {
-                L.DomEvent.stopPropagation(e); 
-                const index = roadLayersArray.indexOf(layer);
-                if(index !== -1) {
-                    document.getElementById('roadSelect').value = index; 
-                    handleMapClickSelection(index);
-                }
+        onEachFeature: (f, l) => {
+            l.bindTooltip(f.properties?.name || "道路", { sticky: true, direction: 'top' });
+            l.on('mouseover', () => { l.setStyle({ weight: 5, color: LIGHT_BLUE }); map.getContainer().style.cursor='pointer'; });
+            l.on('mouseout', () => { l.setStyle({ weight: 3, color: DEEP_BLUE }); map.getContainer().style.cursor='default'; });
+            l.on('click', (e) => {
+                L.DomEvent.stopPropagation(e);
+                // 修正：傳遞 true 表示這是「點擊」，要顯示時間軸
+                handleMapClickSelection(roadLayersArray.indexOf(l), true);
+                if(window.innerWidth <= 768) document.body.classList.remove('sidebar-open');
             });
         }
     }).addTo(map);
@@ -378,192 +331,355 @@ fetch('farmroads.geojson').then(r => r.json()).then(data => {
     sel.innerHTML = '<option value="">-- 請選擇路線 --</option>';
     data.features.forEach((f, i) => {
         const o = document.createElement('option');
-        o.value = i;
-        o.textContent = f.properties?.name || `路線 ${i + 1}`;
+        o.value = i; o.textContent = f.properties?.name || `路線 ${i+1}`;
         sel.appendChild(o);
     });
-    map.fitBounds(roadsLayer.getBounds());
-});
+}).catch(e=>{});
 
-document.getElementById('roadSelect').addEventListener('change', (e) => {
-    handleDropdownSelection(e.target.value);
-});
-
-async function showRouteRepairsForLayer(routeLayer, routeName) {
-    const cont = document.getElementById('routeRepairs');
-    cont.innerHTML = '<i>查詢中...</i>';
-    routeMatchLayer.clearLayers();
-    const months = REPAIR_CONFIG;
-    if (!months.length) { cont.innerHTML = '<i>未定義任何案件資料。</i>'; return; }
-    const matches = [];
-    const routeGeoJSON = routeLayer.toGeoJSON();
-    const routeLine = routeGeoJSON.geometry.type === 'LineString' ? turf.lineString(routeGeoJSON.geometry.coordinates) : turf.multiLineString(routeGeoJSON.geometry.coordinates);
-    await Promise.all(months.map(async m => {
-        try {
-            const res = await fetch(m.value + '.geojson');
-            if (!res.ok) return;
-            const geo = await res.json();
-            geo.features.forEach(f => {
-                const coords = f.geometry?.coordinates;
-                if (!coords) return;
-                const [lng, lat] = coords;
-                const point = turf.point([lng, lat]);
-                const distance = turf.pointToLineDistance(point, routeLine, { units: 'meters' });
-                if (distance <= ROUTE_MATCH_THRESHOLD) {
-                    matches.push({ fileName: m.value, props: f.properties || {}, lat, lng, dist: distance });
-                }
-            });
-        } catch {}
-    }));
-    if (!matches.length) {
-        cont.innerHTML = `<b style="color:${DEEP_BLUE};">${routeName}</b><div class="small">此路線目前未發現 ${ROUTE_MATCH_THRESHOLD} 公尺內的維修案件。</div>`;
-        return;
-    }
-    matches.sort((a, b) => (a.props['完工日期'] || '').localeCompare(b.props['完工日期'] || ''));
-    cont.innerHTML = `<b style="color:${DEEP_BLUE};">${routeName}</b><div class="small">共 ${matches.length} 件（距離路線 ${ROUTE_MATCH_THRESHOLD} 公尺內）</div><div class="timeline"></div>`;
-    const timelineDiv = cont.querySelector('.timeline');
-    matches.forEach(m => {
-        const marker = L.circleMarker([m.lat, m.lng], {
-            radius: 6, color: '#fff', fillColor: DEEP_BLUE, weight: 1, fillOpacity: 0.9
-        }).addTo(routeMatchLayer);
-        const twd = twd97FromWgs84(m.lat, m.lng);
-        const html = createRepairPopupContent({
-            fileName: m.fileName, caseNo: m.props['案件編號'] || '無編號', date: m.props['完工日期'] || '未填寫',
-            x: m.props['X'] || twd.x, y: m.props['Y'] || twd.y, lat: m.lat, lng: m.lng,
-            distance: m.dist, isTimelineMatch: true, props: m.props
-        });
-        marker.bindPopup(html, { className: 'custom-popup' });
-        const item = document.createElement('div');
-        item.className = 'timeline-item';
-        item.innerHTML = `<div><b>${m.props['完工日期'] || '未知'}</b>　<span style="color:#555;">${m.fileName}</span></div><div class="small">案件編號：${m.props['案件編號'] || '未提供'}　距離：${m.dist.toFixed(1)}m</div>`;
-        item.addEventListener('click', () => {
-            map.setView([m.lat, m.lng], 17);
-            marker.openPopup();
-        });
-        timelineDiv.appendChild(item);
-    });
-}
-
-function loadRepairSettings() {
+async function loadRepairSettings() {
     const box = document.getElementById('repairCheckboxes');
-    const list = REPAIR_CONFIG;
-    box.innerHTML = '';
-    if (list.length === 0) { box.innerHTML = '無設定資料'; return; }
-    list.forEach(item => {
-        const div = document.createElement('div');
-        div.style.marginBottom = "4px";
-        div.innerHTML = `<input type="checkbox" id="cb_${item.value}" value="${item.value}"><label for="cb_${item.value}" style="cursor:pointer; font-weight:bold; color:#333;">${item.label}</label>`;
-        box.appendChild(div);
+    try {
+        const res = await fetch('repair_months.json');
+        REPAIR_CONFIG = await res.json(); 
+    } catch (e) { box.innerHTML = '讀取失敗'; return; }
+    
+    if(REPAIR_CONFIG.length === 0) { box.innerHTML = '無資料'; return; }
+    box.innerHTML = ''; 
+
+    const grouped = {};
+    REPAIR_CONFIG.forEach(item => {
+        const m = item.label.match(/(\d{3})年/);
+        const y = m ? m[1] : '其他';
+        if(!grouped[y]) grouped[y] = [];
+        grouped[y].push(item);
     });
-    box.addEventListener('change', updateRepairPoints);
+
+    Object.keys(grouped).sort((a,b)=>b-a).forEach((y, idx) => {
+        const gDiv = document.createElement('div');
+        gDiv.className = 'year-group';
+        if(idx===0) gDiv.classList.add('open');
+        gDiv.innerHTML = `
+            <div class="year-header" onclick="this.parentElement.classList.toggle('open')">
+                <div><span class="toggle-icon">▶</span> ${y}年度</div>
+                <label class="year-select-all" onclick="event.stopPropagation()"><input type="checkbox" onchange="toggleYear(this)"> 全選</label>
+            </div>
+            <div class="year-content">
+                ${grouped[y].map(item => `<div class="checkbox-item"><input type="checkbox" value="${item.value}" class="repair-cb" onchange="updateRepairPoints()"><label>${item.label}</label></div>`).join('')}
+            </div>
+        `;
+        box.appendChild(gDiv);
+    });
+    preloadAllDataForContractors();
 }
 loadRepairSettings();
 
-document.getElementById('clearRepairBtn').addEventListener('click', () => {
+window.toggleYear = function(source) {
+    const cbs = source.closest('.year-group').querySelectorAll('.repair-cb');
+    cbs.forEach(cb => cb.checked = source.checked);
+    updateRepairPoints();
+}
+
+function distToRoad(latlng, roadLayer) {
+    if(!roadLayer || !turf) return NaN;
+    try {
+        let min = Infinity;
+        roadLayer.eachLayer(l => {
+            if(!l.feature.geometry) return;
+            const geom = l.feature.geometry;
+            const line = geom.type==='LineString' ? turf.lineString(geom.coordinates) : (geom.type==='MultiLineString' ? turf.multiLineString(geom.coordinates) : null);
+            if(line) {
+                const d = turf.pointToLineDistance(turf.point([latlng.lng, latlng.lat]), line, {units:'meters'});
+                if(d < min) min = d;
+            }
+        });
+        return min===Infinity ? NaN : min;
+    } catch(e) { return NaN; }
+}
+
+function createPopup(data) {
+    const { fileName, props, lat, lng, dist } = data;
+    const dText = isNaN(dist) ? 'N/A' : (dist<=30 ? `<span style="color:green">${dist.toFixed(1)}m</span>` : `<span style="color:red">${dist.toFixed(1)}m</span>`);
+    const twd = twd97FromWgs84(lat, lng);
+    const procurementUrl = props['採購網址'] ? props['採購網址'].trim() : '';
+    const tenderBtn = procurementUrl ? `<a href="${procurementUrl}" target="_blank" class="popup-btn"><i class="fas fa-bullhorn"></i> 決標公告</a>` : `<span class="popup-btn" style="background:#eee;color:#999;cursor:not-allowed;"><i class="fas fa-bullhorn"></i> 無公告</span>`;
+
+    return `
+        <div class="info-card">
+            <div class="info-header">檔案編號：${fileName}</div>
+            <div class="info-body">
+                <div class="info-row"><div class="info-label">案件編號</div><div class="info-val">${props['案件編號']||''}</div></div>
+                <div class="info-row"><div class="info-label">決標金額</div><div class="info-val" style="font-weight:bold;color:#0056b3;">${props['決標金額']||''}</div></div>
+                <div class="info-row"><div class="info-label">施工廠商</div><div class="info-val">${props['施工廠商']||''}</div></div>
+                <div class="info-row"><div class="info-label">監造廠商</div><div class="info-val">${props['監造廠商']||''}</div></div>
+                <div class="info-row"><div class="info-label">完工日期</div><div class="info-val">${props['完工日期']||''}</div></div>
+                <div class="info-row"><div class="info-label">TWD97</div><div class="info-val">${props['X']||twd.x}, ${props['Y']||twd.y}</div></div>
+                <div class="info-row"><div class="info-label">WGS84</div><div class="info-val">${lat.toFixed(6)}, ${lng.toFixed(6)}</div></div>
+                <div class="info-row"><div class="info-label">距最近路線</div><div class="info-val">${dText}</div></div>
+                
+                <div class="btn-group-popup">
+                    ${tenderBtn}
+                    <a href="https://maps.nlsc.gov.tw/go/${lng}/${lat}" target="_blank" class="popup-btn"><i class="fas fa-map"></i> 地籍查詢</a>
+                    <a href="https://www.google.com/maps?q=&layer=c&cbll=${lat},${lng}" target="_blank" class="popup-btn"><i class="fas fa-street-view"></i> Google街景</a>
+                    <a href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}" target="_blank" class="popup-btn"><i class="fas fa-location-arrow"></i> Google導航</a>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function updateRepairPoints() {
     repairLayer.clearLayers();
-    document.querySelectorAll('#repairCheckboxes input').forEach(cb => cb.checked = false);
+    const checked = document.querySelectorAll('.repair-cb:checked');
+    checked.forEach(cb => {
+        const fileKey = cb.value;
+        const data = REPAIR_DATA_CACHE[fileKey];
+        if(!data) return;
+        const config = REPAIR_CONFIG.find(c => c.value === fileKey);
+        L.geoJSON(data, {
+            pointToLayer: (f, ll) => L.circleMarker(ll, { radius: 14, fillColor: '#004080', color: '#fff', weight: 1, fillOpacity: 0.9 }),
+            onEachFeature: (f, l) => {
+                if(f.geometry.type !== 'Point') return;
+                const ll = l.getLatLng();
+                const dist = distToRoad(ll, roadsLayer);
+                if(!isNaN(dist) && dist > 30) l.setStyle({ fillColor: 'red' });
+                l.bindPopup(createPopup({ fileName: config.label, props: f.properties, lat: ll.lat, lng: ll.lng, dist }), { className: 'custom-popup' });
+            }
+        }).addTo(repairLayer);
+    });
+}
+
+async function preloadAllDataForContractors() {
+    const cSel = document.getElementById('contractorSelect');
+    await Promise.all(REPAIR_CONFIG.map(async item => {
+        try {
+            const res = await fetch(item.value + '.geojson');
+            if(res.ok) {
+                const json = await res.json();
+                REPAIR_DATA_CACHE[item.value] = json;
+                json.features?.forEach(f => {
+                    const c = f.properties['施工廠商']?.trim();
+                    if(c) ALL_CONTRACTORS.add(c);
+                });
+            }
+        } catch(e){}
+    }));
+    const sortedC = Array.from(ALL_CONTRACTORS).sort();
+    cSel.innerHTML = '<option value="">-- 請選擇廠商 (' + sortedC.length + ') --</option>' + sortedC.map(c => `<option value="${c}">${c}</option>`).join('');
+    cSel.addEventListener('change', function() {
+        if(this.value) { document.getElementById('keywordInput').value=''; performSearch(p=>p['施工廠商']?.trim()===this.value, `廠商：${this.value}`); }
+        else clearSearchResults();
+    });
+}
+
+async function performSearch(predicate, label) {
+    const status = document.getElementById('searchStatus');
+    const btn = document.getElementById('searchBtn');
+    btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    status.innerText = '搜尋中...';
+    searchResultLayer.clearLayers();
+    let count = 0;
+    REPAIR_CONFIG.forEach(conf => {
+        const data = REPAIR_DATA_CACHE[conf.value];
+        if(!data || !data.features) return;
+        data.features.forEach(f => {
+            try {
+                if(f.geometry.type !== 'Point') return;
+                if(predicate(f.properties)) {
+                    const [lng, lat] = f.geometry.coordinates;
+                    const ll = L.latLng(lat, lng);
+                    L.circleMarker(ll, { radius: 18, fillColor: '#ffd700', color: '#ff8c00', weight: 2, fillOpacity: 0.6 }).addTo(searchResultLayer);
+                    L.circleMarker(ll, { radius: 6, fillColor: '#d32f2f', color: '#fff', weight: 1, fillOpacity: 1 }).addTo(searchResultLayer)
+                        .bindPopup(createPopup({ fileName: conf.label, props: f.properties, lat, lng, dist: distToRoad(ll, roadsLayer) }), { className: 'custom-popup' });
+                    count++;
+                }
+            } catch(e){}
+        });
+    });
+    if(count > 0) {
+        map.fitBounds(searchResultLayer.getBounds());
+        if(window.innerWidth <= 768) document.body.classList.remove('sidebar-open');
+        status.innerHTML = `找到 <b style="color:#d32f2f">${count}</b> 筆`;
+        document.getElementById('clearSearchBtn').style.display = 'block';
+    } else status.innerHTML = '<span style="color:red">查無資料</span>';
+    btn.disabled = false; btn.innerHTML = '<i class="fas fa-search"></i> 搜尋';
+}
+
+document.getElementById('searchBtn').addEventListener('click', () => {
+    const kw = document.getElementById('keywordInput').value.trim().toLowerCase();
+    if(!kw) return alert('請輸入關鍵字');
+    document.getElementById('contractorSelect').value = '';
+    performSearch(p => Object.values(p).join(' ').toLowerCase().includes(kw), kw);
 });
 
-async function updateRepairPoints() {
-    repairLayer.clearLayers();
-    const checked = document.querySelectorAll('#repairCheckboxes input:checked');
-    for (const cb of checked) {
-        const file = cb.value + '.geojson';
-        try {
-            const res = await fetch(file);
-            if (!res.ok) continue;
-            const geo = await res.json();
-            L.geoJSON(geo, {
-                pointToLayer: (feature, latlng) => {
-                    const distance = distToRoad(latlng, roadsLayer);
-                    const isNear = distance <= NEAR_ROAD_THRESHOLD;
-                    const color = isNear ? DEEP_BLUE : 'red'; 
-                    return L.circleMarker(latlng, { radius: 7, fillColor: color, color: '#fff', weight: 1, opacity: 1, fillOpacity: 0.9 });
-                },
-                onEachFeature: (feature, layer) => {
-                    const p = feature.properties || {};
-                    const lat = layer.getLatLng().lat;
-                    const lng = layer.getLatLng().lng;
-                    const twd = twd97FromWgs84(lat, lng);
-                    const distance = distToRoad(layer.getLatLng(), roadsLayer);
-                    const html = createRepairPopupContent({
-                        fileName: cb.value, caseNo: p['案件編號'] || '無編號', date: p['完工日期'] || '未填寫',
-                        x: p['X'] || twd.x, y: p['Y'] || twd.y, lat: lat, lng: lng, distance: distance, isTimelineMatch: false,
-                        props: p
-                    });
-                    layer.bindPopup(html, { className: 'custom-popup' });
-                }
-            }).addTo(repairLayer);
-        } catch (err) { console.log(`載入 ${file} 失敗`); }
+document.getElementById('clearSearchBtn').addEventListener('click', clearSearchResults);
+function clearSearchResults() {
+    searchResultLayer.clearLayers();
+    document.getElementById('keywordInput').value = '';
+    document.getElementById('contractorSelect').value = '';
+    document.getElementById('searchStatus').innerText = '';
+    document.getElementById('clearSearchBtn').style.display = 'none';
+}
+
+// 修正：傳遞 false，表示這是下拉選單觸發
+document.getElementById('roadSelect').addEventListener('change', (e) => handleMapClickSelection(e.target.value, false));
+
+// 核心選擇邏輯：增加 isInteractive 參數
+function handleMapClickSelection(idx, isInteractive) {
+    if(idx==="" || idx===null) return;
+    if(roadsLayer) roadsLayer.eachLayer(l => l.setStyle({color: DEEP_BLUE, weight:3}));
+    
+    const target = roadLayersArray[idx];
+    if(target) {
+        target.setStyle({ color: 'red', weight: 6 });
+        map.fitBounds(target.getBounds());
+        target.openPopup();
+        
+        if (isInteractive) {
+            // 只有地圖點擊時，才顯示時間軸面板與維修點
+            document.getElementById('panelTitle').innerHTML = `<i class="fas fa-history"></i> ${target.feature.properties.name}`;
+            bottomPanel.classList.add('open');
+            showTimeline(target);
+        } else {
+            // 下拉選單時，隱藏面板與維修點
+            bottomPanel.classList.remove('open');
+            routeMatchLayer.clearLayers();
+        }
     }
 }
 
-map.on('mousemove', e => {
-    if(window.innerWidth <= 768) return; 
-    const fc = document.getElementById('floatingCoords');
-    const twd = twd97FromWgs84(e.latlng.lat, e.latlng.lng);
-    fc.style.display = 'block';
-    fc.innerHTML = `TWD97: ${twd.x}, ${twd.y}<br>WGS84: ${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)}`;
-});
-map.on('mouseout', () => document.getElementById('floatingCoords').style.display = 'none');
-
-document.getElementById('plotBtn').addEventListener('click', () => {
-    pointLayer.clearLayers();
-    const txt = document.getElementById('coordsInput').value.trim();
-    if (!txt) return;
-    const lines = txt.split(/\r?\n/);
-    lines.forEach(line => {
-        const parts = line.split(/[,\t\s]+/);
-        if (parts.length < 2) return;
-        const x = parseFloat(parts[0]);
-        const y = parseFloat(parts[1]);
-        if (!isNaN(x) && !isNaN(y)) {
-            const wgs = proj4('EPSG:3826','EPSG:4326',[x,y]);
-            L.marker([wgs[1], wgs[0]]).addTo(pointLayer)
-                .bindPopup(`<b>查詢點位</b><br>X: ${x}<br>Y: ${y}`).openPopup();
-            map.setView([wgs[1], wgs[0]], 16);
-            if(window.innerWidth <= 768) document.body.classList.remove('sidebar-open');
-        }
-    });
-});
-document.getElementById('clearBtn').addEventListener('click', () => {
-    pointLayer.clearLayers();
-    document.getElementById('coordsInput').value = '';
-});
-
-document.getElementById('locateBtn').addEventListener('click', () => {
-    map.locate({setView: true, maxZoom: 16});
-    if(window.innerWidth <= 768) document.body.classList.remove('sidebar-open');
-});
-map.on('locationfound', e => {
-    const { lat, lng } = e.latlng;
-    const popupHtml = createGPSPopupContent(lat, lng);
-    L.circleMarker(e.latlng, {color:'blue', radius:8}).addTo(map)
-        .bindPopup(popupHtml, { className: 'custom-popup' }).openPopup();
-});
-
-document.getElementById('toggleMapBtn').addEventListener('click', () => {
-    if (isSat) { map.removeLayer(sat); osm.addTo(map); }
-    else { map.removeLayer(osm); sat.addTo(map); }
-    isSat = !isSat;
-});
-
-document.getElementById('toggleCadastralBtn').addEventListener('click', (e) => {
-    if (isCadastralVisible) {
-        map.removeLayer(cadastralLayer);
-        e.target.classList.remove('active');
-        e.target.textContent = "顯示地籍圖";
-    } else {
-        cadastralLayer.addTo(map);
-        e.target.classList.add('active');
-        e.target.textContent = "隱藏地籍圖";
-    }
-    isCadastralVisible = !isCadastralVisible;
-});
-
-map.on('click', () => {
+// 地圖空白處點擊：取消選擇
+map.on('click', (e) => {
+    document.getElementById('contextMenu').style.display='none';
     document.getElementById('roadSelect').value = "";
-    resetRouteInteractions();
+    if(roadsLayer) roadsLayer.eachLayer(l => l.setStyle({ color: DEEP_BLUE, weight: 3 }));
+    map.closePopup();
+    bottomPanel.classList.remove('open');
+    routeMatchLayer.clearLayers();
+    addUserMarker(e.latlng);
+});
+
+// 恢復 showTimeline 邏輯
+function showTimeline(routeLayer) {
+    const cont = document.getElementById('timelineContainer');
+    cont.innerHTML = '<div style="padding:20px;">讀取中...</div>';
+    routeMatchLayer.clearLayers();
+    const routeLine = routeLayer.toGeoJSON().geometry; 
+    const matches = [];
+    REPAIR_CONFIG.forEach(conf => {
+        const data = REPAIR_DATA_CACHE[conf.value];
+        if(!data) return;
+        data.features.forEach(f => {
+            if(f.geometry.type !== 'Point') return;
+            const pt = turf.point(f.geometry.coordinates);
+            const dist = turf.pointToLineDistance(pt, routeLine, {units:'meters'});
+            if(dist <= 50) matches.push({ label: conf.label, props: f.properties, lat: f.geometry.coordinates[1], lng: f.geometry.coordinates[0], dist });
+        });
+    });
+    
+    if(matches.length === 0) { cont.innerHTML = '<div style="padding:20px;">無維修紀錄</div>'; return; }
+    matches.sort((a,b) => (b.props['完工日期']||'').localeCompare(a.props['完工日期']||''));
+    cont.innerHTML = '';
+    
+    matches.forEach(m => {
+        const marker = L.circleMarker([m.lat, m.lng], { radius: 14, color: '#fff', fillColor: DEEP_BLUE, weight:1, fillOpacity:0.9 }).addTo(routeMatchLayer);
+        marker.bindPopup(createPopup({ fileName: m.label, props: m.props, lat: m.lat, lng: m.lng, dist: m.dist }), {className:'custom-popup'});
+        
+        const labelName = m.label.toString();
+        let icon = '<i class="fas fa-circle icon-normal"></i>';
+        let title = '一般';
+        if(labelName.includes('搶修') || labelName.includes('災害') || labelName.includes('緊急')) {
+            icon = '<i class="fas fa-exclamation-triangle icon-urgent"></i>';
+            title = '搶修';
+        }
+        
+        const item = document.createElement('div');
+        item.className = 'h-item';
+        item.innerHTML = `
+            <div class="h-date">${m.props['完工日期']||'未知'}</div>
+            <div class="h-line-container"><div class="h-dot"></div></div>
+            <div class="h-icon" title="${title}">${icon}</div>
+        `;
+        item.addEventListener('mouseenter', () => { marker.setStyle({ radius: 20, color:'#ffd700', weight:4, fillColor:'#d32f2f' }); marker.bringToFront(); marker.openPopup(); });
+        item.addEventListener('mouseleave', () => { marker.setStyle({ radius: 14, color:'#fff', weight:1, fillColor:DEEP_BLUE }); marker.closePopup(); });
+        item.addEventListener('click', () => map.flyTo([m.lat, m.lng], 18));
+        cont.appendChild(item);
+    });
+}
+
+const ctxMenu = document.getElementById('contextMenu');
+let clickedLatLng = null;
+map.on('contextmenu', e => {
+    clickedLatLng = e.latlng;
+    ctxMenu.style.display = 'block';
+    ctxMenu.style.left = e.containerPoint.x + 'px';
+    ctxMenu.style.top = e.containerPoint.y + 'px';
+    pointLayer.clearLayers();
+});
+map.on('dragstart', () => ctxMenu.style.display='none');
+
+document.getElementById('ctxStreetView').onclick = () => { if(clickedLatLng) window.open(`https://www.google.com/maps?q=&layer=c&cbll=${clickedLatLng.lat},${clickedLatLng.lng}`); ctxMenu.style.display='none'; }
+document.getElementById('ctxGoogleNav').onclick = () => { if(clickedLatLng) window.open(`https://www.google.com/maps/dir/?api=1&destination=${clickedLatLng.lat},${clickedLatLng.lng}`); ctxMenu.style.display='none'; }
+document.getElementById('ctxClearMarker').onclick = () => { pointLayer.clearLayers(); ctxMenu.style.display='none'; }
+
+function addUserMarker(latlng) {
+    pointLayer.clearLayers();
+    const marker = L.marker(latlng, { draggable: true }).addTo(pointLayer);
+    const twd = twd97FromWgs84(latlng.lat, latlng.lng);
+    marker.bindPopup(`
+        <div style="text-align:center;">
+            <b>已選取位置</b><br>
+            WGS84: ${latlng.lat.toFixed(5)}, ${latlng.lng.toFixed(5)}<br>
+            TWD97: ${twd.x}, ${twd.y}
+        </div>
+    `).openPopup();
+    marker.on('contextmenu', (e) => {
+        clickedLatLng = e.latlng;
+        ctxMenu.style.display = 'block';
+        ctxMenu.style.left = e.containerPoint.x + 'px';
+        ctxMenu.style.top = e.containerPoint.y + 'px';
+    });
+}
+
+document.getElementById('locateBtn').onclick = () => map.locate({setView:true, maxZoom:16});
+map.on('locationfound', e => L.circleMarker(e.latlng, {color:'blue', radius:8}).addTo(map).bindPopup('我的位置').openPopup());
+
+document.getElementById('toggleMapBtn').onclick = function() {
+    if(isSat) { map.removeLayer(sat); osm.addTo(map); this.classList.remove('active'); }
+    else { map.removeLayer(osm); sat.addTo(map); this.classList.add('active'); }
+    isSat = !isSat;
+};
+document.getElementById('toggleCadastralBtn').onclick = function() {
+    if(isCadastralVisible) { map.removeLayer(cadastralLayer); this.classList.remove('active'); }
+    else { cadastralLayer.addTo(map); this.classList.add('active'); }
+    isCadastralVisible = !isCadastralVisible;
+};
+
+document.getElementById('plotBtn').onclick = () => {
+    pointLayer.clearLayers();
+    const parts = document.getElementById('coordsInput').value.split(/[, \t]+/);
+    if(parts.length>=2) {
+        const x = parseFloat(parts[0]), y = parseFloat(parts[1]);
+        if(!isNaN(x)&&!isNaN(y)) {
+            const w = proj4('EPSG:3826','EPSG:4326',[x,y]);
+            L.marker([w[1],w[0]]).addTo(pointLayer).bindPopup(`X:${x}, Y:${y}`).openPopup();
+            map.setView([w[1],w[0]], 16);
+        }
+    }
+};
+document.getElementById('clearBtn').onclick = () => { pointLayer.clearLayers(); document.getElementById('coordsInput').value=''; };
+
+map.on('mousemove', e => {
+    if(window.innerWidth > 768) {
+        const t = twd97FromWgs84(e.latlng.lat, e.latlng.lng);
+        const el = document.getElementById('floatingCoords');
+        el.style.display = 'block'; el.innerHTML = `TWD97: ${t.x}, ${t.y}`;
+    }
+});
+
+document.getElementById('clearRepairBtn').addEventListener('click', () => {
+    repairLayer.clearLayers();
+    document.querySelectorAll('.repair-cb').forEach(cb => cb.checked = false);
+    document.querySelectorAll('.year-select-all input').forEach(cb => cb.checked = false);
 });
 </script>
 </body>

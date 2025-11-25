@@ -3,962 +3,1262 @@
   "features": [
     {
       "type": "Feature",
+      "properties": {
+        "案件編號": "1",
+        "完工日期": "1140521",
+        "X": 184796,
+        "Y": 2555411,
+        "決標金額": "5230000",
+        "施工廠商": "森府土木包工有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4NzAyMzA=",
+        "備註": ""
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120.36348263163508,
-          23.09920903654672
+          120.3634826310005,
+          23.099209037037173
         ]
-      },
-      "properties": {
-        "X": "184796",
-        "Y": "2555411",
-        "案件編號": "001",
-        "完工日期": "1140521"
       }
     },
     {
       "type": "Feature",
+      "properties": {
+        "案件編號": "1",
+        "完工日期": "1140521",
+        "X": 184793,
+        "Y": 2555363,
+        "決標金額": "5230000",
+        "施工廠商": "森府土木包工有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4NzAyMzA=",
+        "備註": ""
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120.36345538953236,
-          23.098775475400245
+          120.36345538889766,
+          23.098775475890697
         ]
-      },
-      "properties": {
-        "X": "184793",
-        "Y": "2555363",
-        "案件編號": "001",
-        "完工日期": "1140521"
       }
     },
     {
       "type": "Feature",
+      "properties": {
+        "案件編號": "1",
+        "完工日期": "1140521",
+        "X": 183687,
+        "Y": 2555954,
+        "決標金額": "5230000",
+        "施工廠商": "森府土木包工有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4NzAyMzA=",
+        "備註": ""
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120.35263367342999,
-          23.104068329166367
+          120.35263367273953,
+          23.104068329656595
         ]
-      },
-      "properties": {
-        "X": "183687",
-        "Y": "2555954",
-        "案件編號": "001",
-        "完工日期": "1140521"
       }
     },
     {
       "type": "Feature",
+      "properties": {
+        "案件編號": "1",
+        "完工日期": "1140521",
+        "X": 181717,
+        "Y": 2556677,
+        "決標金額": "5230000",
+        "施工廠商": "森府土木包工有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4NzAyMzA=",
+        "備註": ""
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120.33337073719989,
-          23.110516974069842
+          120.33337073640052,
+          23.110516974559552
         ]
-      },
-      "properties": {
-        "X": "181717",
-        "Y": "2556677",
-        "案件編號": "001",
-        "完工日期": "1140521"
       }
     },
     {
       "type": "Feature",
+      "properties": {
+        "案件編號": "2",
+        "完工日期": "1140601",
+        "X": 183883,
+        "Y": 2555004,
+        "決標金額": "5230000",
+        "施工廠商": "森府土木包工有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4NzAyMzA=",
+        "備註": ""
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120.35458797377012,
-          23.095497620045574
+          120.35458797309013,
+          23.09549762053569
         ]
-      },
-      "properties": {
-        "X": "183883",
-        "Y": "2555004",
-        "案件編號": "002",
-        "完工日期": "1140601"
       }
     },
     {
       "type": "Feature",
+      "properties": {
+        "案件編號": "3",
+        "完工日期": "1140601",
+        "X": 187517,
+        "Y": 2555804,
+        "決標金額": "5230000",
+        "施工廠商": "森府土木包工有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4NzAyMzA=",
+        "備註": ""
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120.3900276504103,
-          23.10286272986282
+          120.39002764989706,
+          23.10286273035404
         ]
-      },
-      "properties": {
-        "X": "187517",
-        "Y": "2555804",
-        "案件編號": "003",
-        "完工日期": "1140601"
       }
     },
     {
       "type": "Feature",
+      "properties": {
+        "案件編號": "4",
+        "完工日期": "1140609",
+        "X": 184629,
+        "Y": 2555026,
+        "決標金額": "5230000",
+        "施工廠商": "森府土木包工有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4NzAyMzA=",
+        "備註": ""
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120.36186888695555,
-          23.095725881016374
+          120.36186888631296,
+          23.09572588150671
         ]
-      },
-      "properties": {
-        "X": "184629",
-        "Y": "2555026",
-        "案件編號": "004",
-        "完工日期": "1140609"
       }
     },
     {
       "type": "Feature",
+      "properties": {
+        "案件編號": "5",
+        "完工日期": "1140610",
+        "X": 184729,
+        "Y": 2554926,
+        "決標金額": "5230000",
+        "施工廠商": "森府土木包工有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4NzAyMzA=",
+        "備註": ""
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120.36284926690911,
-          23.094826816589293
+          120.36284926627147,
+          23.094826817079642
         ]
-      },
-      "properties": {
-        "X": "184729",
-        "Y": "2554926",
-        "案件編號": "005",
-        "完工日期": "1140610"
       }
     },
     {
       "type": "Feature",
+      "properties": {
+        "案件編號": "6",
+        "完工日期": "1140612",
+        "X": 187312,
+        "Y": 2553420,
+        "決標金額": "5230000",
+        "施工廠商": "森府土木包工有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4NzAyMzA=",
+        "備註": ""
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120.38812396395785,
-          23.08132719151792
+          120.38812396343694,
+          23.08132719200864
         ]
-      },
-      "properties": {
-        "X": "187312",
-        "Y": "2553420",
-        "案件編號": "006",
-        "完工日期": "1140612"
       }
     },
     {
       "type": "Feature",
+      "properties": {
+        "案件編號": "7",
+        "完工日期": "1140612",
+        "X": 187362,
+        "Y": 2554537,
+        "決標金額": "5230000",
+        "施工廠商": "森府土木包工有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4NzAyMzA=",
+        "備註": ""
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120.38856635338082,
-          23.091415727058603
+          120.3885663528616,
+          23.091415727549542
         ]
-      },
-      "properties": {
-        "X": "187362",
-        "Y": "2554537",
-        "案件編號": "007",
-        "完工日期": "1140612"
       }
     },
     {
       "type": "Feature",
+      "properties": {
+        "案件編號": "8",
+        "完工日期": "1140613",
+        "X": 185819,
+        "Y": 2554983,
+        "決標金額": "5230000",
+        "施工廠商": "森府土木包工有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4NzAyMzA=",
+        "備註": ""
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120.37348655112149,
-          23.095384109149343
+          120.37348655053518,
+          23.095384109639998
         ]
-      },
-      "properties": {
-        "X": "185819",
-        "Y": "2554983",
-        "案件編號": "008",
-        "完工日期": "1140613"
       }
     },
     {
       "type": "Feature",
+      "properties": {
+        "案件編號": "9",
+        "完工日期": "1140614",
+        "X": 185793,
+        "Y": 2553927,
+        "決標金額": "5230000",
+        "施工廠商": "森府土木包工有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4NzAyMzA=",
+        "備註": ""
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120.37327698079037,
-          23.08584732619326
+          120.37327698020323,
+          23.08584732668371
         ]
-      },
-      "properties": {
-        "X": "185793",
-        "Y": "2553927",
-        "案件編號": "009",
-        "完工日期": "1140614"
       }
     },
     {
       "type": "Feature",
+      "properties": {
+        "案件編號": "10",
+        "完工日期": "1140615",
+        "X": 186725,
+        "Y": 2554979,
+        "決標金額": "5230000",
+        "施工廠商": "森府土木包工有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4NzAyMzA=",
+        "備註": ""
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120.38233038526374,
-          23.095382834280397
+          120.38233038471752,
+          23.095382834771275
         ]
-      },
-      "properties": {
-        "X": "186725",
-        "Y": "2554979",
-        "案件編號": "010",
-        "完工日期": "1140615"
       }
     },
     {
       "type": "Feature",
+      "properties": {
+        "案件編號": "11",
+        "完工日期": "1140616",
+        "X": 187635,
+        "Y": 2554919,
+        "決標金額": "5230000",
+        "施工廠商": "森府土木包工有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4NzAyMzA=",
+        "備註": ""
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120.39121555508693,
-          23.09487552804996
+          120.39121555457875,
+          23.09487552854105
         ]
-      },
-      "properties": {
-        "X": "187635",
-        "Y": "2554919",
-        "案件編號": "011",
-        "完工日期": "1140616"
       }
     },
     {
       "type": "Feature",
+      "properties": {
+        "案件編號": "12",
+        "完工日期": "1140617",
+        "X": 187594,
+        "Y": 2554660,
+        "決標金額": "5230000",
+        "施工廠商": "森府土木包工有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4NzAyMzA=",
+        "備註": ""
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120.39082588900754,
-          23.092535184091677
+          120.39082588849782,
+          23.0925351845827
         ]
-      },
-      "properties": {
-        "X": "187594",
-        "Y": "2554660",
-        "案件編號": "012",
-        "完工日期": "1140617"
       }
     },
     {
       "type": "Feature",
+      "properties": {
+        "案件編號": "13",
+        "完工日期": "1140617",
+        "X": 186522,
+        "Y": 2253315,
+        "決標金額": "5230000",
+        "施工廠商": "森府土木包工有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4NzAyMzA=",
+        "備註": ""
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120.39192006109387,
-          20.37086158531534
+          120.39192006062746,
+          20.37086158574854
         ]
-      },
-      "properties": {
-        "X": "186522",
-        "Y": "2253315",
-        "案件編號": "013",
-        "完工日期": "1140617"
       }
     },
     {
       "type": "Feature",
+      "properties": {
+        "案件編號": "14",
+        "完工日期": "1140618",
+        "X": 187408,
+        "Y": 2554852,
+        "決標金額": "5230000",
+        "施工廠商": "森府土木包工有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4NzAyMzA=",
+        "備註": ""
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120.38900249655367,
-          23.09426195125114
+          120.38900249603627,
+          23.09426195174215
         ]
-      },
-      "properties": {
-        "X": "187408",
-        "Y": "2554852",
-        "案件編號": "014",
-        "完工日期": "1140618"
       }
     },
     {
       "type": "Feature",
+      "properties": {
+        "案件編號": "15",
+        "完工日期": "1140619",
+        "X": 184326,
+        "Y": 2555700,
+        "決標金額": "5230000",
+        "施工廠商": "森府土木包工有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4NzAyMzA=",
+        "備註": ""
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120.35888235662006,
-          23.10180015689216
+          120.35888235596224,
+          23.101800157382534
         ]
-      },
-      "properties": {
-        "X": "184326",
-        "Y": "2555700",
-        "案件編號": "015",
-        "完工日期": "1140619"
       }
     },
     {
       "type": "Feature",
+      "properties": {
+        "案件編號": "16",
+        "完工日期": "1140619",
+        "X": 186026,
+        "Y": 2555188,
+        "決標金額": "5230000",
+        "施工廠商": "森府土木包工有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4NzAyMzA=",
+        "備註": ""
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120.37549856680803,
-          23.097243282231943
+          120.375498566231,
+          23.09724328272269
         ]
-      },
-      "properties": {
-        "X": "186026",
-        "Y": "2555188",
-        "案件編號": "016",
-        "完工日期": "1140619"
       }
     },
     {
       "type": "Feature",
+      "properties": {
+        "案件編號": "17",
+        "完工日期": "1140620",
+        "X": 182206,
+        "Y": 2556692,
+        "決標金額": "5230000",
+        "施工廠商": "森府土木包工有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4NzAyMzA=",
+        "備註": ""
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120.33814380672175,
-          23.1106725181652
+          120.33814380595052,
+          23.11067251865509
         ]
-      },
-      "properties": {
-        "X": "182206",
-        "Y": "2556692",
-        "案件編號": "017",
-        "完工日期": "1140620"
       }
     },
     {
       "type": "Feature",
+      "properties": {
+        "案件編號": "18",
+        "完工日期": "1140621",
+        "X": 184332,
+        "Y": 2555552,
+        "決標金額": "5230000",
+        "施工廠商": "森府土木包工有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4NzAyMzA=",
+        "備註": ""
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120.3589472689288,
-          23.100463946849068
+          120.35894726827134,
+          23.100463947339406
         ]
-      },
-      "properties": {
-        "X": "184332",
-        "Y": "2555552",
-        "案件編號": "018",
-        "完工日期": "1140621"
       }
     },
     {
       "type": "Feature",
+      "properties": {
+        "案件編號": "19",
+        "完工日期": "1140625",
+        "X": 187255,
+        "Y": 2554874,
+        "決標金額": "5230000",
+        "施工廠商": "森府土木包工有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4NzAyMzA=",
+        "備註": ""
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120.38750813848792,
-          23.094454827320796
+          120.38750813796415,
+          23.094454827811777
         ]
-      },
-      "properties": {
-        "X": "187255",
-        "Y": "2554874",
-        "案件編號": "019",
-        "完工日期": "1140625"
       }
     },
     {
       "type": "Feature",
+      "properties": {
+        "案件編號": "19",
+        "完工日期": "1140625",
+        "X": 187380,
+        "Y": 2554865,
+        "決標金額": "5230000",
+        "施工廠商": "森府土木包工有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4NzAyMzA=",
+        "備註": ""
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120.38872865297458,
-          23.094378284831002
+          120.38872865245598,
+          23.094378285322012
         ]
-      },
-      "properties": {
-        "X": "187380",
-        "Y": "2554865",
-        "案件編號": "019",
-        "完工日期": "1140625"
       }
     },
     {
       "type": "Feature",
+      "properties": {
+        "案件編號": "20",
+        "完工日期": "1140703",
+        "X": 186089,
+        "Y": 2554810,
+        "決標金額": "5230000",
+        "施工廠商": "森府土木包工有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4NzAyMzA=",
+        "備註": ""
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120.37612929261662,
-          23.093832339648433
+          120.37612929204255,
+          23.09383234013911
         ]
-      },
-      "properties": {
-        "X": "186089",
-        "Y": "2554810",
-        "案件編號": "020",
-        "完工日期": "1140703"
       }
     },
     {
       "type": "Feature",
+      "properties": {
+        "案件編號": "21",
+        "完工日期": "1140624",
+        "X": 186324,
+        "Y": 2553611,
+        "決標金額": "5230000",
+        "施工廠商": "森府土木包工有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4NzAyMzA=",
+        "備註": ""
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120.378472941694,
-          23.08301429419863
+          120.3784729411308,
+          23.083014294689143
         ]
-      },
-      "properties": {
-        "X": "186324",
-        "Y": "2553611",
-        "案件編號": "021",
-        "完工日期": "1140624"
       }
     },
     {
       "type": "Feature",
+      "properties": {
+        "案件編號": "22",
+        "完工日期": "1140624",
+        "X": 187577,
+        "Y": 2555366,
+        "決標金額": "5230000",
+        "施工廠商": "森府土木包工有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4NzAyMzA=",
+        "備註": ""
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120.3906311999579,
-          23.098909804631035
+          120.39063119944726,
+          23.098909805122187
         ]
-      },
-      "properties": {
-        "X": "187577",
-        "Y": "2555366",
-        "案件編號": "022",
-        "完工日期": "1140624"
       }
     },
     {
       "type": "Feature",
+      "properties": {
+        "案件編號": "23",
+        "完工日期": "1140625",
+        "X": 187066,
+        "Y": 2554096,
+        "決標金額": "5230000",
+        "施工廠商": "森府土木包工有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4NzAyMzA=",
+        "備註": ""
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120.38569521141514,
-          23.087422233113035
+          120.3856952108837,
+          23.087422233603824
         ]
-      },
-      "properties": {
-        "X": "187066",
-        "Y": "2554096",
-        "案件編號": "023",
-        "完工日期": "1140625"
       }
     },
     {
       "type": "Feature",
+      "properties": {
+        "案件編號": "24",
+        "完工日期": "1140625",
+        "X": 185962,
+        "Y": 2555180,
+        "決標金額": "5230000",
+        "施工廠商": "森府土木包工有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4NzAyMzA=",
+        "備註": ""
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120.37487417453121,
-          23.097168569094034
+          120.37487417395131,
+          23.09716856958476
         ]
-      },
-      "properties": {
-        "X": "185962",
-        "Y": "2555180",
-        "案件編號": "024",
-        "完工日期": "1140625"
       }
     },
     {
       "type": "Feature",
+      "properties": {
+        "案件編號": "25",
+        "完工日期": "1140626",
+        "X": 187611,
+        "Y": 2556068,
+        "決標金額": "5230000",
+        "施工廠商": "森府土木包工有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4NzAyMzA=",
+        "備註": ""
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120.39093450798552,
-          23.105250220998833
+          120.39093450747605,
+          23.10525022149013
         ]
-      },
-      "properties": {
-        "X": "187611",
-        "Y": "2556068",
-        "案件編號": "025",
-        "完工日期": "1140626"
       }
     },
     {
       "type": "Feature",
+      "properties": {
+        "案件編號": "26",
+        "完工日期": "1140626",
+        "X": 186259,
+        "Y": 2553888,
+        "決標金額": "5230000",
+        "施工廠商": "森府土木包工有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4NzAyMzA=",
+        "備註": ""
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120.3778270088072,
-          23.085513135793644
+          120.37782700824103,
+          23.0855131362842
         ]
-      },
-      "properties": {
-        "X": "186259",
-        "Y": "2553888",
-        "案件編號": "026",
-        "完工日期": "1140626"
       }
     },
     {
       "type": "Feature",
+      "properties": {
+        "案件編號": "27",
+        "完工日期": "1140627",
+        "X": 186423,
+        "Y": 2555309,
+        "決標金額": "5230000",
+        "施工廠商": "森府土木包工有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4NzAyMzA=",
+        "備註": ""
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120.37936880615264,
-          23.098351205176126
+          120.37936880559319,
+          23.098351205666994
         ]
-      },
-      "properties": {
-        "X": "186423",
-        "Y": "2555309",
-        "案件編號": "027",
-        "完工日期": "1140627"
       }
     },
     {
       "type": "Feature",
+      "properties": {
+        "案件編號": "28",
+        "完工日期": "1140627",
+        "X": 186869,
+        "Y": 2555469,
+        "決標金額": "5230000",
+        "施工廠商": "森府土木包工有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4NzAyMzA=",
+        "備註": ""
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120.38371581939862,
-          23.09981307630703
+          120.3837158188584,
+          23.099813076798036
         ]
-      },
-      "properties": {
-        "X": "186869",
-        "Y": "2555469",
-        "案件編號": "028",
-        "完工日期": "1140627"
       }
     },
     {
       "type": "Feature",
+      "properties": {
+        "案件編號": "29",
+        "完工日期": "1140627",
+        "X": 185816,
+        "Y": 2554964,
+        "決標金額": "5230000",
+        "施工廠商": "森府土木包工有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4NzAyMzA=",
+        "備註": ""
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120.37345806304775,
-          23.095212421317868
+          120.37345806246131,
+          23.095212421808515
         ]
-      },
-      "properties": {
-        "X": "185816",
-        "Y": "2554964",
-        "案件編號": "029",
-        "完工日期": "1140627"
       }
     },
     {
       "type": "Feature",
+      "properties": {
+        "案件編號": "29",
+        "完工日期": "1140627",
+        "X": 186293,
+        "Y": 2554680,
+        "決標金額": "5230000",
+        "施工廠商": "森府土木包工有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4NzAyMzA=",
+        "備註": ""
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120.3781259612753,
-          23.09266628256496
+          120.37812596071036,
+          23.092666283055667
         ]
-      },
-      "properties": {
-        "X": "186293",
-        "Y": "2554680",
-        "案件編號": "029",
-        "完工日期": "1140627"
       }
     },
     {
       "type": "Feature",
+      "properties": {
+        "案件編號": "29",
+        "完工日期": "1140627",
+        "X": 186346,
+        "Y": 2554671,
+        "決標金額": "5230000",
+        "施工廠商": "森府土木包工有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4NzAyMzA=",
+        "備註": ""
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120.37864366941331,
-          23.092587048324276
+          120.3786436688507,
+          23.092587048815
         ]
-      },
-      "properties": {
-        "X": "186346",
-        "Y": "2554671",
-        "案件編號": "029",
-        "完工日期": "1140627"
       }
     },
     {
       "type": "Feature",
+      "properties": {
+        "案件編號": "30",
+        "完工日期": "1140628",
+        "X": 186517,
+        "Y": 2553312,
+        "決標金額": "5230000",
+        "施工廠商": "森府土木包工有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4NzAyMzA=",
+        "備註": ""
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120.38036905951978,
-          23.080321691624025
+          120.38036905896512,
+          23.08032169211454
         ]
-      },
-      "properties": {
-        "X": "186517",
-        "Y": "2553312",
-        "案件編號": "030",
-        "完工日期": "1140628"
       }
     },
     {
       "type": "Feature",
+      "properties": {
+        "案件編號": "31",
+        "完工日期": "1140628",
+        "X": 187124,
+        "Y": 2554085,
+        "決標金額": "5230000",
+        "施工廠商": "森府土木包工有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4NzAyMzA=",
+        "備註": ""
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120.38626178086514,
-          23.087325102906984
+          120.38626178033616,
+          23.087325103397784
         ]
-      },
-      "properties": {
-        "X": "187124",
-        "Y": "2554085",
-        "案件編號": "031",
-        "完工日期": "1140628"
       }
     },
     {
       "type": "Feature",
+      "properties": {
+        "案件編號": "32",
+        "完工日期": "1140628",
+        "X": 186659,
+        "Y": 2554022,
+        "決標金額": "5230000",
+        "施工廠商": "森府土木包工有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4NzAyMzA=",
+        "備註": ""
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120.38172568005783,
-          23.086738502469515
+          120.38172567950906,
+          23.086738502960195
         ]
-      },
-      "properties": {
-        "X": "186659",
-        "Y": "2554022",
-        "案件編號": "032",
-        "完工日期": "1140628"
       }
     },
     {
       "type": "Feature",
+      "properties": {
+        "案件編號": "33",
+        "完工日期": "1140628",
+        "X": 184555,
+        "Y": 2555840,
+        "決標金額": "5230000",
+        "施工廠商": "森府土木包工有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4NzAyMzA=",
+        "備註": ""
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120.36111179551204,
-          23.103073428146573
+          120.36111179486554,
+          23.10307342863704
         ]
-      },
-      "properties": {
-        "X": "184555",
-        "Y": "2555840",
-        "案件編號": "033",
-        "完工日期": "1140628"
       }
     },
     {
       "type": "Feature",
+      "properties": {
+        "案件編號": "34",
+        "完工日期": "1140629",
+        "X": 187614,
+        "Y": 2556053,
+        "決標金額": "5230000",
+        "施工廠商": "森府土木包工有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4NzAyMzA=",
+        "備註": ""
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120.3909644046892,
-          23.10511488244542
+          120.39096440417981,
+          23.105114882936714
         ]
-      },
-      "properties": {
-        "X": "187614",
-        "Y": "2556053",
-        "案件編號": "034",
-        "完工日期": "1140629"
       }
     },
     {
       "type": "Feature",
+      "properties": {
+        "案件編號": "35",
+        "完工日期": "1140629",
+        "X": 186324,
+        "Y": 2553611,
+        "決標金額": "5230000",
+        "施工廠商": "森府土木包工有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4NzAyMzA=",
+        "備註": ""
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120.378472941694,
-          23.08301429419863
+          120.3784729411308,
+          23.083014294689143
         ]
-      },
-      "properties": {
-        "X": "186324",
-        "Y": "2553611",
-        "案件編號": "035",
-        "完工日期": "1140629"
       }
     },
     {
       "type": "Feature",
+      "properties": {
+        "案件編號": "36",
+        "完工日期": "1140629",
+        "X": 186183,
+        "Y": 2555069,
+        "決標金額": "5230000",
+        "施工廠商": "森府土木包工有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4NzAyMzA=",
+        "備註": ""
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120.37703605411559,
-          23.09617475626682
+          120.37703605354564,
+          23.096174756757577
         ]
-      },
-      "properties": {
-        "X": "186183",
-        "Y": "2555069",
-        "案件編號": "036",
-        "完工日期": "1140629"
       }
     },
     {
       "type": "Feature",
+      "properties": {
+        "案件編號": "37",
+        "完工日期": "1140630",
+        "X": 186670,
+        "Y": 2554062,
+        "決標金額": "5230000",
+        "施工廠商": "森府土木包工有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4NzAyMzA=",
+        "備註": ""
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120.38183139489088,
-          23.087100127140722
+          120.38183139434261,
+          23.087100127631405
         ]
-      },
-      "properties": {
-        "X": "186670",
-        "Y": "2554062",
-        "案件編號": "037",
-        "完工日期": "1140630"
       }
     },
     {
       "type": "Feature",
+      "properties": {
+        "案件編號": "38",
+        "完工日期": "1140630",
+        "X": 185955,
+        "Y": 2555182,
+        "決標金額": "5230000",
+        "施工廠商": "森府土木包工有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4NzAyMzA=",
+        "備註": ""
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120.37480576153744,
-          23.097186358692234
+          120.37480576095722,
+          23.09718635918295
         ]
-      },
-      "properties": {
-        "X": "185955",
-        "Y": "2555182",
-        "案件編號": "038",
-        "完工日期": "1140630"
       }
     },
     {
       "type": "Feature",
+      "properties": {
+        "案件編號": "39",
+        "完工日期": "1140630",
+        "X": 187535,
+        "Y": 2554014,
+        "決標金額": "5230000",
+        "施工廠商": "森府土木包工有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4NzAyMzA=",
+        "備註": ""
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120.39027630427822,
-          23.086699503193262
+          120.39027630376624,
+          23.08669950368414
         ]
-      },
-      "properties": {
-        "X": "187535",
-        "Y": "2554014",
-        "案件編號": "039",
-        "完工日期": "1140630"
       }
     },
     {
       "type": "Feature",
+      "properties": {
+        "案件編號": "40",
+        "完工日期": "1140701",
+        "X": 186895,
+        "Y": 2554865,
+        "決標金額": "5230000",
+        "施工廠商": "森府土木包工有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4NzAyMzA=",
+        "備註": ""
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120.38399448789086,
-          23.094359885552258
+          120.38399448735196,
+          23.094359886043154
         ]
-      },
-      "properties": {
-        "X": "186895",
-        "Y": "2554865",
-        "案件編號": "040",
-        "完工日期": "1140701"
       }
     },
     {
       "type": "Feature",
+      "properties": {
+        "案件編號": "41",
+        "完工日期": "1140701",
+        "X": 187461,
+        "Y": 2554420,
+        "決標金額": "5230000",
+        "施工廠商": "森府土木包工有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4NzAyMzA=",
+        "備註": ""
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120.38953746042198,
-          23.090362942067433
+          120.38953745990688,
+          23.09036294255838
         ]
-      },
-      "properties": {
-        "X": "187461",
-        "Y": "2554420",
-        "案件編號": "041",
-        "完工日期": "1140701"
       }
     },
     {
       "type": "Feature",
+      "properties": {
+        "案件編號": "42",
+        "完工日期": "1140701",
+        "X": 187534,
+        "Y": 2253970,
+        "決標金額": "5230000",
+        "施工廠商": "森府土木包工有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4NzAyMzA=",
+        "備註": ""
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120.40159117973347,
-          20.376811768451244
+          120.4015911793028,
+          20.376811768884764
         ]
-      },
-      "properties": {
-        "X": "187534",
-        "Y": "2253970",
-        "案件編號": "042",
-        "完工日期": "1140701"
       }
     },
     {
       "type": "Feature",
+      "properties": {
+        "案件編號": "43",
+        "完工日期": "1140702",
+        "X": 187593,
+        "Y": 2554882,
+        "決標金額": "5230000",
+        "施工廠商": "森府土木包工有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4NzAyMzA=",
+        "備註": ""
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120.3908070905888,
-          23.09453983246057
+          120.39080709007894,
+          23.094539832951632
         ]
-      },
-      "properties": {
-        "X": "187593",
-        "Y": "2554882",
-        "案件編號": "043",
-        "完工日期": "1140702"
       }
     },
     {
       "type": "Feature",
+      "properties": {
+        "案件編號": "44",
+        "完工日期": "1140702",
+        "X": 187406,
+        "Y": 2554356,
+        "決標金額": "5230000",
+        "施工廠商": "森府土木包工有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4NzAyMzA=",
+        "備註": ""
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120.38900322463805,
-          23.089782938215034
+          120.3890032241207,
+          23.08978293870596
         ]
-      },
-      "properties": {
-        "X": "187406",
-        "Y": "2554356",
-        "案件編號": "044",
-        "完工日期": "1140702"
       }
     },
     {
       "type": "Feature",
+      "properties": {
+        "案件編號": "45",
+        "完工日期": "1140702",
+        "X": 186175,
+        "Y": 2555223,
+        "決標金額": "5230000",
+        "施工廠商": "森府土木包工有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4NzAyMzA=",
+        "備註": ""
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120.37695155108912,
-          23.097565081953512
+          120.37695155051877,
+          23.097565082444305
         ]
-      },
-      "properties": {
-        "X": "186175",
-        "Y": "2555223",
-        "案件編號": "045",
-        "完工日期": "1140702"
       }
     },
     {
       "type": "Feature",
+      "properties": {
+        "案件編號": "46",
+        "完工日期": "1140702",
+        "X": 187066,
+        "Y": 2553177,
+        "決標金額": "5230000",
+        "施工廠商": "森府土木包工有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4NzAyMzA=",
+        "備註": ""
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120.3857329172282,
-          23.079123552510488
+          120.38573291669704,
+          23.079123553001104
         ]
-      },
-      "properties": {
-        "X": "187066",
-        "Y": "2553177",
-        "案件編號": "046",
-        "完工日期": "1140702"
       }
     },
     {
       "type": "Feature",
+      "properties": {
+        "案件編號": "47",
+        "完工日期": "1140717",
+        "X": 187613,
+        "Y": 2555330,
+        "決標金額": "5230000",
+        "施工廠商": "森府土木包工有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4NzAyMzA=",
+        "備註": ""
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120.39098407948258,
-          23.09858607669217
+          120.39098407897342,
+          23.09858607718332
         ]
-      },
-      "properties": {
-        "X": "187613",
-        "Y": "2555330",
-        "案件編號": "047",
-        "完工日期": "1140717"
       }
     },
     {
       "type": "Feature",
+      "properties": {
+        "案件編號": "48",
+        "完工日期": "1140703",
+        "X": 183654,
+        "Y": 2554118,
+        "決標金額": "5230000",
+        "施工廠商": "森府土木包工有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4NzAyMzA=",
+        "備註": ""
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120.35239100264619,
-          23.087487839705894
+          120.35239100195477,
+          23.08748784019576
         ]
-      },
-      "properties": {
-        "X": "183654",
-        "Y": "2554118",
-        "案件編號": "048",
-        "完工日期": "1140703"
       }
     },
     {
       "type": "Feature",
+      "properties": {
+        "案件編號": "49",
+        "完工日期": "1140704",
+        "X": 185664,
+        "Y": 2554213,
+        "決標金額": "5230000",
+        "施工廠商": "森府土木包工有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4NzAyMzA=",
+        "備註": ""
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120.37200587486416,
-          23.08842493116768
+          120.37200587427103,
+          23.088424931658142
         ]
-      },
-      "properties": {
-        "X": "185664",
-        "Y": "2554213",
-        "案件編號": "049",
-        "完工日期": "1140704"
       }
     },
     {
       "type": "Feature",
+      "properties": {
+        "案件編號": "50",
+        "完工日期": "1140717",
+        "X": 187900,
+        "Y": 2554571,
+        "決標金額": "5230000",
+        "施工廠商": "森府土木包工有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4NzAyMzA=",
+        "備註": ""
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120.3938163734456,
-          23.09174299812357
+          120.39381637294822,
+          23.091742998614645
         ]
-      },
-      "properties": {
-        "X": "187900",
-        "Y": "2554571",
-        "案件編號": "050",
-        "完工日期": "1140717"
       }
     },
     {
       "type": "Feature",
+      "properties": {
+        "案件編號": "51",
+        "完工日期": "1140704",
+        "X": 186067,
+        "Y": 2553823,
+        "決標金額": "5230000",
+        "施工廠商": "森府土木包工有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4NzAyMzA=",
+        "備註": ""
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120.37595570082925,
-          23.084918785613834
+          120.37595570025454,
+          23.08491878610432
         ]
-      },
-      "properties": {
-        "X": "186067",
-        "Y": "2553823",
-        "案件編號": "051",
-        "完工日期": "1140704"
       }
     },
     {
       "type": "Feature",
+      "properties": {
+        "案件編號": "52",
+        "完工日期": "1140705",
+        "X": 185793,
+        "Y": 2553926,
+        "決標金額": "5230000",
+        "施工廠商": "森府土木包工有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4NzAyMzA=",
+        "備註": ""
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120.3732770226554,
-          23.08583829609718
+          120.37327702206827,
+          23.08583829658762
         ]
-      },
-      "properties": {
-        "X": "185793",
-        "Y": "2553926",
-        "案件編號": "052",
-        "完工日期": "1140705"
       }
     },
     {
       "type": "Feature",
+      "properties": {
+        "案件編號": "53",
+        "完工日期": "1140705",
+        "X": 186187,
+        "Y": 2555252,
+        "決標金額": "5230000",
+        "施工廠商": "森府土木包工有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4NzAyMzA=",
+        "備註": ""
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120.3770674802002,
-          23.09782741677433
+          120.37706747963034,
+          23.097827417265115
         ]
-      },
-      "properties": {
-        "X": "186187",
-        "Y": "2555252",
-        "案件編號": "053",
-        "完工日期": "1140705"
       }
     },
     {
       "type": "Feature",
+      "properties": {
+        "案件編號": "54",
+        "完工日期": "1140706",
+        "X": 186183,
+        "Y": 2555246,
+        "決標金額": "5230000",
+        "施工廠商": "森府土木包工有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4NzAyMzA=",
+        "備註": ""
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120.37702868444022,
-          23.097773082169518
+          120.3770286838702,
+          23.09777308266031
         ]
-      },
-      "properties": {
-        "X": "186183",
-        "Y": "2555246",
-        "案件編號": "054",
-        "完工日期": "1140706"
       }
     }
   ]

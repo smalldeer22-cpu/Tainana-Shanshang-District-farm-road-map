@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (查詢邏輯分流版)</title>
+<title>臺南市山上區公眾通行道路圖資 (板手圖示藍色版)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
@@ -89,10 +89,10 @@
   .checkbox-item { margin-bottom: 6px; display: flex; align-items: center; gap: 6px; font-size: 13px; }
   .checkbox-item input { margin: 0; accent-color: var(--primary-color); }
 
-  /* === 6. 底部時間軸面板 (回復功能) === */
+  /* === 6. 底部時間軸面板 (板手圖示修正) === */
   #bottomPanel {
       position: absolute; bottom: 0; left: var(--sidebar-width); right: 0; 
-      height: 140px; 
+      height: 160px; 
       background: rgba(255, 255, 255, 0.98);
       box-shadow: 0 -4px 16px rgba(0,0,0,0.1); z-index: 1400; 
       display: flex; flex-direction: column;
@@ -104,16 +104,23 @@
   #bottomPanelHeader { padding: 8px 20px; background: var(--primary-color); color: white; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
   #timelineContainer { flex: 1; overflow-x: auto; padding: 15px 20px; display: flex; align-items: flex-start; gap: 0; }
   
-  .h-item { width: 80px; text-align: center; cursor: pointer; position: relative; transition: transform 0.2s; }
+  .h-item { width: 130px; text-align: center; cursor: pointer; position: relative; transition: transform 0.2s; }
   .h-item:hover { transform: translateY(-5px); }
-  .h-date { font-size: 12px; font-weight: bold; color: #333; margin-bottom: 5px; }
-  .h-line-container { position: relative; height: 20px; display: flex; align-items: center; justify-content: center; }
-  .h-line-container::before { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 2px; background: #ddd; z-index: 0; }
-  .h-dot { width: 12px; height: 12px; background: #fff; border: 3px solid var(--primary-color); border-radius: 50%; z-index: 1; position: relative; transition: all 0.2s; }
-  .h-item:hover .h-dot { transform: scale(1.4); }
-  .h-icon { margin-top: 5px; font-size: 16px; }
-  .icon-urgent { color: #d32f2f; }
-  .icon-normal { color: #1976d2; }
+  .h-date { font-size: 13px; font-weight: bold; color: #333; margin-bottom: 8px; }
+  
+  .h-line-container { position: relative; height: 24px; display: flex; align-items: center; justify-content: center; }
+  .h-line-container::before { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 3px; background: #ddd; z-index: 0; }
+  .h-dot { width: 16px; height: 16px; background: #fff; border: 4px solid var(--primary-color); border-radius: 50%; z-index: 1; position: relative; transition: all 0.2s; }
+  .h-item:hover .h-dot { transform: scale(1.4); border-color: var(--accent-color); }
+  
+  /* === 圖示樣式修正 === */
+  .h-icon { 
+      margin-top: 8px; font-size: 24px; display: flex; justify-content: center; 
+  }
+  /* 搶修：使用藍色 (var(--primary-color)) */
+  .icon-urgent { color: var(--primary-color); } 
+  /* 一般：使用淺藍色 */
+  .icon-normal { color: #1976d2; font-size: 18px; }
 
   /* === 7. 右鍵選單 === */
   #contextMenu { 
@@ -151,7 +158,7 @@
     body.sidebar-open #overlay-mask { display: block; }
     
     #toggleSidebarBtn { left: 10px; top: 10px; }
-    #bottomPanel { left: 0; height: 160px; z-index: 2100; }
+    #bottomPanel { left: 0; height: 180px; z-index: 2100; }
     .map-floating-controls { top: 70px; right: 10px; }
   }
 </style>
@@ -206,12 +213,12 @@
 
   <div id="tab-search" class="tab-content-container tab-pane">
       <div class="card-section">
-          <div class="card-title"><i class="fas fa-route"></i> 1. 公眾通行道路圖資查詢</div>
+          <div class="card-title"><i class="fas fa-route"></i> 公眾通行道路圖資查詢</div>
           <select id="roadSelect"><option>載入中...</option></select>
       </div>
 
       <div class="card-section">
-          <div class="card-title"><i class="fas fa-search-plus"></i> 2. 案件進階搜尋</div>
+          <div class="card-title"><i class="fas fa-search-plus"></i> 案件進階搜尋</div>
           <div class="search-block-label"><i class="fas fa-filter"></i> 依廠商快篩</div>
           <select id="contractorSelect" style="margin-bottom:10px;">
               <option value="">(讀取系統資料中...)</option>
@@ -247,6 +254,7 @@
 <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
 
 <script>
+/* === 變數定義 === */
 let REPAIR_CONFIG = []; 
 let roadsLayer = null;  
 let roadLayersArray = [];
@@ -267,6 +275,7 @@ function twd97FromWgs84(lat,lng){
     return {x:Math.round(p[0]),y:Math.round(p[1])}; 
 }
 
+/* === 分頁切換 === */
 window.switchTab = function(tabId) {
     document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
@@ -275,7 +284,12 @@ window.switchTab = function(tabId) {
     if(btn) btn.classList.add('active');
 };
 
-const map = L.map('map', { zoomControl:false }).setView([23.1025,120.3538], 13);
+/* === 地圖初始化 === */
+const map = L.map('map', { 
+    zoomControl:false,
+    doubleClickZoom: false 
+}).setView([23.1025,120.3538], 13);
+
 const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(map);
 const sat = L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', { attribution: '© Google Maps' });
 let isSat = false; 
@@ -289,6 +303,7 @@ const repairLayer = L.layerGroup().addTo(map);
 const routeMatchLayer = L.layerGroup().addTo(map);
 const searchResultLayer = L.featureGroup().addTo(map);
 
+/* === 側邊欄控制 === */
 const toggleBtn = document.getElementById('toggleSidebarBtn');
 const overlayMask = document.getElementById('overlay-mask');
 const bottomPanel = document.getElementById('bottomPanel');
@@ -307,6 +322,7 @@ document.getElementById('closePanelBtn').addEventListener('click', () => {
     routeMatchLayer.clearLayers();
 });
 
+/* === 資料載入 === */
 fetch('tainan_districts.geojson').then(r=>r.json()).then(data=>{
     L.geoJSON(data, { interactive: false, style: f => ({ color: '#000', weight: (f.properties.TOWNNAME||f.properties.TOWN).includes('山上')?5:2, opacity: 0.8, fillOpacity: 0 }) }).addTo(boundaryLayer).bringToBack();
 }).catch(e=>console.warn(e));
@@ -320,7 +336,6 @@ fetch('farmroads.geojson').then(r=>r.json()).then(data=>{
             l.on('mouseout', () => { l.setStyle({ weight: 3, color: DEEP_BLUE }); map.getContainer().style.cursor='default'; });
             l.on('click', (e) => {
                 L.DomEvent.stopPropagation(e);
-                // 修正：傳遞 true 表示這是「點擊」，要顯示時間軸
                 handleMapClickSelection(roadLayersArray.indexOf(l), true);
                 if(window.innerWidth <= 768) document.body.classList.remove('sidebar-open');
             });
@@ -520,10 +535,8 @@ function clearSearchResults() {
     document.getElementById('clearSearchBtn').style.display = 'none';
 }
 
-// 修正：傳遞 false，表示這是下拉選單觸發
 document.getElementById('roadSelect').addEventListener('change', (e) => handleMapClickSelection(e.target.value, false));
 
-// 核心選擇邏輯：增加 isInteractive 參數
 function handleMapClickSelection(idx, isInteractive) {
     if(idx==="" || idx===null) return;
     if(roadsLayer) roadsLayer.eachLayer(l => l.setStyle({color: DEEP_BLUE, weight:3}));
@@ -535,19 +548,16 @@ function handleMapClickSelection(idx, isInteractive) {
         target.openPopup();
         
         if (isInteractive) {
-            // 只有地圖點擊時，才顯示時間軸面板與維修點
             document.getElementById('panelTitle').innerHTML = `<i class="fas fa-history"></i> ${target.feature.properties.name}`;
             bottomPanel.classList.add('open');
             showTimeline(target);
         } else {
-            // 下拉選單時，隱藏面板與維修點
             bottomPanel.classList.remove('open');
             routeMatchLayer.clearLayers();
         }
     }
 }
 
-// 地圖空白處點擊：取消選擇
 map.on('click', (e) => {
     document.getElementById('contextMenu').style.display='none';
     document.getElementById('roadSelect').value = "";
@@ -555,10 +565,17 @@ map.on('click', (e) => {
     map.closePopup();
     bottomPanel.classList.remove('open');
     routeMatchLayer.clearLayers();
+});
+
+map.on('contextmenu', (e) => {
+    addUserMarker(e.latlng);
+    L.DomEvent.preventDefault(e);
+});
+
+map.on('dblclick', (e) => {
     addUserMarker(e.latlng);
 });
 
-// 恢復 showTimeline 邏輯
 function showTimeline(routeLayer) {
     const cont = document.getElementById('timelineContainer');
     cont.innerHTML = '<div style="padding:20px;">讀取中...</div>';
@@ -585,10 +602,11 @@ function showTimeline(routeLayer) {
         marker.bindPopup(createPopup({ fileName: m.label, props: m.props, lat: m.lat, lng: m.lng, dist: m.dist }), {className:'custom-popup'});
         
         const labelName = m.label.toString();
+        // 修正：使用 fas fa-wrench
         let icon = '<i class="fas fa-circle icon-normal"></i>';
         let title = '一般';
         if(labelName.includes('搶修') || labelName.includes('災害') || labelName.includes('緊急')) {
-            icon = '<i class="fas fa-exclamation-triangle icon-urgent"></i>';
+            icon = '<i class="fas fa-wrench icon-urgent"></i>'; 
             title = '搶修';
         }
         
@@ -608,18 +626,6 @@ function showTimeline(routeLayer) {
 
 const ctxMenu = document.getElementById('contextMenu');
 let clickedLatLng = null;
-map.on('contextmenu', e => {
-    clickedLatLng = e.latlng;
-    ctxMenu.style.display = 'block';
-    ctxMenu.style.left = e.containerPoint.x + 'px';
-    ctxMenu.style.top = e.containerPoint.y + 'px';
-    pointLayer.clearLayers();
-});
-map.on('dragstart', () => ctxMenu.style.display='none');
-
-document.getElementById('ctxStreetView').onclick = () => { if(clickedLatLng) window.open(`https://www.google.com/maps?q=&layer=c&cbll=${clickedLatLng.lat},${clickedLatLng.lng}`); ctxMenu.style.display='none'; }
-document.getElementById('ctxGoogleNav').onclick = () => { if(clickedLatLng) window.open(`https://www.google.com/maps/dir/?api=1&destination=${clickedLatLng.lat},${clickedLatLng.lng}`); ctxMenu.style.display='none'; }
-document.getElementById('ctxClearMarker').onclick = () => { pointLayer.clearLayers(); ctxMenu.style.display='none'; }
 
 function addUserMarker(latlng) {
     pointLayer.clearLayers();
@@ -633,12 +639,29 @@ function addUserMarker(latlng) {
         </div>
     `).openPopup();
     marker.on('contextmenu', (e) => {
+        L.DomEvent.stopPropagation(e);
         clickedLatLng = e.latlng;
         ctxMenu.style.display = 'block';
-        ctxMenu.style.left = e.containerPoint.x + 'px';
-        ctxMenu.style.top = e.containerPoint.y + 'px';
+        ctxMenu.style.left = e.originalEvent.clientX + 'px';
+        ctxMenu.style.top = e.originalEvent.clientY + 'px';
+    });
+    marker.on('click', (e) => {
+        if(L.Browser.mobile) {
+            clickedLatLng = e.latlng;
+            ctxMenu.style.display = 'block';
+            ctxMenu.style.left = e.originalEvent.clientX + 'px';
+            ctxMenu.style.top = e.originalEvent.clientY + 'px';
+        } else {
+            marker.openPopup();
+        }
     });
 }
+
+map.on('dragstart click', () => ctxMenu.style.display='none');
+
+document.getElementById('ctxStreetView').onclick = () => { if(clickedLatLng) window.open(`https://www.google.com/maps?q=&layer=c&cbll=${clickedLatLng.lat},${clickedLatLng.lng}`); ctxMenu.style.display='none'; }
+document.getElementById('ctxGoogleNav').onclick = () => { if(clickedLatLng) window.open(`https://www.google.com/maps/dir/?api=1&destination=${clickedLatLng.lat},${clickedLatLng.lng}`); ctxMenu.style.display='none'; }
+document.getElementById('ctxClearMarker').onclick = () => { pointLayer.clearLayers(); ctxMenu.style.display='none'; }
 
 document.getElementById('locateBtn').onclick = () => map.locate({setView:true, maxZoom:16});
 map.on('locationfound', e => L.circleMarker(e.latlng, {color:'blue', radius:8}).addTo(map).bindPopup('我的位置').openPopup());
@@ -680,6 +703,21 @@ document.getElementById('clearRepairBtn').addEventListener('click', () => {
     repairLayer.clearLayers();
     document.querySelectorAll('.repair-cb').forEach(cb => cb.checked = false);
     document.querySelectorAll('.year-select-all input').forEach(cb => cb.checked = false);
+
+    searchResultLayer.clearLayers();
+    document.getElementById('keywordInput').value = '';
+    document.getElementById('contractorSelect').value = '';
+    document.getElementById('searchStatus').innerText = '';
+    document.getElementById('clearSearchBtn').style.display = 'none';
+
+    pointLayer.clearLayers();
+    document.getElementById('coordsInput').value = '';
+
+    if(roadsLayer) roadsLayer.eachLayer(l => l.setStyle({color: DEEP_BLUE, weight:3}));
+    document.getElementById('roadSelect').value = "";
+
+    bottomPanel.classList.remove('open');
+    map.closePopup();
 });
 </script>
 </body>

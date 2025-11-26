@@ -1,0 +1,992 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "001",
+        "完工日期": "1120612",
+        "X": 186324,
+        "Y": 2553913,
+        "決標金額": "3508000",
+        "施工廠商": "佳泰土木包工業",
+        "監造廠商": "公所自辦",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAyNDkzMzg=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.3784604034676,
+          23.08574138691564
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "002",
+        "完工日期": "1120613",
+        "X": 184723,
+        "Y": 2555140,
+        "決標金額": "3508000",
+        "施工廠商": "佳泰土木包工業",
+        "監造廠商": "公所自辦",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAyNDkzMzg=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.36278158588341,
+          23.096759014929507
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "003",
+        "完工日期": "1120706",
+        "X": 186050,
+        "Y": 2553913,
+        "決標金額": "3508000",
+        "施工廠商": "佳泰土木包工業",
+        "監造廠商": "公所自辦",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAyNDkzMzg=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.37578601971423,
+          23.085730839502432
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "004",
+        "完工日期": "1120706",
+        "X": 184057,
+        "Y": 2555429,
+        "決標金額": "3508000",
+        "施工廠商": "佳泰土木包工業",
+        "監造廠商": "公所自辦",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAyNDkzMzg=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.3562681344679,
+          23.09934232700178
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "005",
+        "完工日期": "1120724",
+        "X": 185569,
+        "Y": 2553430,
+        "決標金額": "3508000",
+        "施工廠商": "佳泰土木包工業",
+        "監造廠商": "公所自辦",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAyNDkzMzg=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.37111149991286,
+          23.081350678414243
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "005",
+        "完工日期": "1120724",
+        "X": 185698,
+        "Y": 2553496,
+        "決標金額": "3508000",
+        "施工廠商": "佳泰土木包工業",
+        "監造廠商": "公所自辦",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAyNDkzMzg=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.37236779894373,
+          23.081951672731204
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "005",
+        "完工日期": "1120724",
+        "X": 186613,
+        "Y": 2554093,
+        "決標金額": "3508000",
+        "施工廠商": "佳泰土木包工業",
+        "監造廠商": "公所自辦",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAyNDkzMzg=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.38127375701801,
+          23.0873778823009
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "005",
+        "完工日期": "1120724",
+        "X": 186323,
+        "Y": 2553916,
+        "決標金額": "3508000",
+        "施工廠商": "佳泰土木包工業",
+        "監造廠商": "公所自辦",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAyNDkzMzg=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.37845051838224,
+          23.085768438819084
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "006",
+        "完工日期": "1120731",
+        "X": 183664,
+        "Y": 2554121,
+        "決標金額": "3508000",
+        "施工廠商": "佳泰土木包工業",
+        "監造廠商": "公所自辦",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAyNDkzMzg=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.35248847822638,
+          23.08751533059309
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "006",
+        "完工日期": "1120731",
+        "X": 186785,
+        "Y": 2552915,
+        "決標金額": "3508000",
+        "施工廠商": "佳泰土木包工業",
+        "監造廠商": "公所自辦",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAyNDkzMzg=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.38300113417127,
+          23.07674697279457
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "006",
+        "完工日期": "1120731",
+        "X": 186430,
+        "Y": 2554183,
+        "決標金額": "3508000",
+        "施工廠商": "佳泰土木包工業",
+        "監造廠商": "公所自辦",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAyNDkzMzg=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.37948382737719,
+          23.08818358364251
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "007",
+        "完工日期": "1120802",
+        "X": 184951,
+        "Y": 2554935,
+        "決標金額": "3508000",
+        "施工廠商": "佳泰土木包工業",
+        "監造廠商": "公所自辦",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAyNDkzMzg=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.36501586113386,
+          23.094916817638495
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "007",
+        "完工日期": "1120802",
+        "X": 185080,
+        "Y": 2555027,
+        "決標金額": "3508000",
+        "施工廠商": "佳泰土木包工業",
+        "監造廠商": "公所自辦",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAyNDkzMzg=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.36627115517265,
+          23.095752643506227
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "007",
+        "完工日期": "1120802",
+        "X": 183182,
+        "Y": 2554816,
+        "決標金額": "3508000",
+        "施工廠商": "佳泰土木包工業",
+        "監造廠商": "公所自辦",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAyNDkzMzg=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.34775358108395,
+          23.093771852767343
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "007",
+        "完工日期": "1120802",
+        "X": 186149,
+        "Y": 2553863,
+        "決標金額": "3508000",
+        "施工廠商": "佳泰土木包工業",
+        "監造廠商": "公所自辦",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAyNDkzMzg=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.37675439308059,
+          23.08528315053014
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "007",
+        "完工日期": "1120802",
+        "X": 185845,
+        "Y": 2554271,
+        "決標金額": "3508000",
+        "施工廠商": "佳泰土木包工業",
+        "監造廠商": "公所自辦",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAyNDkzMzg=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.37377013639637,
+          23.08895569267362
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "007",
+        "完工日期": "1120802",
+        "X": 183638,
+        "Y": 2554584,
+        "決標金額": "3508000",
+        "施工廠商": "佳泰土木包工業",
+        "監造廠商": "公所自辦",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAyNDkzMzg=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.35221466422553,
+          23.091695205209124
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "008",
+        "完工日期": "1120801",
+        "X": 186238,
+        "Y": 2553923,
+        "決標金額": "3508000",
+        "施工廠商": "佳泰土木包工業",
+        "監造廠商": "公所自辦",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAyNDkzMzg=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.377620582431,
+          23.085828382325833
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "008",
+        "完工日期": "1120801",
+        "X": 186886,
+        "Y": 2554064,
+        "決標金額": "3508000",
+        "施工廠商": "佳泰土木包工業",
+        "監造廠商": "公所自辦",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAyNDkzMzg=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.38393960899853,
+          23.087126426148348
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "008",
+        "完工日期": "1120801",
+        "X": 186158,
+        "Y": 2553867,
+        "決標金額": "3508000",
+        "施工廠商": "佳泰土木包工業",
+        "監造廠商": "公所自辦",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAyNDkzMzg=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.37684207099952,
+          23.08531961756376
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "008",
+        "完工日期": "1120801",
+        "X": 186693,
+        "Y": 2554147,
+        "決標金額": "3508000",
+        "施工廠商": "佳泰土木包工業",
+        "監造廠商": "公所自辦",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAyNDkzMzg=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.3820523799088,
+          23.087868565486495
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "008",
+        "完工日期": "1120801",
+        "X": 186785,
+        "Y": 2552915,
+        "決標金額": "3508000",
+        "施工廠商": "佳泰土木包工業",
+        "監造廠商": "公所自辦",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAyNDkzMzg=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.38300113417127,
+          23.07674697279457
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "009",
+        "完工日期": "1120802",
+        "X": 187315,
+        "Y": 2553426,
+        "決標金額": "3508000",
+        "施工廠商": "佳泰土木包工業",
+        "監造廠商": "公所自辦",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAyNDkzMzg=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.38815299894209,
+          23.081381486188715
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "009",
+        "完工日期": "1120802",
+        "X": 186908,
+        "Y": 2554055,
+        "決標金額": "3508000",
+        "施工廠商": "佳泰土木包工業",
+        "監造廠商": "公所自辦",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAyNDkzMzg=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.38415471330008,
+          23.08704599263512
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "010",
+        "完工日期": "1120809",
+        "X": 185651,
+        "Y": 2553463,
+        "決標金額": "3508000",
+        "施工廠商": "佳泰土木包工業",
+        "監造廠商": "公所自辦",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAyNDkzMzg=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.37191045185638,
+          23.08165185606189
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "010",
+        "完工日期": "1120809",
+        "X": 185513,
+        "Y": 2553376,
+        "決標金額": "3508000",
+        "施工廠商": "佳泰土木包工業",
+        "監造廠商": "公所自辦",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAyNDkzMzg=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.3705671988947,
+          23.08086087615123
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "010",
+        "完工日期": "1120809",
+        "X": 186009,
+        "Y": 2553780,
+        "決標金額": "3508000",
+        "施工廠商": "佳泰土木包工業",
+        "監造廠商": "公所自辦",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAyNDkzMzg=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.37539138743783,
+          23.084528253971914
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "011",
+        "完工日期": "1120814",
+        "X": 184313,
+        "Y": 2555570,
+        "決標金額": "3508000",
+        "施工廠商": "佳泰土木包工業",
+        "監造廠商": "公所自辦",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAyNDkzMzg=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.35876102717556,
+          23.100625735015566
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "012",
+        "完工日期": "1120822",
+        "X": 183659,
+        "Y": 2554111,
+        "決標金額": "3508000",
+        "施工廠商": "佳泰土木包工業",
+        "監造廠商": "公所自辦",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAyNDkzMzg=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.35244010779785,
+          23.087424829912795
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "013",
+        "完工日期": "1120906",
+        "X": 184121,
+        "Y": 2555141,
+        "決標金額": "3508000",
+        "施工廠商": "佳泰土木包工業",
+        "監造廠商": "公所自辦",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAyNDkzMzg=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.35690524796118,
+          23.096744217915504
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "013",
+        "完工日期": "1120906",
+        "X": 186289,
+        "Y": 2553687,
+        "決標金額": "3508000",
+        "施工廠商": "佳泰土木包工業",
+        "監造廠商": "公所自辦",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAyNDkzMzg=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.37812817284274,
+          23.083699238245938
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "013",
+        "完工日期": "1120906",
+        "X": 186242,
+        "Y": 2553892,
+        "決標金額": "3508000",
+        "施工廠商": "佳泰土木包工業",
+        "監造廠商": "公所自辦",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAyNDkzMzg=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.37766091329017,
+          23.085548602956862
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "013",
+        "完工日期": "1120906",
+        "X": 186286,
+        "Y": 2553930,
+        "決標金額": "3508000",
+        "施工廠商": "佳泰土木包工業",
+        "監造廠商": "公所自辦",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAyNDkzMzg=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.37808879719684,
+          23.0858934386152
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "013",
+        "完工日期": "1120906",
+        "X": 185654,
+        "Y": 2553900,
+        "決標金額": "3508000",
+        "施工廠商": "佳泰土木包工業",
+        "監造廠商": "公所自辦",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAyNDkzMzg=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.37192140015793,
+          23.085598124564253
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "013",
+        "完工日期": "1120906",
+        "X": 186426,
+        "Y": 2554338,
+        "決標金額": "3508000",
+        "施工廠商": "佳泰土木包工業",
+        "監造廠商": "公所自辦",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAyNDkzMzg=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.37943835835448,
+          23.089583096230445
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "014",
+        "完工日期": "1120910",
+        "X": 183662,
+        "Y": 2554119,
+        "決標金額": "3508000",
+        "施工廠商": "佳泰土木包工業",
+        "監造廠商": "公所自辦",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAyNDkzMzg=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.35246904353059,
+          23.087497190437812
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "015",
+        "完工日期": "1120917",
+        "X": 184531,
+        "Y": 2555644,
+        "決標金額": "3508000",
+        "施工廠商": "佳泰土木包工業",
+        "監造廠商": "公所自辦",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAyNDkzMzg=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.36088588739047,
+          23.10130258926422
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "016",
+        "完工日期": "1120918",
+        "X": 187055,
+        "Y": 2554105,
+        "決標金額": "3508000",
+        "施工廠商": "佳泰土木包工業",
+        "監造廠商": "公所自辦",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAyNDkzMzg=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.38558747418699,
+          23.08750308696752
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "016",
+        "完工日期": "1120918",
+        "X": 183653,
+        "Y": 2554116,
+        "決標金額": "3508000",
+        "施工廠商": "佳泰土木包工業",
+        "監造廠商": "公所自辦",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAyNDkzMzg=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.35238132787904,
+          23.087469740055163
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "016",
+        "完工日期": "1120918",
+        "X": 183496,
+        "Y": 2554517,
+        "決標金額": "3508000",
+        "施工廠商": "佳泰土木包工業",
+        "監造廠商": "公所自辦",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAyNDkzMzg=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.35083152174974,
+          23.091084499624454
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "017",
+        "完工日期": "1120925",
+        "X": 183662,
+        "Y": 2554119,
+        "決標金額": "3508000",
+        "施工廠商": "佳泰土木包工業",
+        "監造廠商": "公所自辦",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAyNDkzMzg=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.35246904353059,
+          23.087497190437812
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "018",
+        "完工日期": "1121017",
+        "X": 186670,
+        "Y": 2554079,
+        "決標金額": "3508000",
+        "施工廠商": "佳泰土木包工業",
+        "監造廠商": "公所自辦",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAyNDkzMzg=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.38183069230529,
+          23.0872536394891
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "018",
+        "完工日期": "1121017",
+        "X": 184749,
+        "Y": 2554922,
+        "決標金額": "3508000",
+        "施工廠商": "佳泰土木包工業",
+        "監造廠商": "公所自辦",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAyNDkzMzg=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.36304465962955,
+          23.094791484505595
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "018",
+        "完工日期": "1121017",
+        "X": 184437,
+        "Y": 2554559,
+        "決標金額": "3508000",
+        "施工廠商": "佳泰土木包工業",
+        "監造廠商": "公所自辦",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAyNDkzMzg=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.36001470546222,
+          23.091501255538482
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "019",
+        "完工日期": "1121005",
+        "X": 186294,
+        "Y": 2553928,
+        "決標金額": "3508000",
+        "施工廠商": "佳泰土木包工業",
+        "監造廠商": "公所自辦",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAyNDkzMzg=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.3781669645769,
+          23.085875685865226
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "020",
+        "完工日期": "1121122",
+        "X": 183660,
+        "Y": 2554106,
+        "決標金額": "3508000",
+        "施工廠商": "佳泰土木包工業",
+        "監造廠商": "公所自辦",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAyNDkzMzg=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.35245008469504,
+          23.087379719646723
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "021",
+        "完工日期": "1121128",
+        "X": 183047,
+        "Y": 2554505,
+        "決標金額": "3508000",
+        "施工廠商": "佳泰土木包工業",
+        "監造廠商": "公所自辦",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAyNDkzMzg=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.34644942142818,
+          23.090958060945045
+        ]
+      }
+    }
+  ]
+}

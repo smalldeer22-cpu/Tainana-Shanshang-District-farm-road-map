@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (板手圖示藍色版)</title>
+<title>臺南市山上區公眾通行道路圖資 (經費計算修正版)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
@@ -89,10 +89,10 @@
   .checkbox-item { margin-bottom: 6px; display: flex; align-items: center; gap: 6px; font-size: 13px; }
   .checkbox-item input { margin: 0; accent-color: var(--primary-color); }
 
-  /* === 6. 底部時間軸面板 (板手圖示修正) === */
+  /* === 6. 底部時間軸面板 (板手圖示 + 統計) === */
   #bottomPanel {
       position: absolute; bottom: 0; left: var(--sidebar-width); right: 0; 
-      height: 160px; 
+      height: 170px; /* 增加高度以容納統計 */
       background: rgba(255, 255, 255, 0.98);
       box-shadow: 0 -4px 16px rgba(0,0,0,0.1); z-index: 1400; 
       display: flex; flex-direction: column;
@@ -101,26 +101,48 @@
   }
   body.collapsed #bottomPanel { left: 0; } 
   #bottomPanel.open { transform: translateY(0); }
-  #bottomPanelHeader { padding: 8px 20px; background: var(--primary-color); color: white; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+  
+  #bottomPanelHeader { 
+      padding: 8px 20px; background: var(--primary-color); color: white; 
+      display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
+  }
+
+  #timelineStats { font-size: 13px; background: rgba(0,0,0,0.2); padding: 4px 12px; border-radius: 20px; }
+  #timelineStats span { margin-left: 5px; font-weight: bold; color: #ffeb3b; }
+
   #timelineContainer { flex: 1; overflow-x: auto; padding: 15px 20px; display: flex; align-items: flex-start; gap: 0; }
   
+  /* 項目寬度加寬 */
   .h-item { width: 130px; text-align: center; cursor: pointer; position: relative; transition: transform 0.2s; }
   .h-item:hover { transform: translateY(-5px); }
   .h-date { font-size: 13px; font-weight: bold; color: #333; margin-bottom: 8px; }
   
   .h-line-container { position: relative; height: 24px; display: flex; align-items: center; justify-content: center; }
   .h-line-container::before { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 3px; background: #ddd; z-index: 0; }
-  .h-dot { width: 16px; height: 16px; background: #fff; border: 4px solid var(--primary-color); border-radius: 50%; z-index: 1; position: relative; transition: all 0.2s; }
+  
+  /* 密集維修警示線條 (右側線) */
+  .h-item.alert-right .h-line-container::after {
+      content: ''; position: absolute; left: 50%; right: -50%; top: 50%; height: 4px; 
+      background: repeating-linear-gradient(45deg, #d32f2f, #d32f2f 5px, #ffcdd2 5px, #ffcdd2 10px);
+      z-index: 0; animation: alertPulse 1.5s infinite;
+  }
+  @keyframes alertPulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
+
+  /* 圓點放大 */
+  .h-dot { background: #fff; border: 4px solid var(--primary-color); border-radius: 50%; z-index: 1; position: relative; transition: all 0.2s; }
   .h-item:hover .h-dot { transform: scale(1.4); border-color: var(--accent-color); }
   
-  /* === 圖示樣式修正 === */
-  .h-icon { 
-      margin-top: 8px; font-size: 24px; display: flex; justify-content: center; 
-  }
-  /* 搶修：使用藍色 (var(--primary-color)) */
-  .icon-urgent { color: var(--primary-color); } 
-  /* 一般：使用淺藍色 */
-  .icon-normal { color: #1976d2; font-size: 18px; }
+  /* 金額大小 Class */
+  .dot-sm { width: 12px; height: 12px; border-width: 3px; }
+  .dot-md { width: 16px; height: 16px; border-width: 4px; }
+  .dot-lg { width: 22px; height: 22px; border-width: 5px; box-shadow: 0 0 0 3px rgba(0, 64, 128, 0.2); }
+
+  /* 圖示放大 */
+  .h-icon { margin-top: 8px; font-size: 24px; display: flex; justify-content: center; }
+  
+  /* 強制使用 FontAwesome Unicode */
+  .icon-urgent::before { content: "\f0ad"; font-family: "Font Awesome 6 Free"; font-weight: 900; color: #d32f2f; } /* 板手 */
+  .icon-normal::before { content: "\f111"; font-family: "Font Awesome 6 Free"; font-weight: 900; color: #1976d2; font-size: 18px; } /* 圓點 */
 
   /* === 7. 右鍵選單 === */
   #contextMenu { 
@@ -184,6 +206,8 @@
 <div id="bottomPanel">
     <div id="bottomPanelHeader">
         <span id="panelTitle"><i class="fas fa-history"></i> 路線維修紀錄</span>
+        <!-- 統計資訊 -->
+        <div id="timelineStats"></div>
         <button id="closePanelBtn" style="background:none; border:none; color:#fff; font-size:18px; cursor:pointer;"><i class="fas fa-times"></i></button>
     </div>
     <div id="timelineContainer">
@@ -576,12 +600,29 @@ map.on('dblclick', (e) => {
     addUserMarker(e.latlng);
 });
 
+// 輔助函式
+function formatMoney(val) {
+    if (!val) return 0;
+    return parseInt(val.toString().replace(/,/g, '')) || 0;
+}
+
+function getDateDiffDays(dateStr1, dateStr2) {
+    if (!dateStr1 || dateStr1.length < 7 || !dateStr2 || dateStr2.length < 7) return 9999;
+    const d1 = new Date(parseInt(dateStr1.substring(0,3))+1911, parseInt(dateStr1.substring(3,5))-1, parseInt(dateStr1.substring(5,7)));
+    const d2 = new Date(parseInt(dateStr2.substring(0,3))+1911, parseInt(dateStr2.substring(3,5))-1, parseInt(dateStr2.substring(5,7)));
+    return Math.ceil(Math.abs(d1 - d2) / (1000 * 60 * 60 * 24)); 
+}
+
 function showTimeline(routeLayer) {
     const cont = document.getElementById('timelineContainer');
+    const statsDiv = document.getElementById('timelineStats');
+    
     cont.innerHTML = '<div style="padding:20px;">讀取中...</div>';
     routeMatchLayer.clearLayers();
+    
     const routeLine = routeLayer.toGeoJSON().geometry; 
     const matches = [];
+    
     REPAIR_CONFIG.forEach(conf => {
         const data = REPAIR_DATA_CACHE[conf.value];
         if(!data) return;
@@ -589,34 +630,76 @@ function showTimeline(routeLayer) {
             if(f.geometry.type !== 'Point') return;
             const pt = turf.point(f.geometry.coordinates);
             const dist = turf.pointToLineDistance(pt, routeLine, {units:'meters'});
-            if(dist <= 50) matches.push({ label: conf.label, props: f.properties, lat: f.geometry.coordinates[1], lng: f.geometry.coordinates[0], dist });
+            if(dist <= 50) matches.push({ 
+                label: conf.label, 
+                props: f.properties, 
+                lat: f.geometry.coordinates[1], 
+                lng: f.geometry.coordinates[0], 
+                dist 
+            });
         });
     });
     
-    if(matches.length === 0) { cont.innerHTML = '<div style="padding:20px;">無維修紀錄</div>'; return; }
+    if(matches.length === 0) { 
+        cont.innerHTML = '<div style="padding:20px;">無維修紀錄</div>'; 
+        statsDiv.innerHTML = '';
+        return; 
+    }
+    
     matches.sort((a,b) => (b.props['完工日期']||'').localeCompare(a.props['完工日期']||''));
+    
+    // 經費累計邏輯 (去重)
+    let totalCost = 0;
+    let processedCases = new Set();
+    matches.forEach(m => {
+        const caseNo = m.props['案件編號'];
+        const money = formatMoney(m.props['決標金額']);
+        if (caseNo && !processedCases.has(caseNo)) {
+            totalCost += money;
+            processedCases.add(caseNo);
+        } else if (!caseNo) {
+            totalCost += money;
+        }
+    });
+    const count = matches.length;
+    statsDiv.innerHTML = `總花費：<span>$${totalCost.toLocaleString()}</span> | 維修：<span>${count} 次</span>`;
+    
     cont.innerHTML = '';
     
-    matches.forEach(m => {
+    matches.forEach((m, i) => {
         const marker = L.circleMarker([m.lat, m.lng], { radius: 14, color: '#fff', fillColor: DEEP_BLUE, weight:1, fillOpacity:0.9 }).addTo(routeMatchLayer);
         marker.bindPopup(createPopup({ fileName: m.label, props: m.props, lat: m.lat, lng: m.lng, dist: m.dist }), {className:'custom-popup'});
         
         const labelName = m.label.toString();
-        // 修正：使用 fas fa-wrench
-        let icon = '<i class="fas fa-circle icon-normal"></i>';
+        let iconClass = 'icon-normal';
         let title = '一般';
         if(labelName.includes('搶修') || labelName.includes('災害') || labelName.includes('緊急')) {
-            icon = '<i class="fas fa-wrench icon-urgent"></i>'; 
+            iconClass = 'icon-urgent'; 
             title = '搶修';
         }
+
+        const amount = formatMoney(m.props['決標金額']);
+        let sizeClass = 'dot-sm'; 
+        if (amount > 5000000) sizeClass = 'dot-lg';      
+        else if (amount > 1000000) sizeClass = 'dot-md'; 
+
+        let isFrequent = false;
+        if (i < matches.length - 1) {
+            const nextItem = matches[i+1]; 
+            const days = getDateDiffDays(m.props['完工日期'], nextItem.props['完工日期']);
+            if (days < 180) isFrequent = true; 
+        }
         
+        const alertClass = isFrequent ? 'alert-right' : '';
+
         const item = document.createElement('div');
-        item.className = 'h-item';
+        item.className = `h-item ${alertClass}`;
         item.innerHTML = `
             <div class="h-date">${m.props['完工日期']||'未知'}</div>
-            <div class="h-line-container"><div class="h-dot"></div></div>
-            <div class="h-icon" title="${title}">${icon}</div>
+            <div class="h-line-container"><div class="h-dot ${sizeClass}"></div></div>
+            <div class="h-icon ${iconClass}" title="${title}"></div>
         `;
+        
         item.addEventListener('mouseenter', () => { marker.setStyle({ radius: 20, color:'#ffd700', weight:4, fillColor:'#d32f2f' }); marker.bringToFront(); marker.openPopup(); });
         item.addEventListener('mouseleave', () => { marker.setStyle({ radius: 14, color:'#fff', weight:1, fillColor:DEEP_BLUE }); marker.closePopup(); });
         item.addEventListener('click', () => map.flyTo([m.lat, m.lng], 18));
@@ -699,6 +782,7 @@ map.on('mousemove', e => {
     }
 });
 
+// 修正 1: 超級清除按鈕
 document.getElementById('clearRepairBtn').addEventListener('click', () => {
     repairLayer.clearLayers();
     document.querySelectorAll('.repair-cb').forEach(cb => cb.checked = false);

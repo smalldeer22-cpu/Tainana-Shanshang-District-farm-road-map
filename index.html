@@ -3,299 +3,194 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (Basic Version - 聚合升級版)</title>
+<title>臺南市山上區公眾通行道路圖資 (全功能終極版)</title>
+<!-- Leaflet CSS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<!-- FontAwesome -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+<!-- Leaflet MarkerCluster CSS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
 
 <style>
-  /* === 1. 全局與變數設定 (UI美化) === */
+  /* === 1. 全局設定 === */
   :root {
     --primary-color: #004080;
-    --primary-hover: #003366;
     --accent-color: #ff9800;
-    --accent-hover: #e68a00;
-    --bg-light: #f4f7f6;
-    --sidebar-width: 360px;
-    --panel-height-open: 240px;
+    --bg-light: #f8faff;
+    --text-dark: #333;
+    --sidebar-width: 350px;
+    --panel-height-open: 200px;
     --panel-height-min: 50px;
-    --shadow-soft: 0 4px 20px rgba(0,0,0,0.08);
-    --shadow-float: 0 8px 24px rgba(0,0,0,0.12);
-    --radius-main: 12px;
   }
-  
-  body { 
-    margin:0; font-family:"Microsoft JhengHei", "Heiti TC", sans-serif; 
-    display:flex; height:100vh; overflow:hidden; position: relative; 
-    background: var(--bg-light); color: #333; 
-  }
+  body { margin:0; font-family:"Microsoft JhengHei", "Heiti TC", sans-serif; display:flex; height:100vh; overflow:hidden; position: relative; background: var(--bg-light); }
    
   /* === 2. 懸浮漢堡按鈕 === */
   #toggleSidebarBtn {
-    position: absolute; top: 15px; left: 375px; 
-    width: 44px; height: 44px;
-    background: #fff; color: var(--primary-color);
-    border: none; border-radius: 50%;
-    cursor: pointer; z-index: 2000;
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: var(--shadow-float);
-    transition: all 0.3s ease; 
+    position: absolute; top: 10px; left: 360px; width: 40px; height: 40px;
+    background: #fff; color: var(--text-dark); border: 2px solid rgba(0,0,0,0.1); border-radius: 8px;
+    cursor: pointer; z-index: 2000; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2); transition: left 0.3s ease; 
   }
-  #toggleSidebarBtn:hover { transform: scale(1.05); background: #fff; color: var(--accent-color); }
-  body.collapsed #toggleSidebarBtn { left: 15px; }
+  #toggleSidebarBtn:hover { background: #f4f4f4; }
+  body.collapsed #toggleSidebarBtn { left: 10px; }
 
-  /* === 3. 側邊欄樣式 (美化版) === */
+  /* === 3. 側邊欄樣式 === */
   #sidebar {
-    width: var(--sidebar-width); min-width: var(--sidebar-width);
-    background: #fff; 
-    display: flex; flex-direction: column;
-    z-index: 1500; box-shadow: 4px 0 15px rgba(0,0,0,0.03);
-    margin-left: 0; transition: margin-left 0.3s ease;
-    position: relative; border-right: 1px solid rgba(0,0,0,0.05);
+    width: var(--sidebar-width); min-width: var(--sidebar-width); background: #fff; border-right: 1px solid #eee;
+    display: flex; flex-direction: column; z-index: 1500; box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+    margin-left: 0; transition: margin-left 0.3s ease; position: relative;
   }
   body.collapsed #sidebar { margin-left: calc(var(--sidebar-width) * -1); }
 
-  .sidebar-header { 
-    padding: 20px; 
-    background: linear-gradient(135deg, var(--primary-color), #00264d); 
-    color: white; 
-    text-align: center; flex-shrink: 0; 
-  }
-  .sidebar-header h3 { margin: 0; font-size: 18px; font-weight: 700; letter-spacing: 0.5px; line-height: 1.4; }
-  
-  .tabs-nav { display: flex; background: #f0f2f5; padding: 10px 10px 0 10px; flex-shrink: 0; gap: 5px; }
-  .tab-btn { 
-    flex: 1; padding: 12px 0; border: none; background: transparent; 
-    cursor: pointer; font-size: 14px; font-weight: 600; color: #777; 
-    border-radius: 8px 8px 0 0; transition: all 0.2s; 
-  }
-  .tab-btn:hover { background: rgba(255,255,255,0.6); color: var(--primary-color); }
-  .tab-btn.active { background: #fff; color: var(--primary-color); box-shadow: 0 -2px 8px rgba(0,0,0,0.05); }
-  
-  .tab-content-container { flex: 1; overflow-y: auto; padding: 20px; background: #fff; position: relative; }
+  .sidebar-header { padding: 15px; background: var(--primary-color); color: white; text-align: center; flex-shrink: 0; }
+  .sidebar-header h3 { margin: 0; font-size: 16px; font-weight: bold; line-height: 1.4; }
+  .tabs-nav { display: flex; background: #eef2f6; padding: 5px 5px 0 5px; flex-shrink: 0; }
+  .tab-btn { flex: 1; padding: 10px 0; border: none; background: transparent; cursor: pointer; font-size: 14px; font-weight: bold; color: #666; border-radius: 8px 8px 0 0; transition: all 0.2s; }
+  .tab-btn.active { background: #fff; color: var(--primary-color); box-shadow: 0 -2px 5px rgba(0,0,0,0.05); position: relative; top: 1px; }
+  .tab-content-container { flex: 1; overflow-y: auto; padding: 15px; background: #fff; position: relative; }
   .tab-pane { display: none; animation: fadeIn 0.3s; }
   .tab-pane.active { display: block; }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-  /* 卡片樣式優化 */
-  .card-section { 
-    background: #fff; border-radius: var(--radius-main); 
-    padding: 16px; margin-bottom: 20px; 
-    box-shadow: 0 2px 10px rgba(0,0,0,0.03); 
-    border: 1px solid #edf2f7; 
-  }
-  .card-title { 
-    font-size: 15px; font-weight: 700; color: var(--primary-color); 
-    margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid #f0f2f5;
-    display: flex; align-items: center; gap: 8px;
-  }
+  .card-section { background: #fff; border-radius: 12px; padding: 12px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: 1px solid #f0f0f0; }
+  .card-title { font-size: 14px; font-weight: bold; color: var(--primary-color); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 2px solid #f0f0f0; }
+  select, textarea, input[type="text"] { width: 100%; padding: 10px; margin-top: 5px; font-size: 14px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
   
-  /* 表單元件優化 */
-  select, textarea, input[type="text"] { 
-    width: 100%; padding: 10px 12px; margin-top: 5px; 
-    font-size: 14px; border: 1px solid #dce0e4; border-radius: 8px; 
-    box-sizing: border-box; background: #fcfcfc; transition: border 0.2s;
-  }
-  select:focus, textarea:focus, input[type="text"]:focus { outline:none; border-color: var(--primary-color); background: #fff; }
-  
-  button.primary { 
-    width: 100%; padding: 10px; margin-top: 10px; cursor: pointer; 
-    border-radius: 8px; border: none; background: var(--primary-color); 
-    color: #fff; font-size: 14px; font-weight: 600; transition: background 0.2s;
-  }
-  button.primary:hover { background: var(--primary-hover); }
-  
-  button.secondary { 
-    width: 100%; padding: 8px; margin-top: 8px; cursor: pointer; 
-    border-radius: 8px; border: 1px solid #dce0e4; background: #fff; 
-    color: #555; font-size: 13px; transition: all 0.2s;
-  }
-  button.secondary:hover { background: #f7f9fa; border-color: #ccc; }
+  button.primary { width: 100%; padding: 10px; margin-top: 8px; cursor: pointer; border-radius: 6px; border: none; background: var(--primary-color); color: #fff; font-size: 14px; font-weight: bold; }
+  button.primary:hover { background: #003366; }
+  button.secondary { width: 100%; padding: 8px; margin-top: 8px; cursor: pointer; border-radius: 6px; border: 1px solid #ddd; background: #fff; color: #555; font-size: 13px; }
+  button.secondary:hover { background: #f5f5f5; }
 
-  /* === 4. 地圖區與浮動控制 === */
+  /* === 4. 地圖區 === */
   #map { flex: 1; position: relative; z-index: 1; transition: width 0.3s ease; }
+  body.measuring, body.measuring #map { cursor: crosshair !important; }
 
-  /* 浮動按鈕群 */
-  .map-floating-controls { 
-    position: absolute; top: 20px; right: 20px; z-index: 1000; 
-    display: flex; flex-direction: column; gap: 12px; 
-  }
-  .float-btn { 
-    width: 44px; height: 44px; border-radius: 50%; background: #fff; 
-    border: none; color: #555; box-shadow: var(--shadow-float); 
-    cursor: pointer; display: flex; align-items: center; justify-content: center; 
-    font-size: 18px; position: relative; transition: all 0.2s;
-  }
-  .float-btn:hover { background: var(--primary-color); color: #fff; transform: translateY(-2px); }
-  .float-btn.active { background: var(--accent-color); color: #fff; }
-  .float-btn::after { 
-    content: attr(data-title); position: absolute; right: 55px; top: 50%; transform: translateY(-50%); 
-    background: rgba(0,0,0,0.8); color: #fff; padding: 4px 10px; border-radius: 4px; 
-    font-size: 12px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.2s; 
-  }
+  .map-floating-controls { position: absolute; top: 20px; right: 20px; z-index: 1000; display: flex; flex-direction: column; gap: 10px; }
+  .float-btn { width: 40px; height: 40px; border-radius: 50%; background: #fff; border: none; color: #444; box-shadow: 0 2px 8px rgba(0,0,0,0.2); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; position: relative; }
+  .float-btn:hover { background: #f0f0f0; color: var(--primary-color); transform: scale(1.1); }
+  .float-btn.active { background: var(--accent-color); color: #000; }
+  .float-btn::after { content: attr(data-title); position: absolute; right: 50px; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.7); color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 12px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
   .float-btn:hover::after { opacity: 1; }
 
-  /* === 新增：聚合控制面板 (Map Overlay) === */
+  /* 聚合圖標 */
+  .marker-cluster-custom { background-color: rgba(46, 204, 113, 0.6); border-radius: 50%; }
+  .marker-cluster-custom div { width: 30px; height: 30px; margin-left: 5px; margin-top: 5px; text-align: center; border-radius: 50%; color: white; font-weight: bold; background-color: rgba(39, 174, 96, 0.9); line-height: 30px; font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+
+  /* 聚合控制面板 (地圖左下) */
   #clusterControlPanel {
-    position: absolute; bottom: 80px; left: 20px; z-index: 1000;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(5px);
-    padding: 15px; border-radius: 12px;
-    box-shadow: var(--shadow-float);
+    position: absolute; bottom: 220px; left: 360px; z-index: 1000;
+    background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(5px);
+    padding: 15px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     width: 220px; border: 1px solid rgba(255,255,255,0.2);
-    display: none; /* 預設隱藏，有勾選案件時顯示 */
-    animation: slideUp 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+    display: none; /* 預設隱藏 */
+    transition: left 0.3s ease;
   }
-  @keyframes slideUp { from { opacity:0; transform: translateY(20px); } to { opacity:1; transform: translateY(0); } }
-  
+  body.collapsed #clusterControlPanel { left: 20px; } /* 收合時面板左移 */
+
   .cluster-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
   .cluster-title { font-size:14px; font-weight:bold; color:var(--primary-color); display:flex; align-items:center; gap:6px; }
   .cluster-value-badge { background: var(--accent-color); color:#fff; padding:2px 6px; border-radius:4px; font-size:12px; }
-  
-  input[type=range].custom-range {
-    -webkit-appearance: none; width: 100%; background: transparent;
-  }
-  input[type=range].custom-range::-webkit-slider-thumb {
-    -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%;
-    background: var(--primary-color); cursor: pointer; margin-top: -6px; box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-  }
-  input[type=range].custom-range::-webkit-slider-runnable-track {
-    width: 100%; height: 4px; cursor: pointer; background: #ddd; border-radius: 2px;
-  }
+  input[type=range].custom-range { -webkit-appearance: none; width: 100%; background: transparent; }
+  input[type=range].custom-range::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: var(--primary-color); cursor: pointer; margin-top: -6px; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+  input[type=range].custom-range::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: #ddd; border-radius: 2px; }
 
-  /* === 5. 年度摺疊選單 (優化) === */
-  .year-group { margin-bottom: 10px; border: 1px solid #edf2f7; border-radius: 8px; overflow: hidden; background:#fff; }
-  .year-header { 
-    background: #f8fafc; padding: 12px; cursor: pointer; 
-    display: flex; justify-content: space-between; align-items: center; 
-    font-weight: 600; font-size: 14px; color: #475569; user-select: none; transition: background 0.2s;
-  }
-  .year-header:hover { background: #eff6ff; color: var(--primary-color); }
-  .year-content { display: none; padding: 10px 15px; background: #fff; border-top: 1px solid #edf2f7; }
+  /* === 5. 年度摺疊選單 === */
+  .year-group { margin-bottom: 8px; border: 1px solid #eee; border-radius: 6px; overflow: hidden; }
+  .year-header { background: #f8fafc; padding: 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 13px; color: #475569; user-select: none; }
+  .year-header:hover { background: #e2e8f0; }
+  .year-content { display: none; padding: 8px 12px; background: #fff; border-top: 1px solid #eee; }
   .year-group.open .year-content { display: block; }
   .year-group.open .toggle-icon { transform: rotate(90deg); }
-  .toggle-icon { display:inline-block; transition: transform 0.2s; width:12px; margin-right:5px; color:#999; }
-  .checkbox-item { margin-bottom: 8px; display: flex; align-items: center; gap: 8px; font-size: 13px; color:#555; }
-  .checkbox-item input { margin: 0; accent-color: var(--primary-color); cursor: pointer; }
+  .toggle-icon { display:inline-block; transition: transform 0.2s; width:12px; margin-right:5px;}
+  .year-select-all { font-size: 12px; color: var(--primary-color); cursor: pointer; }
+  .checkbox-item { margin-bottom: 6px; display: flex; align-items: center; gap: 6px; font-size: 13px; }
+  .checkbox-item input { margin: 0; accent-color: var(--primary-color); }
 
-  /* === 6. 底部時間軸面板 (玻璃擬態) === */
-  #bottomPanel {
-      position: absolute; bottom: 0; left: var(--sidebar-width); right: 0; 
-      height: var(--panel-height-open); 
-      background: rgba(255, 255, 255, 0.96);
-      backdrop-filter: blur(8px);
-      box-shadow: 0 -4px 24px rgba(0,0,0,0.08); z-index: 1400; 
-      display: flex; flex-direction: column;
-      transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), height 0.3s ease, left 0.3s ease;
-      border-top: 1px solid rgba(0,0,0,0.05);
-  }
+  /* === 6. 底部時間軸面板 === */
+  #bottomPanel { position: absolute; bottom: 0; left: var(--sidebar-width); right: 0; height: 200px; background: rgba(255, 255, 255, 0.98); box-shadow: 0 -4px 16px rgba(0,0,0,0.1); z-index: 1400; display: flex; flex-direction: column; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), height 0.3s ease, left 0.3s ease; border-top: 1px solid #e0e0e0; }
   body.collapsed #bottomPanel { left: 0; } 
   #bottomPanel.open { transform: translateY(0); }
   #bottomPanel.minimized { height: var(--panel-height-min); }
 
-  #bottomPanelHeader { 
-      padding: 0 25px; height: var(--panel-height-min); 
-      background: var(--primary-color); color: white; 
-      display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
-  }
-  .header-left { display: flex; flex-direction: column; gap: 0; justify-content: center; }
-  #panelTitle { font-size: 16px; font-weight: bold; display:flex; align-items:center; gap:8px; }
-  #timelineStats { font-size: 12px; color: #ffecb3; opacity: 0.95; margin-top: 2px; }
-  
+  #bottomPanelHeader { padding: 0 20px; height: var(--panel-height-min); background: var(--primary-color); color: white; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+  .header-left { display: flex; flex-direction: column; gap: 2px; justify-content: center; }
+  #panelTitle { font-size: 15px; font-weight: bold; }
+  #timelineStats { font-size: 13px; color: #ffeb3b; font-weight: normal; opacity: 0.9; }
   .header-right { display: flex; gap: 15px; align-items: center; }
-  .control-btn { background:none; border:none; color:rgba(255,255,255,0.7); font-size:16px; cursor:pointer; padding: 5px; transition: color 0.2s; }
-  .control-btn:hover { color: #fff; }
+  .control-btn { background:none; border:none; color:#fff; font-size:16px; cursor:pointer; padding: 5px; transition: color 0.2s; }
+  .control-btn:hover { color: #ffeb3b; }
 
-  #timelineFilterBar {
-      background: #f8fafc; padding: 8px 25px; border-bottom: 1px solid #eee;
-      white-space: nowrap; overflow-x: auto; display: flex; gap: 8px; align-items: center;
-      flex-shrink: 0; height: 44px; box-sizing: border-box;
-  }
-  .filter-chip {
-      padding: 4px 12px; border-radius: 20px; font-size: 12px; cursor: pointer;
-      border: 1px solid #e2e8f0; background: #fff; color: #64748b; transition: all 0.2s;
-      user-select: none; display: flex; align-items: center; gap: 6px; font-weight:600;
-  }
-  .filter-chip:hover { background: #f1f5f9; }
-  .filter-chip.active {
-      background: var(--primary-color); color: #fff; border-color: var(--primary-color);
-      box-shadow: 0 2px 6px rgba(0, 64, 128, 0.2);
-  }
+  #timelineFilterBar { background: #f1f5f9; padding: 6px 20px; border-bottom: 1px solid #e0e0e0; white-space: nowrap; overflow-x: auto; display: flex; gap: 8px; align-items: center; flex-shrink: 0; height: 40px; box-sizing: border-box; }
+  .filter-label { font-size: 12px; color: #666; font-weight: bold; margin-right: 5px; }
+  .filter-chip { padding: 3px 10px; border-radius: 15px; font-size: 12px; cursor: pointer; border: 1px solid #ccc; background: #fff; color: #555; transition: all 0.2s; user-select: none; display: flex; align-items: center; gap: 5px; }
+  .filter-chip:hover { background: #e2e8f0; }
+  .filter-chip.active { background: var(--primary-color); color: #fff; border-color: var(--primary-color); box-shadow: 0 2px 5px rgba(0, 64, 128, 0.2); }
+  .filter-chip i { font-size: 10px; }
 
-  /* Timeline Items */
-  #timelineContainer { flex: 1; overflow-x: auto; padding: 20px 25px; display: flex; align-items: flex-start; gap: 0; }
-  .h-item { width: 140px; text-align: center; cursor: pointer; position: relative; transition: transform 0.2s; }
+  #timelineContainer { flex: 1; overflow-x: auto; padding: 15px 20px; display: flex; align-items: flex-start; gap: 0; }
+  .h-item { width: 130px; text-align: center; cursor: pointer; position: relative; transition: transform 0.2s; }
   .h-item:hover { transform: translateY(-5px); }
-  .h-date { font-size: 13px; font-weight: 700; color: #334155; margin-bottom: 10px; }
-  
+  .h-date { font-size: 13px; font-weight: bold; color: #333; margin-bottom: 8px; }
   .h-line-container { position: relative; height: 24px; display: flex; align-items: center; justify-content: center; }
-  .h-line-container::before { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 3px; background: #e2e8f0; z-index: 0; }
-  .h-item.alert-right .h-line-container::after {
-      content: ''; position: absolute; left: 50%; right: -50%; top: 50%; height: 4px; 
-      background: repeating-linear-gradient(45deg, #ef4444, #ef4444 5px, #fee2e2 5px, #fee2e2 10px);
-      z-index: 0; animation: alertPulse 1.5s infinite; opacity: 0.8;
-  }
-  @keyframes alertPulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
-
-  .h-dot { background: #fff; border: 4px solid var(--primary-color); border-radius: 50%; z-index: 1; position: relative; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-  .h-item:hover .h-dot { transform: scale(1.3); border-color: var(--accent-color); background: #fff; }
-  
+  .h-line-container::before { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 3px; background: #ddd; z-index: 0; }
+  .h-item.alert-right .h-line-container::after { content: ''; position: absolute; left: 50%; right: -50%; top: 50%; height: 4px; background: repeating-linear-gradient(45deg, #d32f2f, #d32f2f 5px, #ffcdd2 5px, #ffcdd2 10px); z-index: 0; animation: alertPulse 1.5s infinite; }
+  @keyframes alertPulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
+  .h-dot { background: #fff; border: 4px solid var(--primary-color); border-radius: 50%; z-index: 1; position: relative; transition: all 0.2s; }
+  .h-item:hover .h-dot { transform: scale(1.4); border-color: var(--accent-color); }
   .dot-sm { width: 12px; height: 12px; border-width: 3px; }
   .dot-md { width: 16px; height: 16px; border-width: 4px; }
-  .dot-lg { width: 22px; height: 22px; border-width: 5px; box-shadow: 0 0 0 4px rgba(0, 64, 128, 0.1); }
+  .dot-lg { width: 22px; height: 22px; border-width: 5px; box-shadow: 0 0 0 3px rgba(0, 64, 128, 0.2); }
+  .h-icon { margin-top: 8px; font-size: 24px; display: flex; justify-content: center; }
+  .icon-urgent::before { content: "\f0ad"; font-family: "Font Awesome 6 Free"; font-weight: 900; color: #d32f2f; } 
+  .icon-normal::before { content: "\f111"; font-family: "Font Awesome 6 Free"; font-weight: 900; color: #1976d2; font-size: 18px; } 
 
-  .h-icon { margin-top: 10px; font-size: 20px; display: flex; justify-content: center; color: #94a3b8; transition:color 0.2s; }
-  .h-item:hover .h-icon { color: var(--primary-color); }
-  .icon-urgent::before { content: "\f0ad"; font-family: "Font Awesome 6 Free"; font-weight: 900; color: #ef4444; } 
-  .icon-normal::before { content: "\f111"; font-family: "Font Awesome 6 Free"; font-weight: 900; color: #3b82f6; font-size: 14px; opacity:0.6; } 
+  /* === 7. 右鍵選單 === */
+  #contextMenu { display: none; position: absolute; z-index: 5000; background: #fff; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); overflow: hidden; min-width: 160px; border: 1px solid #ddd; top: 0; left: 0; }
+  .ctx-item { padding: 10px 15px; cursor: pointer; font-size: 14px; color: #333; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #f0f0f0; }
+  .ctx-item:hover { background: #f5faff; color: var(--primary-color); }
 
-  /* === 7. 泡泡窗美化 === */
-  .custom-popup .leaflet-popup-content-wrapper { padding: 0; border-radius: 12px; overflow: hidden; box-shadow: var(--shadow-float); }
-  .custom-popup .leaflet-popup-content { margin: 0; width: 320px !important; }
-  .info-header { background: var(--primary-color); color: white; padding: 12px 16px; font-weight: bold; font-size: 15px; display: flex; justify-content: space-between; align-items: center; }
-  .info-body { padding: 16px; background: #fff; font-size: 14px; color: #333; }
-  .info-row { margin-bottom: 8px; display: flex; border-bottom: 1px dashed #e2e8f0; padding-bottom: 6px; }
+  /* Popup */
+  .custom-popup .leaflet-popup-content-wrapper { padding: 0; border-radius: 8px; overflow: hidden; box-shadow: 0 3px 10px rgba(0,0,0,0.2); }
+  .custom-popup .leaflet-popup-content { margin: 0; width: 300px !important; }
+  .info-header { background: var(--primary-color); color: white; padding: 10px 12px; font-weight: bold; font-size: 15px; display: flex; justify-content: space-between; align-items: center; }
+  .info-body { padding: 12px; background: #fff; font-size: 14px; color: #333; }
+  .info-row { margin-bottom: 6px; display: flex; border-bottom: 1px dashed #eee; padding-bottom: 4px; }
   .info-row:last-of-type { border-bottom: none; }
-  .info-label { width: 90px; font-weight: 600; color: #64748b; flex-shrink: 0; }
-  .info-val { color: #1e293b; word-break: break-all; flex: 1; }
-  .btn-group-popup { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 15px; }
-  .popup-btn { 
-    display: flex; align-items: center; justify-content: center; gap: 6px; 
-    background: #fff; color: #333; padding: 8px; border-radius: 6px; 
-    border: 1px solid #e2e8f0; text-decoration: none; font-size: 13px; font-weight: 600; 
-    transition: all 0.2s; 
-  }
-  .popup-btn:hover { background: #f1f5f9; border-color: #cbd5e1; color: var(--primary-color); }
-  .popup-btn.main-action { background: var(--accent-color); color: #fff; border:none; }
-  .popup-btn.main-action:hover { background: var(--accent-hover); }
+  .info-label { width: 85px; font-weight: bold; color: #555; flex-shrink: 0; }
+  .info-val { color: #222; word-break: break-all; flex: 1; }
+  .btn-group-popup { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+  .popup-btn { display: flex; align-items: center; justify-content: center; gap: 5px; background: var(--accent-color); color: #000; padding: 8px; border-radius: 4px; text-decoration: none; font-size: 13px; font-weight: bold; box-shadow: 0 1px 3px rgba(0,0,0,0.15); transition: background 0.2s; }
+  .popup-btn:hover { background: #e68a00; }
+  .hp-container { margin-bottom: 12px; }
+  .hp-label { font-size: 12px; font-weight: bold; color: #666; margin-bottom: 4px; display: flex; justify-content: space-between; }
+  .hp-bar-bg { width: 100%; height: 10px; background: #e0e0e0; border-radius: 5px; overflow: hidden; box-shadow: inset 0 1px 3px rgba(0,0,0,0.2); }
+  .hp-bar-fill { height: 100%; width: 100%; transition: width 1s ease; border-radius: 5px; }
+  .hp-high { background: linear-gradient(90deg, #43a047, #66bb6a); }
+  .hp-mid { background: linear-gradient(90deg, #fbc02d, #ffeb3b); }
+  .hp-low { background: linear-gradient(90deg, #d32f2f, #ef5350); }
+  
+  .analysis-control { margin-top: 10px; padding: 10px; background: #fff3e0; border-radius: 8px; border: 1px solid #ffe0b2; }
+  .slider-container { margin-top: 10px; display: flex; align-items: center; gap: 10px; }
+  .slider-container input { flex: 1; cursor: pointer; }
+  .slider-value { font-weight: bold; color: #d32f2f; min-width: 50px; text-align: right; }
+  .toggle-switch { display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: bold; color: #e65100; }
+  .toggle-switch input { width: auto; margin: 0; }
 
-  /* 座標顯示 */
-  #floatingCoords { position:absolute; pointer-events:none; background:rgba(255,255,255,0.8); backdrop-filter:blur(3px); border:1px solid #ccc; border-radius:4px; padding:4px 8px; font-size:11px; display:none; z-index:1300; bottom: 10px; right: 10px; color:#333; }
+  .measure-label { background: rgba(255,255,255,0.9); border: 1px solid #333; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 12px; white-space: nowrap; display: flex; align-items: center; gap: 5px; }
+  .measure-close-btn { color: red; cursor: pointer; font-weight: bold; padding: 0 4px; }
 
-  /* Context Menu */
-  #contextMenu { 
-      display: none; position: absolute; z-index: 5000; 
-      background: #fff; border-radius: 8px; box-shadow: var(--shadow-float);
-      overflow: hidden; min-width: 180px; border: 1px solid #e2e8f0; 
-  }
-  .ctx-item { padding: 12px 16px; cursor: pointer; font-size: 14px; color: #333; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #f1f5f9; transition:background 0.2s;}
-  .ctx-item:hover { background: #f8fafc; color: var(--primary-color); }
+  #floatingCoords { position:absolute; pointer-events:none; background:rgba(255,255,255,0.9); border:1px solid #ccc; border-radius:4px; padding:4px 8px; font-size:11px; display:none; z-index:1300; bottom: 10px; right: 10px; }
 
   @media (max-width: 768px) {
-    #sidebar {
-      position: absolute; bottom: 0; left: 0; width: 100%; height: 60%; 
-      top: auto; border-radius: 20px 20px 0 0; border-right: none;
-      transform: translateY(100%); margin-left: 0; 
-    }
+    #sidebar { position: absolute; bottom: 0; left: 0; width: 100%; height: 60%; top: auto; border-radius: 20px 20px 0 0; border-right: none; transform: translateY(100%); margin-left: 0; }
     body.sidebar-open #sidebar { transform: translateY(0); }
-    #overlay-mask { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 1400; backdrop-filter: blur(2px); }
+    #overlay-mask { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 1400; }
     body.sidebar-open #overlay-mask { display: block; }
-    
-    #toggleSidebarBtn { left: 15px; top: 15px; }
-    #bottomPanel { left: 0; height: 260px; z-index: 2100; }
-    .map-floating-controls { top: 80px; right: 15px; }
-    #clusterControlPanel { bottom: 30px; left: 15px; right: 15px; width: auto; }
+    #toggleSidebarBtn { left: 10px; top: 10px; }
+    #bottomPanel { left: 0; height: 220px; z-index: 2100; }
+    .map-floating-controls { top: 70px; right: 10px; }
+    #clusterControlPanel { bottom: 200px; left: 15px; right: 15px; width: auto; }
   }
 </style>
 </head>
@@ -310,6 +205,14 @@
     <button class="float-btn" id="toggleCadastralBtn" data-title="地籍圖開關"><i class="fas fa-map"></i></button>
 </div>
 
+<div id="contextMenu">
+    <div class="ctx-item" id="ctxStreetView"><i class="fas fa-street-view"></i> Google 街景</div>
+    <div class="ctx-item" id="ctxGoogleNav"><i class="fas fa-location-arrow"></i> Google 導航</div>
+    <div class="ctx-item" id="ctxMeasure"><i class="fas fa-ruler-horizontal"></i> 距離量測</div>
+    <div class="ctx-item" id="ctxClearMarker" style="color:#d32f2f;"><i class="fas fa-trash-alt" style="color:#d32f2f;"></i> 移除標記</div>
+</div>
+
+<!-- 點位聚合控制面板 (Map Overlay) -->
 <div id="clusterControlPanel">
     <div class="cluster-header">
         <div class="cluster-title"><i class="fas fa-circle-nodes"></i> 點位聚合設定</div>
@@ -319,12 +222,7 @@
     <input type="range" id="clusterRadiusSlider" class="custom-range" min="20" max="150" step="10" value="50">
 </div>
 
-<div id="contextMenu">
-    <div class="ctx-item" id="ctxStreetView"><i class="fas fa-street-view"></i> Google 街景</div>
-    <div class="ctx-item" id="ctxGoogleNav"><i class="fas fa-location-arrow"></i> Google 導航</div>
-    <div class="ctx-item" id="ctxClearMarker" style="color:#ef4444;"><i class="fas fa-trash-alt" style="color:#ef4444;"></i> 移除標記</div>
-</div>
-
+<!-- 底部時間軸 -->
 <div id="bottomPanel">
     <div id="bottomPanelHeader">
         <div class="header-left">
@@ -337,18 +235,13 @@
         </div>
     </div>
     
-    <div id="timelineFilterBar">
-        <span class="filter-label" style="font-size:12px; color:#666; font-weight:bold; margin-right:5px;">快速篩選:</span>
-    </div>
-
-    <div id="timelineContainer">
-        <div style="padding:20px; color:#777;">請點選地圖上的藍色路線以檢視紀錄。</div>
-    </div>
+    <div id="timelineFilterBar"><span class="filter-label">篩選:</span></div>
+    <div id="timelineContainer"><div style="padding:20px; color:#777;">請點選地圖上的藍色路線以檢視紀錄。</div></div>
 </div>
 
 <div id="sidebar">
   <div class="sidebar-header">
-      <h3>臺南市山上區<br>公眾通行道路圖資 (Basic Version)</h3>
+      <h3>臺南市山上區<br>公眾通行道路圖資及施工/維修案件透明</h3>
   </div>
 
   <div class="tabs-nav">
@@ -360,10 +253,8 @@
   <div id="tab-layers" class="tab-content-container tab-pane active">
       <div class="card-section">
           <div class="card-title"><i class="fas fa-road"></i> 施工/維修案件公告</div>
-          <div class="small" style="margin-bottom:12px; color:#666; font-size:13px; line-height:1.5;">
-             勾選年份以顯示案件位置。系統將自動聚合鄰近點位，可透過地圖左下角滑竿調整聚合範圍。
-          </div>
-          <div id="repairCheckboxes" style="max-height:450px; overflow-y:auto; padding-right:5px;"></div>
+          <div class="small" style="margin-bottom:8px; color:#666;">勾選年份批次顯示位置 (<span style="color:#004080">●</span>近 / <span style="color:red">●</span>遠)</div>
+          <div id="repairCheckboxes" style="max-height:400px; overflow-y:auto;"></div>
           <button class="secondary" id="clearRepairBtn"><i class="fas fa-eraser"></i> 清除所有顯示</button>
       </div>
   </div>
@@ -373,48 +264,40 @@
           <div class="card-title"><i class="fas fa-route"></i> 公眾通行道路圖資查詢</div>
           <select id="roadSelect"><option>載入中...</option></select>
       </div>
-
       <div class="card-section">
           <div class="card-title"><i class="fas fa-search-plus"></i> 案件進階搜尋</div>
-          <label style="font-size:12px; font-weight:bold; color:#666;"><i class="fas fa-filter"></i> 依廠商快篩</label>
-          <select id="contractorSelect" style="margin-bottom:15px;">
-              <option value="">(讀取系統資料中...)</option>
-          </select>
-          <div style="text-align:center; font-size:12px; color:#ccc; margin:10px 0; position:relative;">
-              <span style="background:#fff; padding:0 10px;">OR</span>
-              <div style="position:absolute; top:50%; left:0; right:0; height:1px; background:#eee; z-index:-1;"></div>
-          </div>
-          <label style="font-size:12px; font-weight:bold; color:#666;"><i class="fas fa-keyboard"></i> 關鍵字搜尋</label>
+          <div class="search-block-label"><i class="fas fa-filter"></i> 依廠商快篩</div>
+          <select id="contractorSelect" style="margin-bottom:10px;"><option value="">(讀取系統資料中...)</option></select>
+          <div style="text-align:center; font-size:12px; color:#999; margin:5px 0;">- 或 -</div>
+          <div class="search-block-label"><i class="fas fa-keyboard"></i> 關鍵字搜尋</div>
           <input type="text" id="keywordInput" placeholder="例如：案件編號(113001) 案件名稱 廠商名稱">
           <button id="searchBtn" class="primary"><i class="fas fa-search"></i> 開始搜尋</button>
-          <button id="clearSearchBtn" class="secondary" style="display:none; background:#fee2e2; border-color:#fecaca; color:#ef4444;"><i class="fas fa-times"></i> 清除結果</button>
-          <div id="searchStatus" class="small" style="margin-top:12px; color:#004080; font-weight:bold; text-align:center;"></div>
+          <button id="clearSearchBtn" class="secondary" style="display:none; background:#ffebee; border-color:#ffcdd2; color:#d32f2f;"><i class="fas fa-times"></i> 清除結果</button>
+          <div id="searchStatus" class="small" style="margin-top:8px; color:#004080; font-weight:bold;"></div>
       </div>
   </div>
-
   <div id="tab-tools" class="tab-content-container tab-pane">
       <div class="card-section">
           <div class="card-title"><i class="fas fa-map-marker-alt"></i> 座標查詢工具</div>
-          <div class="small" style="margin-bottom:8px; color:#666; font-size:13px;">輸入 TWD97 座標 (X,Y)，每行一組</div>
+          <div class="small" style="margin-bottom:5px;">輸入 TWD97 座標 (X,Y)，每行一組</div>
           <textarea id="coordsInput" rows="4" placeholder="例如：181924,2555825"></textarea>
-          <div style="display:flex; gap:10px; margin-top:10px;">
+          <div style="display:flex; gap:5px; margin-top:5px;">
             <button id="plotBtn" class="primary" style="margin-top:0;">顯示點位</button>
             <button id="clearBtn" class="secondary" style="margin-top:0;">清除</button>
           </div>
       </div>
-      
       <div class="card-section">
-          <div class="card-title"><i class="fas fa-chart-network"></i> 空間熱區分析 (Buffer)</div>
-          <label style="display:flex; align-items:center; gap:8px; cursor:pointer; color:#e65100; font-weight:bold;">
-              <input type="checkbox" id="clusterToggle"> 啟動熱區範圍預警
-          </label>
-          <div style="margin-top:15px; background:#fff3e0; padding:10px; border-radius:8px;">
-              <div style="font-size:12px; color:#666;">群聚閾值 (半徑)：<span id="clusterValue" style="font-weight:bold; color:#d32f2f;">50m</span></div>
-              <input type="range" id="clusterSlider" class="custom-range" min="0" max="500" step="10" value="50">
+          <div class="card-title"><i class="fas fa-chart-network"></i> 空間群聚分析 (戰情模式)</div>
+          <label class="toggle-switch"><input type="checkbox" id="clusterToggle"> 啟動熱區分析</label>
+          <div class="analysis-control">
+              <div style="font-size:12px; color:#666;">群聚閾值 (半徑)：</div>
+              <div class="slider-container">
+                  <input type="range" id="clusterSlider" min="0" max="500" step="10" value="50">
+                  <span id="clusterValue" class="slider-value">50m</span>
+              </div>
           </div>
       </div>
-
-      <div style="text-align:center; color:#94a3b8; font-size:12px; margin-top:30px;">臺南市山上區公所 Basic Version</div>
+      <div style="text-align:center; color:#999; font-size:12px; margin-top:20px;">臺南市山上區公所</div>
   </div>
 </div>
 
@@ -427,22 +310,24 @@
 <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
 
 <script>
-/* === 變數定義 === */
 let REPAIR_CONFIG = []; 
 let roadsLayer = null;  
 let roadLayersArray = [];
 let REPAIR_DATA_CACHE = {}; 
 let ALL_CONTRACTORS = new Set(); 
 let currentRouteAllMatches = []; 
+let isMeasuring = false;
+let measureStartLatLng = null;
+let measureLine = null;
+let measureTooltip = null;
+let markersClusterGroup = null; 
+let activeRepairLayers = []; 
 
-// 顏色定義 (配合 UI 美化)
 const DEEP_BLUE = '#004080'; 
 const LIGHT_BLUE = '#0066cc'; 
-const ACCENT_ORANGE = '#ff9800';
-
-/* === 新增：Marker Cluster 變數 === */
-let markersClusterGroup = null; // 儲存聚合圖層
-let activeRepairLayers = [];    // 暫存當前所有要顯示的 Marker 資料，供滑竿重繪使用
+const ROUTE_MATCH_THRESHOLD = 50; 
+const NEAR_ROAD_THRESHOLD = 30; 
+const POINT_RADIUS = 14; 
 
 proj4.defs("EPSG:3826","+proj=tmerc +lat_0=0 +lon_0=121 +k=0.9999 +x_0=250000 +y_0=0 +ellps=WGS84 +units=m +no_defs");
 proj4.defs("EPSG:4326","+proj=longlat +datum=WGS84 +no_defs");
@@ -460,13 +345,8 @@ window.switchTab = function(tabId) {
     if(btn) btn.classList.add('active');
 };
 
-/* === 地圖初始化 === */
-const map = L.map('map', { 
-    zoomControl:false,
-    doubleClickZoom: false 
-}).setView([23.1025,120.3538], 13);
-
-const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
+const map = L.map('map', { zoomControl:false, doubleClickZoom: false }).setView([23.1025,120.3538], 13);
+const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(map);
 const sat = L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', { attribution: '© Google Maps' });
 let isSat = false; 
 
@@ -475,12 +355,12 @@ let isCadastralVisible = false;
 
 const boundaryLayer = L.layerGroup().addTo(map); 
 const pointLayer = L.layerGroup().addTo(map);   
-// repairLayer 改用 ClusterGroup 管理，不再直接 addTo(map)
+const repairLayer = L.layerGroup().addTo(map);  
 const routeMatchLayer = L.layerGroup().addTo(map);
 const searchResultLayer = L.featureGroup().addTo(map);
-const clusterLayer = L.featureGroup().addTo(map); // 舊版熱區 Buffer
+const clusterLayer = L.featureGroup().addTo(map);
+const measureLayer = L.layerGroup().addTo(map);
 
-/* === 側邊欄與面板控制 === */
 const toggleBtn = document.getElementById('toggleSidebarBtn');
 const overlayMask = document.getElementById('overlay-mask');
 const bottomPanel = document.getElementById('bottomPanel');
@@ -510,17 +390,16 @@ togglePanelSizeBtn.addEventListener('click', () => {
     }
 });
 
-/* === 資料載入 === */
 fetch('tainan_districts.geojson').then(r=>r.json()).then(data=>{
-    L.geoJSON(data, { interactive: false, style: f => ({ color: '#333', weight: (f.properties.TOWNNAME||f.properties.TOWN).includes('山上')?4:1, opacity: 0.6, fillOpacity: 0 }) }).addTo(boundaryLayer).bringToBack();
+    L.geoJSON(data, { interactive: false, style: f => ({ color: '#000', weight: (f.properties.TOWNNAME||f.properties.TOWN).includes('山上')?5:2, opacity: 0.8, fillOpacity: 0 }) }).addTo(boundaryLayer).bringToBack();
 }).catch(e=>console.warn(e));
 
 fetch('farmroads.geojson').then(r=>r.json()).then(data=>{
     roadsLayer = L.geoJSON(data, {
-        style: { color: DEEP_BLUE, weight: 3, opacity: 0.8 }, 
+        style: { color: DEEP_BLUE, weight: 3, opacity: 0.9 }, 
         onEachFeature: (f, l) => {
             l.bindTooltip(f.properties?.name || "道路", { sticky: true, direction: 'top' });
-            l.on('mouseover', () => { l.setStyle({ weight: 6, color: LIGHT_BLUE }); map.getContainer().style.cursor='pointer'; });
+            l.on('mouseover', () => { l.setStyle({ weight: 5, color: LIGHT_BLUE }); map.getContainer().style.cursor='pointer'; });
             l.on('mouseout', () => { l.setStyle({ weight: 3, color: DEEP_BLUE }); map.getContainer().style.cursor='default'; });
             l.on('click', (e) => {
                 L.DomEvent.stopPropagation(e);
@@ -545,10 +424,8 @@ async function loadRepairSettings() {
         const res = await fetch('repair_months.json');
         REPAIR_CONFIG = await res.json(); 
     } catch (e) { box.innerHTML = '讀取失敗'; return; }
-    
     if(REPAIR_CONFIG.length === 0) { box.innerHTML = '無資料'; return; }
     box.innerHTML = ''; 
-
     const grouped = {};
     REPAIR_CONFIG.forEach(item => {
         const m = item.label.match(/(\d{3})年/);
@@ -556,7 +433,6 @@ async function loadRepairSettings() {
         if(!grouped[y]) grouped[y] = [];
         grouped[y].push(item);
     });
-
     Object.keys(grouped).sort((a,b)=>b-a).forEach((y, idx) => {
         const gDiv = document.createElement('div');
         gDiv.className = 'year-group';
@@ -599,17 +475,43 @@ function distToRoad(latlng, roadLayer) {
     } catch(e) { return NaN; }
 }
 
+function getHP(dateStr) {
+    if(!dateStr || dateStr.length < 6) return { percent: 100, class: 'hp-high', text: '資料不足' };
+    const year = parseInt(dateStr.substring(0, 3)) + 1911;
+    const month = parseInt(dateStr.substring(3, 5)) - 1;
+    const day = parseInt(dateStr.substring(5, 7));
+    const completeDate = new Date(year, month, day);
+    const now = new Date();
+    const warrantyYears = 3;
+    const warrantyEnd = new Date(completeDate);
+    warrantyEnd.setFullYear(warrantyEnd.getFullYear() + warrantyYears);
+    const totalDuration = warrantyEnd - completeDate;
+    const elapsed = now - completeDate;
+    if (elapsed < 0) return { percent: 100, class: 'hp-high', text: '施工中' };
+    let percent = 100 - (elapsed / totalDuration * 100);
+    if (percent < 0) percent = 0;
+    let cssClass = 'hp-high', text = '保固內 (健康)';
+    if (percent <= 0) { cssClass = 'hp-low'; text = '已過保固'; } 
+    else if (percent < 30) { cssClass = 'hp-low'; text = '即將過保'; } 
+    else if (percent < 70) { cssClass = 'hp-mid'; text = '保固中'; }
+    return { percent: Math.round(percent), class: cssClass, text: text };
+}
+
 function createPopup(data) {
     const { fileName, props, lat, lng, dist } = data;
     const dText = isNaN(dist) ? 'N/A' : (dist<=30 ? `<span style="color:green">${dist.toFixed(1)}m</span>` : `<span style="color:red">${dist.toFixed(1)}m</span>`);
     const twd = twd97FromWgs84(lat, lng);
     const procurementUrl = props['採購網址'] ? props['採購網址'].trim() : '';
-    const tenderBtn = procurementUrl ? `<a href="${procurementUrl}" target="_blank" class="popup-btn main-action"><i class="fas fa-bullhorn"></i> 決標公告</a>` : `<span class="popup-btn" style="background:#f1f5f9;color:#94a3b8;cursor:not-allowed; border:none;"><i class="fas fa-bullhorn"></i> 無公告</span>`;
-
+    const tenderBtn = procurementUrl ? `<a href="${procurementUrl}" target="_blank" class="popup-btn"><i class="fas fa-bullhorn"></i> 決標公告</a>` : `<span class="popup-btn" style="background:#eee;color:#999;cursor:not-allowed;"><i class="fas fa-bullhorn"></i> 無公告</span>`;
+    const hp = getHP(props['完工日期']);
     return `
         <div class="info-card">
             <div class="info-header">檔案編號：${fileName}</div>
             <div class="info-body">
+                <div class="hp-container">
+                    <div class="hp-label"><span><i class="fas fa-shield-alt"></i> ${hp.text}</span><span>${hp.percent}%</span></div>
+                    <div class="hp-bar-bg"><div class="hp-bar-fill ${hp.class}" style="width: ${hp.percent}%"></div></div>
+                </div>
                 <div class="info-row"><div class="info-label">案件編號</div><div class="info-val">${props['案件編號']||''}</div></div>
                 <div class="info-row"><div class="info-label">決標金額</div><div class="info-val" style="font-weight:bold;color:#0056b3;">${props['決標金額']||''}</div></div>
                 <div class="info-row"><div class="info-label">施工廠商</div><div class="info-val">${props['施工廠商']||''}</div></div>
@@ -618,7 +520,6 @@ function createPopup(data) {
                 <div class="info-row"><div class="info-label">TWD97</div><div class="info-val">${props['X']||twd.x}, ${props['Y']||twd.y}</div></div>
                 <div class="info-row"><div class="info-label">WGS84</div><div class="info-val">${lat.toFixed(6)}, ${lng.toFixed(6)}</div></div>
                 <div class="info-row"><div class="info-label">距最近路線</div><div class="info-val">${dText}</div></div>
-                
                 <div class="btn-group-popup">
                     ${tenderBtn}
                     <a href="https://maps.nlsc.gov.tw/go/${lng}/${lat}" target="_blank" class="popup-btn"><i class="fas fa-map"></i> 地籍查詢</a>
@@ -630,106 +531,78 @@ function createPopup(data) {
     `;
 }
 
-/* === 核心修改：更新維修點位 (包含聚合邏輯) === */
 function updateRepairPoints() {
-    const checked = document.querySelectorAll('.repair-cb:checked');
-    const panel = document.getElementById('clusterControlPanel');
+    if(markersClusterGroup) {
+        markersClusterGroup.clearLayers();
+        map.removeLayer(markersClusterGroup);
+    }
     
-    // 1. 收集所有需要顯示的資料到 activeRepairLayers
-    activeRepairLayers = [];
+    const checked = document.querySelectorAll('.repair-cb:checked');
+    activeRepairLayers = []; 
+    const panel = document.getElementById('clusterControlPanel');
+
     checked.forEach(cb => {
         const fileKey = cb.value;
+        if(!REPAIR_DATA_CACHE[fileKey]) {
+             fetch(fileKey + '.geojson').then(r=>r.json()).then(json => {
+                 REPAIR_DATA_CACHE[fileKey] = json;
+                 updateRepairPoints(); 
+                 json.features?.forEach(f => {
+                    const c = f.properties['施工廠商']?.trim();
+                    if(c) ALL_CONTRACTORS.add(c);
+                 });
+             }).catch(e=>{});
+             return;
+        }
         const data = REPAIR_DATA_CACHE[fileKey];
-        if(!data) return;
         const config = REPAIR_CONFIG.find(c => c.value === fileKey);
         
-        // 解析 GeoJSON Feature
-        data.features.forEach(f => {
-            if(f.geometry.type === 'Point') {
-                const lat = f.geometry.coordinates[1];
-                const lng = f.geometry.coordinates[0];
-                const ll = L.latLng(lat, lng);
+        L.geoJSON(data, {
+            pointToLayer: (f, ll) => {
                 const dist = distToRoad(ll, roadsLayer);
-                
-                // 決定顏色 (偏離紅色，正常藍色)
                 const isFar = (!isNaN(dist) && dist > 30);
                 const color = isFar ? '#ef4444' : '#004080';
 
-                // 建立 Marker (使用 CircleMarker 樣式，但包裝成 Marker 供 Cluster 使用)
-                // 為了讓 MarkerCluster 運作順暢，我們使用 L.marker + L.divIcon 模擬原來的圓點
-                const iconHtml = `<div style="
-                    width:14px; height:14px; 
-                    background:${color}; 
-                    border:2px solid #fff; 
-                    border-radius:50%; 
-                    box-shadow:0 2px 4px rgba(0,0,0,0.2);"></div>`;
-                
-                const icon = L.divIcon({
-                    html: iconHtml,
-                    className: 'custom-dot-marker',
-                    iconSize: [18, 18],
-                    iconAnchor: [9, 9] // Center
-                });
+                const iconHtml = `<div style="width:14px; height:14px; background:${color}; border:2px solid #fff; border-radius:50%; box-shadow:0 2px 4px rgba(0,0,0,0.2);"></div>`;
+                const icon = L.divIcon({ html: iconHtml, className: 'custom-dot-marker', iconSize: [18, 18], iconAnchor: [9, 9] });
 
                 const marker = L.marker(ll, { icon: icon });
                 marker.bindPopup(createPopup({ fileName: config.label, props: f.properties, lat: ll.lat, lng: ll.lng, dist }), { className: 'custom-popup' });
                 activeRepairLayers.push(marker);
             }
-        });
+        }); 
     });
 
-    // 2. 顯示或隱藏地圖上的聚合控制面板
     if (activeRepairLayers.length > 0) {
         panel.style.display = 'block';
     } else {
         panel.style.display = 'none';
     }
-
-    // 3. 執行渲染 (使用目前的滑竿值)
     renderClusterGroup();
-    
-    // 同步計算舊版 Buffer
     calculateClusters(); 
 }
 
-// 根據滑竿值渲染 Cluster Group
 function renderClusterGroup() {
-    // 取得目前滑竿數值
     const sliderVal = parseInt(document.getElementById('clusterRadiusSlider').value);
-    
-    // 若已有 Group，先移除
-    if (markersClusterGroup) {
-        map.removeLayer(markersClusterGroup);
-    }
-
-    // 建立新的 Cluster Group，設定 maxClusterRadius
+    if (markersClusterGroup) map.removeLayer(markersClusterGroup);
     markersClusterGroup = L.markerClusterGroup({
-        maxClusterRadius: sliderVal, // 動態半徑 (Pixel)
-        disableClusteringAtZoom: 18, // 縮放到最大時不聚合
+        maxClusterRadius: sliderVal,
+        disableClusteringAtZoom: 18, 
         spiderfyOnMaxZoom: true,
         showCoverageOnHover: false,
         zoomToBoundsOnClick: true
     });
-
-    // 加入所有 Markers
     markersClusterGroup.addLayers(activeRepairLayers);
-    
-    // 加回地圖
     map.addLayer(markersClusterGroup);
 }
 
-// 監聽滑竿變動事件
 const clusterRadiusSlider = document.getElementById('clusterRadiusSlider');
 const clusterRadiusVal = document.getElementById('clusterRadiusVal');
-
 clusterRadiusSlider.addEventListener('input', function() {
     clusterRadiusVal.innerText = `範圍 ${this.value}px`;
-    // 拖曳時即時重繪 (若效能不好可改用 change 事件)
     renderClusterGroup();
 });
 
-
-/* === 廠商資料預載 === */
 async function preloadAllDataForContractors() {
     const cSel = document.getElementById('contractorSelect');
     await Promise.all(REPAIR_CONFIG.map(async item => {
@@ -784,6 +657,7 @@ async function performSearch(predicate, label) {
         document.getElementById('clearSearchBtn').style.display = 'block';
     } else status.innerHTML = '<span style="color:red">查無資料</span>';
     btn.disabled = false; btn.innerHTML = '<i class="fas fa-search"></i> 搜尋';
+    if(clusterToggle.checked) setTimeout(calculateClusters, 100);
 }
 
 document.getElementById('searchBtn').addEventListener('click', () => {
@@ -810,14 +684,14 @@ function handleMapClickSelection(idx, isInteractive) {
     
     const target = roadLayersArray[idx];
     if(target) {
-        target.setStyle({ color: '#e65100', weight: 6 }); // Route active color
+        target.setStyle({ color: 'red', weight: 6 });
         map.fitBounds(target.getBounds());
         target.openPopup();
         
         if (isInteractive) {
             document.getElementById('panelTitle').innerHTML = `<i class="fas fa-history"></i> ${target.feature.properties.name}`;
-            bottomPanel.classList.remove('minimized'); 
-            panelIcon.classList.replace('fa-chevron-up', 'fa-chevron-down');
+            bottomPanel.classList.remove('minimized');
+            panelIcon.classList.replace('fa-chevron-down', 'fa-chevron-up');
             bottomPanel.classList.add('open');
             showTimeline(target);
         } else {
@@ -827,22 +701,34 @@ function handleMapClickSelection(idx, isInteractive) {
     }
 }
 
+// === Map Click Event (Fix: Show Points and Timeline on Road Click) ===
 map.on('click', (e) => {
-    document.getElementById('contextMenu').style.display='none';
-    document.getElementById('roadSelect').value = "";
-    if(roadsLayer) roadsLayer.eachLayer(l => l.setStyle({ color: DEEP_BLUE, weight: 3 }));
-    map.closePopup();
-    bottomPanel.classList.remove('open');
-    routeMatchLayer.clearLayers();
+    if(isMeasuring) {
+        if(measureStartLatLng) finishMeasure(e.latlng);
+    } else {
+        document.getElementById('contextMenu').style.display='none';
+        document.getElementById('roadSelect').value = "";
+        
+        // 檢查是否點擊到路線 (透過 Leaflet 點擊事件捕捉)
+        // 因為 roadsLayer 是 GeoJSON，我們已經在 onEachFeature 綁定了 click 事件
+        // 所以這裡只處理「點擊空白處」的情況
+        
+        // 如果點擊空白處，清除選取
+        if(roadsLayer) roadsLayer.eachLayer(l => l.setStyle({ color: DEEP_BLUE, weight: 3 }));
+        map.closePopup();
+        bottomPanel.classList.remove('open');
+        routeMatchLayer.clearLayers();
+    }
 });
 
 map.on('contextmenu', (e) => {
-    addUserMarker(e.latlng);
-    L.DomEvent.preventDefault(e);
+    L.DomEvent.stopPropagation(e);
+    clickedLatLng = e.latlng;
+    openCtxMenu(e.originalEvent);
 });
 
 map.on('dblclick', (e) => {
-    addUserMarker(e.latlng);
+    // 手機版雙擊設點
 });
 
 function formatMoney(val) {
@@ -876,19 +762,13 @@ function showTimeline(routeLayer) {
             const pt = turf.point(f.geometry.coordinates);
             const dist = turf.pointToLineDistance(pt, routeLine, {units:'meters'});
             if(dist <= 50) {
-                currentRouteAllMatches.push({ 
-                    label: conf.label, 
-                    props: f.properties, 
-                    lat: f.geometry.coordinates[1], 
-                    lng: f.geometry.coordinates[0], 
-                    dist 
-                });
+                currentRouteAllMatches.push({ label: conf.label, props: f.properties, lat: f.geometry.coordinates[1], lng: f.geometry.coordinates[0], dist });
             }
         });
     });
 
     const uniqueLabels = [...new Set(currentRouteAllMatches.map(m => m.label))].sort().reverse();
-    filterBar.innerHTML = '<span class="filter-label" style="font-size:12px; color:#666; font-weight:bold; margin-right:5px;">快速篩選:</span>';
+    filterBar.innerHTML = '<span class="filter-label">篩選:</span>';
     uniqueLabels.forEach(label => {
         const chip = document.createElement('div');
         chip.className = 'filter-chip active';
@@ -901,7 +781,6 @@ function showTimeline(routeLayer) {
         });
         filterBar.appendChild(chip);
     });
-
     renderTimeline(currentRouteAllMatches);
 }
 
@@ -919,7 +798,7 @@ function renderTimeline(matches) {
     routeMatchLayer.clearLayers(); 
     
     if(matches.length === 0) { 
-        cont.innerHTML = '<div style="padding:20px; font-size:14px; color:#666;">無符合篩選條件的紀錄</div>'; 
+        cont.innerHTML = '<div style="padding:20px;">無符合篩選條件的紀錄</div>'; 
         statsDiv.innerHTML = '總花費：<span>$0</span> | 維修：<span>0 次</span>';
         return; 
     }
@@ -986,45 +865,87 @@ function renderTimeline(matches) {
 const ctxMenu = document.getElementById('contextMenu');
 let clickedLatLng = null;
 
-function addUserMarker(latlng) {
-    pointLayer.clearLayers();
-    const marker = L.marker(latlng, { draggable: true }).addTo(pointLayer);
-    const twd = twd97FromWgs84(latlng.lat, latlng.lng);
-    marker.bindPopup(`
-        <div style="text-align:center;">
-            <b>已選取位置</b><br>
-            WGS84: ${latlng.lat.toFixed(5)}, ${latlng.lng.toFixed(5)}<br>
-            TWD97: ${twd.x}, ${twd.y}
-        </div>
-    `).openPopup();
-    marker.on('contextmenu', (e) => {
-        L.DomEvent.stopPropagation(e);
-        clickedLatLng = e.latlng;
-        ctxMenu.style.display = 'block';
-        ctxMenu.style.left = e.originalEvent.clientX + 'px';
-        ctxMenu.style.top = e.originalEvent.clientY + 'px';
-    });
-    marker.on('click', (e) => {
-        if(L.Browser.mobile) {
-            clickedLatLng = e.latlng;
-            ctxMenu.style.display = 'block';
-            ctxMenu.style.left = e.originalEvent.clientX + 'px';
-            ctxMenu.style.top = e.originalEvent.clientY + 'px';
-        } else {
-            marker.openPopup();
-        }
-    });
+function openCtxMenu(event) {
+    ctxMenu.style.display = 'block';
+    ctxMenu.style.left = event.clientX + 'px';
+    ctxMenu.style.top = event.clientY + 'px';
 }
-
-map.on('dragstart click', () => ctxMenu.style.display='none');
 
 document.getElementById('ctxStreetView').onclick = () => { if(clickedLatLng) window.open(`https://www.google.com/maps?q=&layer=c&cbll=${clickedLatLng.lat},${clickedLatLng.lng}`); ctxMenu.style.display='none'; }
 document.getElementById('ctxGoogleNav').onclick = () => { if(clickedLatLng) window.open(`https://www.google.com/maps/dir/?api=1&destination=${clickedLatLng.lat},${clickedLatLng.lng}`); ctxMenu.style.display='none'; }
-document.getElementById('ctxClearMarker').onclick = () => { pointLayer.clearLayers(); ctxMenu.style.display='none'; }
+document.getElementById('ctxClearMarker').onclick = () => { 
+    pointLayer.clearLayers(); 
+    measureLayer.clearLayers(); // 清除測量
+    isMeasuring = false;
+    document.body.classList.remove('measuring');
+    ctxMenu.style.display='none'; 
+}
+
+/* === 測量功能 === */
+document.getElementById('ctxMeasure').onclick = () => {
+    ctxMenu.style.display = 'none';
+    startMeasure(clickedLatLng);
+};
+
+function startMeasure(latlng) {
+    isMeasuring = true;
+    measureStartLatLng = latlng;
+    document.body.classList.add('measuring');
+    L.circleMarker(latlng, {color: 'green', radius: 5, fillOpacity: 1}).addTo(measureLayer);
+}
+
+function finishMeasure(endLatLng) {
+    if(!isMeasuring || !measureStartLatLng) return;
+    
+    const dist = measureStartLatLng.distanceTo(endLatLng).toFixed(1);
+    if(dist == 0) return;
+
+    const line = L.polyline([measureStartLatLng, endLatLng], {color: 'red', weight: 3}).addTo(measureLayer);
+    const centerLat = (measureStartLatLng.lat + endLatLng.lat) / 2;
+    const centerLng = (measureStartLatLng.lng + endLatLng.lng) / 2;
+    
+    const icon = L.divIcon({
+        className: 'measure-label',
+        html: `${dist} m <span class="measure-close-btn" onclick="clearMeasure()">X</span>`,
+        iconSize: [100, 20],
+        iconAnchor: [50, 10]
+    });
+    L.marker([centerLat, centerLng], {icon: icon}).addTo(measureLayer);
+
+    isMeasuring = false;
+    document.body.classList.remove('measuring');
+    if(measureLine) map.removeLayer(measureLine);
+    if(measureTooltip) map.removeLayer(measureTooltip);
+    measureLine = null; measureTooltip = null;
+    measureStartLatLng = null;
+}
+
+// 修正：將 clearMeasure 綁定到 window 以便 HTML onclick 呼叫
+window.clearMeasure = function() {
+    measureLayer.clearLayers();
+    isMeasuring = false;
+    document.body.classList.remove('measuring');
+}
+
+map.on('mousemove', e => {
+    if(window.innerWidth > 768) {
+        const t = twd97FromWgs84(e.latlng.lat, e.latlng.lng);
+        const el = document.getElementById('floatingCoords');
+        el.style.display = 'block'; el.innerHTML = `TWD97: ${t.x}, ${t.y}`;
+    }
+    
+    if(isMeasuring && measureStartLatLng) {
+        if(measureLine) measureLine.setLatLngs([measureStartLatLng, e.latlng]);
+        else measureLine = L.polyline([measureStartLatLng, e.latlng], {color: 'red', dashArray: '5, 10'}).addTo(map);
+        
+        const dist = measureStartLatLng.distanceTo(e.latlng).toFixed(1);
+        if(measureTooltip) measureTooltip.setLatLng(e.latlng).setContent(`${dist} m`);
+        else measureTooltip = L.tooltip({permanent:true, direction:'right'}).setLatLng(e.latlng).setContent(`${dist} m`).addTo(map);
+    }
+});
 
 document.getElementById('locateBtn').onclick = () => map.locate({setView:true, maxZoom:16});
 map.on('locationfound', e => L.circleMarker(e.latlng, {color:'blue', radius:8}).addTo(map).bindPopup('我的位置').openPopup());
-
 document.getElementById('toggleMapBtn').onclick = function() {
     if(isSat) { map.removeLayer(sat); osm.addTo(map); this.classList.remove('active'); }
     else { map.removeLayer(osm); sat.addTo(map); this.classList.add('active'); }
@@ -1050,14 +971,6 @@ document.getElementById('plotBtn').onclick = () => {
 };
 document.getElementById('clearBtn').onclick = () => { pointLayer.clearLayers(); document.getElementById('coordsInput').value=''; };
 
-map.on('mousemove', e => {
-    if(window.innerWidth > 768) {
-        const t = twd97FromWgs84(e.latlng.lat, e.latlng.lng);
-        const el = document.getElementById('floatingCoords');
-        el.style.display = 'block'; el.innerHTML = `TWD97: ${t.x}, ${t.y}`;
-    }
-});
-
 document.getElementById('clearRepairBtn').addEventListener('click', () => {
     // 清除 Cluster
     if(markersClusterGroup) {
@@ -1078,54 +991,68 @@ document.getElementById('clearRepairBtn').addEventListener('click', () => {
     document.getElementById('clearSearchBtn').style.display = 'none';
 
     pointLayer.clearLayers();
+    measureLayer.clearLayers();
     document.getElementById('coordsInput').value = '';
 
     if(roadsLayer) roadsLayer.eachLayer(l => l.setStyle({color: DEEP_BLUE, weight:3}));
     document.getElementById('roadSelect').value = "";
 
     bottomPanel.classList.remove('open');
-    clusterLayer.clearLayers(); // 清除舊版群聚
+    clusterLayer.clearLayers();
+    if(clusterToggle.checked) clusterToggle.checked = false;
     map.closePopup();
 });
 
-/* === 群聚分析邏輯 (舊版 Buffer 工具) === */
 const clusterToggle = document.getElementById('clusterToggle');
 const clusterSlider = document.getElementById('clusterSlider');
 const clusterValue = document.getElementById('clusterValue');
-
-clusterToggle.addEventListener('change', calculateClusters);
+clusterToggle.addEventListener('change', () => { if(clusterToggle.checked) calculateClusters(); else clusterLayer.clearLayers(); });
 clusterSlider.addEventListener('input', () => {
     clusterValue.innerText = `${clusterSlider.value}m`;
-    calculateClusters();
+    if(clusterToggle.checked) { clearTimeout(window.clusterTimer); window.clusterTimer = setTimeout(calculateClusters, 100); }
 });
-
 function calculateClusters() {
     clusterLayer.clearLayers();
     if(!clusterToggle.checked) return;
-
     const radius = parseInt(clusterSlider.value);
     if(radius === 0) return;
-
-    // 從 activeRepairLayers 提取座標 (因為它們現在被 ClusterGroup 管理)
-    const points = activeRepairLayers.map(l => l.feature || { 
-        type: "Feature", 
-        geometry: { type: "Point", coordinates: [l.getLatLng().lng, l.getLatLng().lat] } 
-    });
-
-    if(points.length === 0) return;
-
-    const fc = turf.featureCollection(points);
-    const buffered = turf.buffer(fc, radius / 1000, {units: 'kilometers'});
-
-    L.geoJSON(buffered, {
-        style: {
-            color: '#ff0000',
-            weight: 0,
-            fillColor: '#ff0000',
-            fillOpacity: 0.2
-        }
-    }).addTo(clusterLayer);
+    document.body.style.cursor = 'wait';
+    setTimeout(() => {
+        try {
+            const points = [];
+            // 從 activeRepairLayers 抓點，支援 Cluster
+            activeRepairLayers.forEach(l => {
+                points.push({ 
+                    type: "Feature", 
+                    geometry: { type: "Point", coordinates: [l.getLatLng().lng, l.getLatLng().lat] } 
+                });
+            });
+            searchResultLayer.eachLayer(layer => { if(layer.feature && layer.feature.geometry.type === 'Point') points.push(layer.feature); });
+            
+            if(points.length === 0) {
+                alert("⚠️ 尚未載入任何案件資料！\n\n請先至「透明」分頁勾選年度，\n或至「搜尋」分頁查詢案件後，\n再來執行空間分析。");
+                clusterToggle.checked = false; document.body.style.cursor = 'default'; return;
+            }
+            const fc = turf.featureCollection(points);
+            const buffered = turf.buffer(fc, radius / 1000, {units: 'kilometers', steps: 10});
+            let resultGeoJSON = null;
+            try {
+                if (buffered.features.length > 0) {
+                    let merged = buffered.features[0];
+                    for (let i = 1; i < buffered.features.length; i++) merged = turf.union(merged, buffered.features[i]);
+                    resultGeoJSON = merged;
+                }
+            } catch (unionError) { resultGeoJSON = buffered; }
+            if (resultGeoJSON) {
+                const layer = L.geoJSON(resultGeoJSON, { style: { color: 'none', weight: 0, fillColor: '#d32f2f', fillOpacity: 0.3 }, interactive: false }).addTo(clusterLayer);
+                layer.bringToBack();
+            }
+        } catch (e) { console.error(e); } finally { document.body.style.cursor = 'default'; }
+    }, 50);
 }
+document.getElementById('repairCheckboxes').addEventListener('change', () => {
+    if(clusterToggle.checked) { clearTimeout(window.clusterTimer); window.clusterTimer = setTimeout(calculateClusters, 200); }
+});
 </script>
 </body>
 </html>

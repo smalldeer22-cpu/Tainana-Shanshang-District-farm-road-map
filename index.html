@@ -96,7 +96,7 @@
     background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(5px);
     padding: 15px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     width: 220px; border: 1px solid rgba(255,255,255,0.2);
-    display: none; /* 預設隱藏，現在由 JS 控制切換顯示 */
+    display: none; 
     transition: left 0.3s ease;
   }
   body.collapsed #clusterControlPanel { left: 20px; } 
@@ -134,12 +134,24 @@
   .control-btn { background:none; border:none; color:#fff; font-size:16px; cursor:pointer; padding: 5px; transition: color 0.2s; }
   .control-btn:hover { color: #ffeb3b; }
 
-  #timelineFilterBar { background: #f1f5f9; padding: 6px 20px; border-bottom: 1px solid #e0e0e0; white-space: nowrap; overflow-x: auto; display: flex; gap: 8px; align-items: center; flex-shrink: 0; height: 40px; box-sizing: border-box; }
-  .filter-label { font-size: 12px; color: #666; font-weight: bold; margin-right: 5px; }
-  .filter-chip { padding: 3px 10px; border-radius: 15px; font-size: 12px; cursor: pointer; border: 1px solid #ccc; background: #fff; color: #555; transition: all 0.2s; user-select: none; display: flex; align-items: center; gap: 5px; }
-  .filter-chip:hover { background: #e2e8f0; }
-  .filter-chip.active { background: var(--primary-color); color: #fff; border-color: var(--primary-color); box-shadow: 0 2px 5px rgba(0, 64, 128, 0.2); }
-  .filter-chip i { font-size: 10px; }
+  /* Timeline 篩選列 */
+  #timelineFilterBar { background: #f1f5f9; padding: 6px 20px; border-bottom: 1px solid #e0e0e0; display: flex; gap: 10px; align-items: center; flex-shrink: 0; height: 48px; box-sizing: border-box; }
+  .filter-label { font-size: 13px; color: #333; font-weight: bold; white-space: nowrap; }
+  
+  /* Timeline 下拉選單樣式 */
+  .timeline-select {
+      flex: 1;
+      max-width: 400px;
+      padding: 6px 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 13px;
+      color: #333;
+      background: #fff;
+      margin: 0;
+      cursor: pointer;
+  }
+  .timeline-select:focus { outline: none; border-color: var(--primary-color); }
 
   #timelineContainer { flex: 1; overflow-x: auto; padding: 15px 20px; display: flex; align-items: flex-start; gap: 0; }
   .h-item { width: 130px; text-align: center; cursor: pointer; position: relative; transition: transform 0.2s; }
@@ -160,7 +172,7 @@
   .icon-urgent::before { content: "\f0ad"; font-family: "Font Awesome 6 Free"; font-weight: 900; color: #d32f2f; } 
   .icon-normal::before { content: "\f111"; font-family: "Font Awesome 6 Free"; font-weight: 900; color: #1976d2; font-size: 18px; } 
 
-  /* === 7. 右鍵選單 (修正為 Fixed 跟隨游標) === */
+  /* === 7. 右鍵選單 === */
   #contextMenu { display: none; position: fixed; z-index: 5000; background: #fff; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); overflow: hidden; min-width: 160px; border: 1px solid #ddd; top: 0; left: 0; }
   .ctx-item { padding: 10px 15px; cursor: pointer; font-size: 14px; color: #333; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #f0f0f0; }
   .ctx-item:hover { background: #f5faff; color: var(--primary-color); }
@@ -176,8 +188,24 @@
   .info-label { width: 85px; font-weight: bold; color: #555; flex-shrink: 0; }
   .info-val { color: #222; word-break: break-all; flex: 1; }
   .btn-group-popup { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
-  .popup-btn { display: flex; align-items: center; justify-content: center; gap: 5px; background: var(--accent-color); color: #000; padding: 8px; border-radius: 4px; text-decoration: none; font-size: 13px; font-weight: bold; box-shadow: 0 1px 3px rgba(0,0,0,0.15); transition: background 0.2s; }
-  .popup-btn:hover { background: #e68a00; }
+  
+  /* 修改：Popup 按鈕改為黃底黑字，工程風格 */
+  .popup-btn { 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      gap: 5px; 
+      background: #ffc107; /* 琥珀黃/工程黃 */
+      color: #000;         /* 純黑字 */
+      padding: 8px; 
+      border-radius: 4px; 
+      text-decoration: none; 
+      font-size: 14px; 
+      font-weight: bold; 
+      box-shadow: 0 1px 3px rgba(0,0,0,0.15); 
+      transition: background 0.2s; 
+  }
+  .popup-btn:hover { background: #e0a800; /* 深橘黃 */ }
   
   .analysis-control { margin-top: 10px; padding: 10px; background: #fff3e0; border-radius: 8px; border: 1px solid #ffe0b2; }
   .slider-container { margin-top: 10px; display: flex; align-items: center; gap: 10px; }
@@ -247,7 +275,7 @@
         </div>
     </div>
     
-    <div id="timelineFilterBar"><span class="filter-label">篩選:</span></div>
+    <div id="timelineFilterBar"><span class="filter-label"><i class="fas fa-filter"></i> 篩選案件：</span></div>
     <div id="timelineContainer"><div style="padding:20px; color:#777;">請點選地圖上的藍色路線以檢視紀錄。</div></div>
 </div>
 
@@ -365,6 +393,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.9.0/proj4.js"></script>
 <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
 <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
+<!-- 引入 TopoJSON 支援 -->
+<script src="https://unpkg.com/topojson-client@3"></script>
 
 <script>
 /* === 全域變數宣告 === */
@@ -374,6 +404,7 @@ let roadLayersArray = [];
 let REPAIR_DATA_CACHE = {}; 
 let ALL_CONTRACTORS = new Set(); 
 let currentRouteAllMatches = []; 
+let villageGeoJSON = null; // 儲存里界資料
 
 let isMeasuring = false;
 let measureStartLatLng = null;
@@ -459,6 +490,70 @@ togglePanelSizeBtn.addEventListener('click', () => {
 fetch('tainan_districts.geojson').then(r=>r.json()).then(data=>{
     L.geoJSON(data, { interactive: false, style: f => ({ color: '#000', weight: (f.properties.TOWNNAME||f.properties.TOWN).includes('山上')?5:2, opacity: 0.8, fillOpacity: 0 }) }).addTo(boundaryLayer).bringToBack();
 }).catch(e=>console.warn(e));
+
+/* 新增：載入 t22.json (TopoJSON 里界) 並設定七色分區 */
+const VILLAGE_COLORS = {
+    "明和里": "#E74C3C", // 柔和紅
+    "山上里": "#F39C12", // 亮橘色
+    "南洲里": "#F1C40F", // 金黃色
+    "新莊里": "#2ECC71", // 翡翠綠
+    "平陽里": "#1ABC9C", // 青綠色
+    "豐德里": "#9B59B6", // 紫羅蘭
+    "玉峯里": "#FF69B4", // 粉紅色
+    "玉峰里": "#FF69B4"  // 相容字
+};
+
+fetch('t22.json').then(r => r.json()).then(topology => {
+    villageGeoJSON = topojson.feature(topology, topology.objects.t22);
+    // 顯示里界線 (色塊 + 細虛線)
+    const villageLayer = L.geoJSON(villageGeoJSON, {
+        style: function(feature) {
+            const vName = feature.properties.VILLAGE || feature.properties.VILLNAME;
+            const color = VILLAGE_COLORS[vName] || "#999";
+            return {
+                fillColor: color,
+                fillOpacity: 0.1, // 極低透明度，不擋底圖
+                color: color,     // 邊框同色
+                weight: 1,        // 細線
+                opacity: 0.4,
+                dashArray: '5, 5' // 虛線風格
+            };
+        },
+        onEachFeature: function(feature, layer) {
+            // 滑鼠移入：加深顏色 + 金黃邊框
+            layer.on('mouseover', function() {
+                this.setStyle({
+                    fillOpacity: 0.4,
+                    weight: 2,
+                    color: '#FFD700', // 金黃色 highlight
+                    dashArray: ''     // 實線
+                });
+            });
+            // 滑鼠移出：恢復原狀
+            layer.on('mouseout', function() {
+                villageLayer.resetStyle(this);
+            });
+        }
+    }).addTo(boundaryLayer);
+    
+    // 確保在最底層，不遮擋道路
+    villageLayer.bringToBack();
+    
+}).catch(e => console.warn("無法載入里界資料 t22.json", e));
+
+/* 輔助函式：取得里別名稱 */
+function getVillageName(lat, lng) {
+    if (!villageGeoJSON) return "讀取資料中...";
+    const pt = turf.point([lng, lat]);
+    for (const feature of villageGeoJSON.features) {
+        if (turf.booleanPointInPolygon(pt, feature)) {
+            // 嘗試取得里名，根據 GeoJSON 屬性欄位可能不同
+            const vName = feature.properties.VILLAGE || feature.properties.VILLNAME || "未知里";
+            return `山上區 ${vName}`;
+        }
+    }
+    return "非山上區範圍";
+}
 
 fetch('farmroads.geojson').then(r=>r.json()).then(data=>{
     roadsLayer = L.geoJSON(data, {
@@ -774,7 +869,7 @@ map.on('click', (e) => {
     }
 });
 
-/* === 修正：右鍵選單邏輯 (單一標記與選單定位) === */
+/* === 修正：右鍵選單邏輯 (單一標記與選單定位 + 顯示里別) === */
 const ctxMenu = document.getElementById('contextMenu');
 let clickedLatLng = null;
 
@@ -793,12 +888,15 @@ map.on('contextmenu', (e) => {
     // 建立新標記
     const latlng = e.latlng;
     const twd = twd97FromWgs84(latlng.lat, latlng.lng);
+    // 取得里別
+    const villageName = getVillageName(latlng.lat, latlng.lng);
     
-    // Popup 內容：顯示座標
+    // Popup 內容：顯示座標與里別 (修正：文字顏色樣式與上方統一)
     const popupContent = `
         <div style="font-weight:bold; color:#004080; margin-bottom:5px;">位置資訊</div>
         <div style="font-size:13px;">TWD97: ${twd.x}, ${twd.y}</div>
         <div style="font-size:13px;">WGS84: ${latlng.lat.toFixed(6)}, ${latlng.lng.toFixed(6)}</div>
+        <div style="font-size:13px;">行政區: ${villageName}</div>
         <div style="font-size:12px; color:#666; margin-top:5px;">(再點右鍵開啟功能選單)</div>
     `;
 
@@ -901,7 +999,7 @@ document.getElementById('toggleCadastralBtn').onclick = function() {
     isCadastralVisible = !isCadastralVisible;
 };
 
-/* === 修正：支援多點座標輸入與顯示 === */
+/* === 修正：支援多點座標輸入與顯示，並顯示里別 === */
 document.getElementById('plotBtn').onclick = () => {
     pointLayer.clearLayers();
     const input = document.getElementById('coordsInput').value.trim();
@@ -924,9 +1022,13 @@ document.getElementById('plotBtn').onclick = () => {
                     // TWD97 (EPSG:3826) 轉 WGS84 (EPSG:4326)
                     const w = proj4('EPSG:3826', 'EPSG:4326', [x, y]);
                     const latlng = L.latLng(w[1], w[0]);
+                    
+                    // 取得里別
+                    const villageName = getVillageName(w[1], w[0]);
 
                     const marker = L.marker(latlng).addTo(pointLayer);
-                    marker.bindPopup(`X:${x}, Y:${y}`);
+                    // 修正：座標輸入工具的 Popup 樣式也移除紅色粗體
+                    marker.bindPopup(`X:${x}, Y:${y}<br>行政區: ${villageName}`);
                     markerCount++;
                     bounds.extend(latlng);
                 } catch (e) {
@@ -1075,17 +1177,20 @@ function getDateDiffDays(dateStr1, dateStr2) {
     return Math.ceil(Math.abs(d1 - d2) / (1000 * 60 * 60 * 24)); 
 }
 
-/* === 修正：時間軸顯示 (確保有資料可顯示) === */
+/* === 修改：歷史維修軸顯示 (使用下拉式選單篩選) === */
 function showTimeline(routeLayer) {
     const cont = document.getElementById('timelineContainer');
-    const statsDiv = document.getElementById('timelineStats');
     const filterBar = document.getElementById('timelineFilterBar');
+    
+    // 清除舊資料並顯示讀取中
     cont.innerHTML = '<div style="padding:20px;">讀取中...</div>';
     routeMatchLayer.clearLayers();
+    
+    // 計算匹配資料
     const routeLine = routeLayer.toGeoJSON().geometry; 
     currentRouteAllMatches = [];
 
-    // 若資料尚未載入，這段會是空的，所以前面加強了 preloadAllDataForContractors
+    // 從已載入的 REPAIR_CONFIG 與 REPAIR_DATA_CACHE 中搜尋附近的點
     REPAIR_CONFIG.forEach(conf => {
         const data = REPAIR_DATA_CACHE[conf.value];
         if(!data) return;
@@ -1099,28 +1204,46 @@ function showTimeline(routeLayer) {
         });
     });
 
+    // 取得所有不重複的專案名稱 (用於建立下拉選單)
     const uniqueLabels = [...new Set(currentRouteAllMatches.map(m => m.label))].sort().reverse();
-    filterBar.innerHTML = '<span class="filter-label">篩選:</span>';
-    uniqueLabels.forEach(label => {
-        const chip = document.createElement('div');
-        chip.className = 'filter-chip active';
-        chip.dataset.label = label;
-        chip.innerHTML = `<i class="fas fa-check"></i> ${label}`;
-        chip.addEventListener('click', function() {
-            this.classList.toggle('active');
-            this.innerHTML = this.classList.contains('active') ? `<i class="fas fa-check"></i> ${label}` : label;
-            renderTimelineFromFilter();
-        });
-        filterBar.appendChild(chip);
-    });
-    renderTimeline(currentRouteAllMatches);
-}
 
-function renderTimelineFromFilter() {
-    const activeChips = document.querySelectorAll('.filter-chip.active');
-    const activeLabels = Array.from(activeChips).map(c => c.dataset.label);
-    const filteredMatches = currentRouteAllMatches.filter(m => activeLabels.includes(m.label));
-    renderTimeline(filteredMatches);
+    // === 重建 Filter Bar 為 Select ===
+    filterBar.innerHTML = '<span class="filter-label"><i class="fas fa-filter"></i> 篩選案件：</span>';
+    
+    // 建立 Select 元素
+    const select = document.createElement('select');
+    select.className = 'timeline-select';
+    
+    // 加入「全選」選項
+    const allOption = document.createElement('option');
+    allOption.value = 'all';
+    allOption.textContent = `(全選) 顯示全部 (${currentRouteAllMatches.length} 筆)`;
+    select.appendChild(allOption);
+
+    // 加入各個專案選項
+    uniqueLabels.forEach(label => {
+        const count = currentRouteAllMatches.filter(m => m.label === label).length;
+        const opt = document.createElement('option');
+        opt.value = label;
+        opt.textContent = `${label} (${count} 筆)`;
+        select.appendChild(opt);
+    });
+
+    // 監聽變更事件
+    select.addEventListener('change', function() {
+        const val = this.value;
+        if (val === 'all') {
+            renderTimeline(currentRouteAllMatches);
+        } else {
+            const filtered = currentRouteAllMatches.filter(m => m.label === val);
+            renderTimeline(filtered);
+        }
+    });
+
+    filterBar.appendChild(select);
+
+    // 初始渲染全部
+    renderTimeline(currentRouteAllMatches);
 }
 
 function renderTimeline(matches) {

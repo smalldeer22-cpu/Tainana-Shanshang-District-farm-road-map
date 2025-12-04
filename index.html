@@ -96,7 +96,7 @@
     background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(5px);
     padding: 15px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     width: 220px; border: 1px solid rgba(255,255,255,0.2);
-    display: none; /* 預設隱藏 */
+    display: none; /* 預設隱藏，現在由 JS 控制切換顯示 */
     transition: left 0.3s ease;
   }
   body.collapsed #clusterControlPanel { left: 20px; } 
@@ -212,6 +212,7 @@
     <button class="float-btn" id="locateBtn" data-title="我的位置"><i class="fas fa-crosshairs"></i></button>
     <button class="float-btn" id="toggleMapBtn" data-title="切換衛星/地圖"><i class="fas fa-layer-group"></i></button>
     <button class="float-btn" id="toggleCadastralBtn" data-title="地籍圖開關"><i class="fas fa-map"></i></button>
+    <button class="float-btn" id="toggleClusterControlBtn" data-title="點位聚合設定"><i class="fas fa-circle-nodes"></i></button>
 </div>
 
 <div id="contextMenu">
@@ -225,7 +226,10 @@
 <div id="clusterControlPanel">
     <div class="cluster-header">
         <div class="cluster-title"><i class="fas fa-circle-nodes"></i> 點位聚合設定</div>
-        <span id="clusterRadiusVal" class="cluster-value-badge">範圍 50px</span>
+        <div style="display:flex; align-items:center;">
+            <span id="clusterRadiusVal" class="cluster-value-badge" style="margin-right: 5px;">範圍 50px</span>
+            <button id="closeClusterControlBtn" class="control-btn" title="關閉" style="color:#000; font-size:12px; padding:0;"><i class="fas fa-times"></i></button>
+        </div>
     </div>
     <div style="font-size:12px; color:#666; margin-bottom:5px;">調整聚合敏感度 (滑竿往右 = 範圍大/聚合強)</div>
     <input type="range" id="clusterRadiusSlider" class="custom-range" min="20" max="150" step="10" value="50">
@@ -579,6 +583,7 @@ function updateRepairPoints() {
     const checked = document.querySelectorAll('.repair-cb:checked');
     activeRepairLayers = []; 
     const panel = document.getElementById('clusterControlPanel');
+    const toggleBtn = document.getElementById('toggleClusterControlBtn'); // 取得按鈕
 
     checked.forEach(cb => {
         const fileKey = cb.value;
@@ -604,11 +609,13 @@ function updateRepairPoints() {
         }
     });
 
-    if (activeRepairLayers.length > 0) {
-        panel.style.display = 'block';
-    } else {
+    // 修正邏輯：不再自動顯示面板，只在點位數為 0 時強制隱藏
+    if (activeRepairLayers.length === 0) {
         panel.style.display = 'none';
+        toggleBtn.classList.remove('active');
     }
+    // 如果點位數 > 0，則面板狀態由使用者點擊按鈕決定
+    
     renderClusterGroup();
     calculateClusters(); 
 }
@@ -632,6 +639,27 @@ const clusterRadiusVal = document.getElementById('clusterRadiusVal');
 clusterRadiusSlider.addEventListener('input', function() {
     clusterRadiusVal.innerText = `範圍 ${this.value}px`;
     renderClusterGroup();
+});
+
+// 修正項目：新增切換聚合設定面板的事件監聽器
+const toggleClusterControlBtn = document.getElementById('toggleClusterControlBtn');
+const clusterControlPanel = document.getElementById('clusterControlPanel');
+const closeClusterControlBtn = document.getElementById('closeClusterControlBtn');
+
+toggleClusterControlBtn.addEventListener('click', function() {
+    // 檢查是否有 activeRepairLayers，沒有則不開啟，並給予提示 (可選)
+    if (activeRepairLayers.length === 0) {
+        alert("請先至「透明」分頁勾選欲顯示的案件資料。");
+        return;
+    }
+    const isVisible = clusterControlPanel.style.display === 'block';
+    clusterControlPanel.style.display = isVisible ? 'none' : 'block';
+    this.classList.toggle('active');
+});
+
+closeClusterControlBtn.addEventListener('click', function() {
+    clusterControlPanel.style.display = 'none';
+    toggleClusterControlBtn.classList.remove('active');
 });
 
 async function preloadAllDataForContractors() {
@@ -956,7 +984,8 @@ document.getElementById('clearBtn').onclick = () => { pointLayer.clearLayers(); 
 document.getElementById('clearRepairBtn').addEventListener('click', () => {
     if(markersClusterGroup) { markersClusterGroup.clearLayers(); map.removeLayer(markersClusterGroup); markersClusterGroup = null; }
     activeRepairLayers = [];
-    document.getElementById('clusterControlPanel').style.display = 'none';
+    document.getElementById('clusterControlPanel').style.display = 'none'; // 清除所有點位時隱藏面板
+    document.getElementById('toggleClusterControlBtn').classList.remove('active'); // 移除按鈕 active 狀態
     document.querySelectorAll('.repair-cb').forEach(cb => cb.checked = false);
     document.querySelectorAll('.year-select-all input').forEach(cb => cb.checked = false);
     searchResultLayer.clearLayers();

@@ -1,0 +1,572 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "111055-新莊里農路路面及豐德里隙子口47-6號民宅旁路邊排水等2件改善工程",
+        "完工日期": "待補充",
+        "X": 183660,
+        "Y": 2554287,
+        "決標金額": "565000",
+        "施工廠商": "鑫旺土木包工業",
+        "監造廠商": "丞信工程顧問有限公司",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAxODI1NTc=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.35244225438151,
+          23.089014159910704
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "111055-新莊里農路路面及豐德里隙子口47-6號民宅旁路邊排水等2件改善工程",
+        "完工日期": "待補充",
+        "X": 184726,
+        "Y": 2553083,
+        "決標金額": "565000",
+        "施工廠商": "鑫旺土木包工業",
+        "監造廠商": "丞信工程顧問有限公司",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAxODI1NTc=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.36289842509284,
+          23.078184266756782
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "111052-玉峰里清水寺往中坑道路路面改善",
+        "完工日期": "待補充",
+        "X": 187632,
+        "Y": 2555213,
+        "決標金額": "385000",
+        "施工廠商": "鑫旺土木包工業",
+        "監造廠商": "昇泰工程顧問有限公司",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAxNjI3MjE=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.39117430822962,
+          23.097530269381213
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "111050-善山高幹107右7農路排水改善工程",
+        "完工日期": "待補充",
+        "X": 183650,
+        "Y": 2556383,
+        "決標金額": "1466000",
+        "施工廠商": "裕軒土木包工業",
+        "監造廠商": "榮承發工程顧問有限公司",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAxNTcxMzI=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.3522539056975,
+          23.10794073330738
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "111048-平陽里活動中心後道路擋土牆改善工程",
+        "完工日期": "待補充",
+        "X": 186584,
+        "Y": 2554071,
+        "決標金額": "248000",
+        "施工廠商": "鑫旺土木包工業",
+        "監造廠商": "丞信工程顧問有限公司",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAxNDc0NzQ=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.38099160790867,
+          23.087178110709353
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "111043-111年8月豪雨平陽里謝天二號橋護岸崩塌復建工程",
+        "完工日期": "待補充",
+        "X": 187193,
+        "Y": 2554455,
+        "決標金額": "2397000",
+        "施工廠商": "瓏泰土木包工業",
+        "監造廠商": "昇泰工程顧問有限公司",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAxNDQ5OTM=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.38692011066883,
+          23.090668862135153
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "111046-111年8月豪雨玉峰里坑仔尾野溪護岸崩塌復建工程",
+        "完工日期": "待補充",
+        "X": 186892,
+        "Y": 2555104,
+        "決標金額": "3480000",
+        "施工廠商": "瓏泰土木包工業",
+        "監造廠商": "丞信工程顧問有限公司",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAxNDUwNDE=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.38395536411863,
+          23.096517966519404
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "111044-山上里雪紫商號至山上國中道路路面改善工程",
+        "完工日期": "待補充",
+        "X": 184129,
+        "Y": 2555751,
+        "決標金額": "650000",
+        "施工廠商": "弘燿營造有限公司",
+        "監造廠商": "昇泰工程顧問有限公司",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAxMzM5OTI=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.35695711880035,
+          23.102252867621072
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "111039-玉峰里廬芝坑農路改善工程等2處",
+        "完工日期": "待補充",
+        "X": 189682,
+        "Y": 2556501,
+        "決標金額": "665000",
+        "施工廠商": "裕軒土木包工業",
+        "監造廠商": "榮承發工程顧問有限公司",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAwOTM4ODk=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.41113451957897,
+          23.10923699134663
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "111032-謝天二號橋護岸改善工程",
+        "完工日期": "待補充",
+        "X": 187123,
+        "Y": 2554515,
+        "決標金額": "1394900",
+        "施工廠商": "瓏泰土木包工業",
+        "監造廠商": "昇泰工程顧問有限公司",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAwOTI0MzE=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.38623438722219,
+          23.091208014657372
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "111038-111石子崎段139-2地號旁農田排水改善工程",
+        "完工日期": "待補充",
+        "X": 185293,
+        "Y": 2554415,
+        "決標金額": "765000",
+        "施工廠商": "鑫旺土木包工業",
+        "監造廠商": "丞信工程顧問有限公司",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAwODgzODI=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.3683761283602,
+          23.09023456677319
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "111036-第一公墓農路路面及排水溝改善工程",
+        "完工日期": "待補充",
+        "X": 182026,
+        "Y": 2557272,
+        "決標金額": "1493000",
+        "施工廠商": "再生營造有限公司",
+        "監造廠商": "榮承發工程顧問有限公司",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAwNjU0MDY=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.3363608554888,
+          23.115902538189506
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "111037-平陽里巷道改善工程",
+        "完工日期": "待補充",
+        "X": 186510,
+        "Y": 2553916,
+        "決標金額": "550000",
+        "施工廠商": "裕軒土木包工業",
+        "監造廠商": "昇泰工程顧問有限公司",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAwNTk0NDE=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.3802757377543,
+          23.085775611361544
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "111035-玉峰里玉峰3號橋前野溪改善工程",
+        "完工日期": "待補充",
+        "X": 188029,
+        "Y": 2555768,
+        "決標金額": "1300000",
+        "施工廠商": "鑫旺土木包工業",
+        "監造廠商": "榮承發工程顧問有限公司",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAwNTc0Nzk=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.39502714280856,
+          23.1025568813593
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "111034-玉峰里清水寺後方農路改善工程",
+        "完工日期": "待補充",
+        "X": 187496,
+        "Y": 2555441,
+        "決標金額": "1050000",
+        "施工廠商": "鑫旺土木包工業",
+        "監造廠商": "昇泰工程顧問有限公司",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAwNDcyNTg=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.38983745904662,
+          23.099584009268245
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "111031-平陽里臺二十線旁野溪整治延續工程(第六期)",
+        "完工日期": "待補充",
+        "X": 186124,
+        "Y": 2553337,
+        "決標金額": "1340000",
+        "施工廠商": "琮富土木包工有限公司",
+        "監造廠商": "丞信工程顧問有限公司",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAwMzQ1MjA=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.37653228471572,
+          23.080532352181624
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "111033-山上里50-1號往市道178甲線道路路面改善工程",
+        "完工日期": "待補充",
+        "X": 184342,
+        "Y": 2555422,
+        "決標金額": "440000",
+        "施工廠商": "東奕土木包工業",
+        "監造廠商": "昇泰工程顧問有限公司",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzAwMzQ1NDg=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.35905045360761,
+          23.099290436557503
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "111026-玉峰里牛稠埔段96地號蝕溝整治工程",
+        "完工日期": "待補充",
+        "X": 187394,
+        "Y": 2555337,
+        "決標金額": "1320000",
+        "施工廠商": "兆均土木包工業",
+        "監造廠商": "丞信工程顧問有限公司",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NTM3Mzk1OTg=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.38884602977475,
+          23.098641026503582
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "111025-宏佳騰公司旁農路改善工程(第二期)",
+        "完工日期": "待補充",
+        "X": 182989,
+        "Y": 2554767,
+        "決標金額": "1260000",
+        "施工廠商": "鑫旺土木包工業",
+        "監造廠商": "丞信工程顧問有限公司",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NTM3MjMzNDM=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.34587184091983,
+          23.093321587404013
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "111023-牛稠埔段305-18地號農田排水改善工程",
+        "完工日期": "待補充",
+        "X": 187317,
+        "Y": 2554549,
+        "決標金額": "1225000",
+        "施工廠商": "兆均土木包工業",
+        "監造廠商": "丞信工程顧問有限公司",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NTM3MDQ5MjA=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.3881266192571,
+          23.0915223875085
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "111019-牛稠埔188-15地號旁農路邊坡側溝改善工程",
+        "完工日期": "待補充",
+        "X": 186793,
+        "Y": 2554934,
+        "決標金額": "1300000",
+        "施工廠商": "湧鑫土木包工有限公司",
+        "監造廠商": "榮承發工程顧問有限公司",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NTM3MDIwNDQ=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.38299600402493,
+          23.09497907552742
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "111021-南洲里明南段637地號農路排水改善工程",
+        "完工日期": "待補充",
+        "X": 183248,
+        "Y": 2555475,
+        "決標金額": "826508",
+        "施工廠商": "華威土木工程行",
+        "監造廠商": "昇泰工程顧問有限公司",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NTM2ODg3NzQ=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.34836911038386,
+          23.099725308852843
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "111020-水管農路往新市末段改善工程",
+        "完工日期": "待補充",
+        "X": 183079,
+        "Y": 2554053,
+        "決標金額": "413000",
+        "施工廠商": "東奕土木包工業",
+        "監造廠商": "丞信工程顧問有限公司",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NTM2ODc4Mjg=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.3467814946107,
+          23.08687777273723
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "111018-山上里山上國中旁道路排水溝改善工程",
+        "完工日期": "待補充",
+        "X": 184132,
+        "Y": 2555884,
+        "決標金額": "688000",
+        "施工廠商": "金逸土木工程有限公司",
+        "監造廠商": "昇泰工程顧問有限公司",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NTM2ODIzNTU=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.35698068633911,
+          23.103453983310033
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "111007-南洲里社區道路路面改善工程",
+        "完工日期": "待補充",
+        "X": 183729,
+        "Y": 2555826,
+        "決標金額": "778000",
+        "施工廠商": "金定土木包工業",
+        "監造廠商": "榮承發工程顧問有限公司",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NTM2NDgyNDk=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.35304920487832,
+          23.10291416554356
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "111007-南洲里社區道路路面改善工程",
+        "完工日期": "待補充",
+        "X": 183761,
+        "Y": 2555871,
+        "決標金額": "778000",
+        "施工廠商": "金定土木包工業",
+        "監造廠商": "榮承發工程顧問有限公司",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NTM2NDgyNDk=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.35335963450747,
+          23.103321797411407
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "案件編號": "111007-南洲里社區道路路面改善工程",
+        "完工日期": "待補充",
+        "X": 183929,
+        "Y": 2555806,
+        "決標金額": "778000",
+        "施工廠商": "金定土木包工業",
+        "監造廠商": "榮承發工程顧問有限公司",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NTM2NDgyNDk=",
+        "備註": ""
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.35500241170143,
+          23.10274155457479
+        ]
+      }
+    }
+  ]
+}

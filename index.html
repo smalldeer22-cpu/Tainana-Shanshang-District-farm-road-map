@@ -189,7 +189,7 @@
   .info-val { color: #222; word-break: break-all; flex: 1; }
   .btn-group-popup { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
   
-  /* 修改：Popup 按鈕改為黃底黑字，工程風格 */
+  /* Popup 按鈕：黃底黑字 */
   .popup-btn { 
       display: flex; 
       align-items: center; 
@@ -216,6 +216,20 @@
 
   .measure-label { background: rgba(255,255,255,0.9); border: 1px solid #333; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 12px; white-space: nowrap; display: flex; align-items: center; gap: 5px; }
   .measure-close-btn { color: red; cursor: pointer; font-weight: bold; padding: 0 4px; }
+
+  /* 統計區塊雙欄樣式 */
+  .stats-columns { display: flex; gap: 8px; margin-top: 5px; }
+  .stats-col { flex: 1; padding: 8px; border-radius: 6px; text-align: center; }
+  .col-general { background: #e3f2fd; border: 1px solid #bbdefb; } /* 淡藍 */
+  .col-emergency { background: #ffebee; border: 1px solid #ffcdd2; } /* 淡紅 */
+  .stats-label { font-size: 12px; color: #555; margin-bottom: 4px; font-weight: bold; }
+  .stats-header { font-size: 13px; font-weight: bold; margin-bottom: 6px; padding-bottom: 4px; border-bottom: 1px dashed rgba(0,0,0,0.1); display:block; }
+  .col-general .stats-header { color: #004080; }
+  .col-emergency .stats-header { color: #d32f2f; }
+  .stats-val-count { font-size: 15px; font-weight: bold; color: #333; display: block; margin-bottom: 2px; }
+  .stats-val-amount { font-size: 14px; font-weight: bold; display: block; }
+  .col-general .stats-val-amount { color: #004080; }
+  .col-emergency .stats-val-amount { color: #d32f2f; }
 
   #floatingCoords { position:absolute; pointer-events:none; background:rgba(255,255,255,0.9); border:1px solid #ccc; border-radius:4px; padding:4px 8px; font-size:11px; display:none; z-index:1300; bottom: 10px; right: 10px; }
 
@@ -307,6 +321,14 @@
       </div>
       <div class="card-section">
           <div class="card-title"><i class="fas fa-search-plus"></i> 案件進階搜尋</div>
+          
+          <!-- 新增：依里別快篩 -->
+          <div class="search-block-label"><i class="fas fa-map-marked-alt"></i> 依里別快篩</div>
+          <select id="villageSelect" style="margin-bottom:10px;">
+              <option value="">-- 請選擇行政區 (載入中...) --</option>
+          </select>
+          <div style="text-align:center; font-size:12px; color:#999; margin:5px 0;">- 或 -</div>
+          
           <div class="search-block-label"><i class="fas fa-filter"></i> 依廠商快篩</div>
           <select id="contractorSelect" style="margin-bottom:10px;"><option value="">(讀取系統資料中...)</option></select>
           <div style="text-align:center; font-size:12px; color:#999; margin:5px 0;">- 或 -</div>
@@ -347,6 +369,37 @@
               </div>
           </div>
       </div>
+
+      <!-- 新增：里別維修統計區塊 -->
+      <div class="card-section">
+          <div class="card-title"><i class="fas fa-calculator"></i> 里別維修統計</div>
+          <div class="small" style="margin-bottom:5px; color:#666;">系統將自動排除同案件重複計算</div>
+          <select id="statsVillageSelect" style="margin-bottom:10px;">
+              <option value="">(讀取中...)</option>
+          </select>
+          <!-- 統計結果儀表板 (雙欄) -->
+          <div id="statsResult" style="display:none;">
+              <div class="stats-columns">
+                  <!-- 左欄：一般工程 -->
+                  <div class="stats-col col-general">
+                      <span class="stats-header">一般工程</span>
+                      <span class="stats-label">案件數量</span>
+                      <span id="statsGenCount" class="stats-val-count">0 件</span>
+                      <span class="stats-label">總投入金額</span>
+                      <span id="statsGenAmount" class="stats-val-amount">$ 0</span>
+                  </div>
+                  <!-- 右欄：搶險搶修 -->
+                  <div class="stats-col col-emergency">
+                      <span class="stats-header">搶險搶修</span>
+                      <span class="stats-label">案件數量</span>
+                      <span id="statsEmgCount" class="stats-val-count">0 件</span>
+                      <span class="stats-label">總投入金額</span>
+                      <span id="statsEmgAmount" class="stats-val-amount">$ 0</span>
+                  </div>
+              </div>
+          </div>
+      </div>
+
       <div style="text-align:center; color:#999; font-size:12px; margin-top:20px;">臺南市山上區公所</div>
   </div>
   
@@ -505,6 +558,30 @@ const VILLAGE_COLORS = {
 
 fetch('t22.json').then(r => r.json()).then(topology => {
     villageGeoJSON = topojson.feature(topology, topology.objects.t22);
+    
+    // 取得里名列表 (用於搜尋 & 統計)
+    const villageNames = villageGeoJSON.features.map(f => f.properties.VILLAGE || f.properties.VILLNAME).sort();
+    
+    // 1. 填入「搜尋分頁-依里別快篩」下拉選單
+    const vSelSearch = document.getElementById('villageSelect');
+    vSelSearch.innerHTML = '<option value="">-- 請選擇行政區 --</option>';
+    
+    // 2. 填入「工具分頁-里別維修統計」下拉選單
+    const vSelStats = document.getElementById('statsVillageSelect');
+    vSelStats.innerHTML = '<option value="">-- 請選擇行政區 --</option>';
+
+    villageNames.forEach(v => {
+        // 搜尋選單
+        const opt1 = document.createElement('option');
+        opt1.value = v; opt1.textContent = v;
+        vSelSearch.appendChild(opt1);
+        
+        // 統計選單
+        const opt2 = document.createElement('option');
+        opt2.value = v; opt2.textContent = v;
+        vSelStats.appendChild(opt2);
+    });
+
     // 顯示里界線 (色塊 + 細虛線)
     const villageLayer = L.geoJSON(villageGeoJSON, {
         style: function(feature) {
@@ -554,6 +631,155 @@ function getVillageName(lat, lng) {
     }
     return "非山上區範圍";
 }
+
+/* 監聽：依里別快篩 (搜尋分頁) */
+document.getElementById('villageSelect').addEventListener('change', function() {
+    const selectedVillage = this.value;
+    const status = document.getElementById('searchStatus');
+    const clearBtn = document.getElementById('clearSearchBtn');
+    
+    // 清除其他搜尋欄位
+    document.getElementById('keywordInput').value = '';
+    document.getElementById('contractorSelect').value = '';
+    searchResultLayer.clearLayers();
+
+    if (!selectedVillage) {
+        status.innerText = '';
+        clearBtn.style.display = 'none';
+        return;
+    }
+
+    const villageFeature = villageGeoJSON.features.find(f => (f.properties.VILLAGE || f.properties.VILLNAME) === selectedVillage);
+    if (!villageFeature) return;
+
+    let count = 0;
+    
+    REPAIR_CONFIG.forEach(conf => {
+        const data = REPAIR_DATA_CACHE[conf.value];
+        if (!data || !data.features) return;
+        
+        data.features.forEach(f => {
+            try {
+                if (f.geometry.type !== 'Point') return;
+                if (turf.booleanPointInPolygon(turf.point(f.geometry.coordinates), villageFeature)) {
+                    const [lng, lat] = f.geometry.coordinates;
+                    const ll = L.latLng(lat, lng);
+                    L.circleMarker(ll, { radius: 18, fillColor: '#ffd700', color: '#ff8c00', weight: 2, fillOpacity: 0.6 }).addTo(searchResultLayer);
+                    const marker = L.circleMarker(ll, { radius: 6, fillColor: '#d32f2f', color: '#fff', weight: 1, fillOpacity: 1 }).addTo(searchResultLayer);
+                    marker.feature = f;
+                    marker.bindPopup(createPopup({ fileName: conf.label, props: f.properties, lat, lng, dist: distToRoad(ll, roadsLayer) }), { className: 'custom-popup' });
+                    count++;
+                }
+            } catch (e) {}
+        });
+    });
+
+    if (count > 0) {
+        const bounds = L.geoJSON(villageFeature).getBounds();
+        map.fitBounds(bounds);
+        if(window.innerWidth <= 768) document.body.classList.remove('sidebar-open');
+        status.innerHTML = `${selectedVillage} 範圍內找到 <b style="color:#d32f2f">${count}</b> 筆`;
+        clearBtn.style.display = 'block';
+    } else {
+        status.innerHTML = '<span style="color:red">此里範圍內尚無案件資料</span>';
+        map.fitBounds(L.geoJSON(villageFeature).getBounds());
+    }
+    if(clusterToggle.checked) setTimeout(calculateClusters, 100);
+});
+
+/* 新增監聽：里別維修統計 (工具分頁) - 雙欄 + 地圖連動 */
+document.getElementById('statsVillageSelect').addEventListener('change', function() {
+    const selectedVillage = this.value;
+    const statsResult = document.getElementById('statsResult');
+    
+    // 清除地圖舊點位
+    searchResultLayer.clearLayers();
+
+    if (!selectedVillage) {
+        statsResult.style.display = 'none';
+        return;
+    }
+
+    const villageFeature = villageGeoJSON.features.find(f => (f.properties.VILLAGE || f.properties.VILLNAME) === selectedVillage);
+    if (!villageFeature) return;
+
+    // 變數初始化：分左右兩欄
+    let genCount = 0, genAmount = 0;
+    let emgCount = 0, emgAmount = 0;
+    let genSet = new Set(), emgSet = new Set(); // 兩個獨立的去重 Set
+
+    REPAIR_CONFIG.forEach(conf => {
+        const data = REPAIR_DATA_CACHE[conf.value];
+        if (!data || !data.features) return;
+
+        // 判斷是否為「搶險搶修」案件
+        // 關鍵字：搶修, 災害, 緊急
+        const isEmergency = /搶修|災害|緊急/.test(conf.label);
+
+        data.features.forEach(f => {
+            try {
+                if (f.geometry.type !== 'Point') return;
+                
+                // 空間判斷：是否在該里
+                if (turf.booleanPointInPolygon(turf.point(f.geometry.coordinates), villageFeature)) {
+                    
+                    // --- 1. 地圖連動顯示 (畫黃色圓點) ---
+                    const [lng, lat] = f.geometry.coordinates;
+                    const ll = L.latLng(lat, lng);
+                    L.circleMarker(ll, { radius: 18, fillColor: '#ffd700', color: '#ff8c00', weight: 2, fillOpacity: 0.6 }).addTo(searchResultLayer);
+                    const marker = L.circleMarker(ll, { radius: 6, fillColor: '#d32f2f', color: '#fff', weight: 1, fillOpacity: 1 }).addTo(searchResultLayer);
+                    marker.feature = f;
+                    marker.bindPopup(createPopup({ fileName: conf.label, props: f.properties, lat, lng, dist: distToRoad(ll, roadsLayer) }), { className: 'custom-popup' });
+
+                    // --- 2. 統計運算 ---
+                    const props = f.properties;
+                    const caseNo = props['案件編號'];
+                    const amount = formatMoney(props['決標金額']);
+
+                    if (isEmergency) {
+                        // 右欄：搶險搶修
+                        if (caseNo && caseNo.trim() !== "") {
+                            if (!emgSet.has(caseNo)) {
+                                emgSet.add(caseNo);
+                                emgCount++;
+                                emgAmount += amount;
+                            }
+                        } else {
+                            emgCount++;
+                            emgAmount += amount;
+                        }
+                    } else {
+                        // 左欄：一般工程
+                        if (caseNo && caseNo.trim() !== "") {
+                            if (!genSet.has(caseNo)) {
+                                genSet.add(caseNo);
+                                genCount++;
+                                genAmount += amount;
+                            }
+                        } else {
+                            genCount++;
+                            genAmount += amount;
+                        }
+                    }
+                }
+            } catch (e) {}
+        });
+    });
+
+    // --- 3. 地圖自動縮放 ---
+    const bounds = L.geoJSON(villageFeature).getBounds();
+    map.fitBounds(bounds);
+    if(window.innerWidth <= 768) document.body.classList.remove('sidebar-open');
+
+    // 顯示結果到雙欄
+    document.getElementById('statsGenCount').innerText = genCount + " 件";
+    document.getElementById('statsGenAmount').innerText = "$ " + genAmount.toLocaleString();
+    
+    document.getElementById('statsEmgCount').innerText = emgCount + " 件";
+    document.getElementById('statsEmgAmount').innerText = "$ " + emgAmount.toLocaleString();
+
+    statsResult.style.display = 'block';
+});
 
 fetch('farmroads.geojson').then(r=>r.json()).then(data=>{
     roadsLayer = L.geoJSON(data, {
@@ -777,7 +1003,7 @@ async function preloadAllDataForContractors() {
     const sortedC = Array.from(ALL_CONTRACTORS).sort();
     cSel.innerHTML = '<option value="">-- 請選擇廠商 (' + sortedC.length + ') --</option>' + sortedC.map(c => `<option value="${c}">${c}</option>`).join('');
     cSel.addEventListener('change', function() {
-        if(this.value) { document.getElementById('keywordInput').value=''; performSearch(p=>p['施工廠商']?.trim()===this.value, `廠商：${this.value}`); }
+        if(this.value) { document.getElementById('keywordInput').value=''; document.getElementById('villageSelect').value=''; performSearch(p=>p['施工廠商']?.trim()===this.value, `廠商：${this.value}`); }
         else clearSearchResults();
     });
 }
@@ -821,6 +1047,7 @@ document.getElementById('searchBtn').addEventListener('click', () => {
     const kw = document.getElementById('keywordInput').value.trim().toLowerCase();
     if(!kw) return alert('請輸入關鍵字');
     document.getElementById('contractorSelect').value = '';
+    document.getElementById('villageSelect').value = '';
     performSearch(p => Object.values(p).join(' ').toLowerCase().includes(kw), kw);
 });
 
@@ -829,6 +1056,7 @@ function clearSearchResults() {
     searchResultLayer.clearLayers();
     document.getElementById('keywordInput').value = '';
     document.getElementById('contractorSelect').value = '';
+    document.getElementById('villageSelect').value = '';
     document.getElementById('searchStatus').innerText = '';
     document.getElementById('clearSearchBtn').style.display = 'none';
 }
@@ -1093,6 +1321,7 @@ document.getElementById('clearRepairBtn').addEventListener('click', () => {
     searchResultLayer.clearLayers();
     document.getElementById('keywordInput').value = '';
     document.getElementById('contractorSelect').value = '';
+    document.getElementById('villageSelect').value = '';
     document.getElementById('searchStatus').innerText = '';
     document.getElementById('clearSearchBtn').style.display = 'none';
     pointLayer.clearLayers();

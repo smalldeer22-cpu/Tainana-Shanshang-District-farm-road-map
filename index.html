@@ -144,9 +144,9 @@
       display: flex; 
       flex-direction: column; 
       transform: translateY(100%); 
-      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), height 0.3s ease; /* 移除 left 的 transition 以優化手機效能 */
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), height 0.3s ease; 
       border-top: 1px solid #e0e0e0; 
-      overflow: hidden; /* 確保內容不會溢出 */
+      overflow: hidden; 
   }
   body.collapsed #bottomPanel { left: 0; } 
   #bottomPanel.open { transform: translateY(0); }
@@ -364,7 +364,7 @@
           <select id="contractorSelect" style="margin-bottom:10px;"><option value="">(讀取系統資料中...)</option></select>
           <div style="text-align:center; font-size:12px; color:#999; margin:5px 0;">- 或 -</div>
           <div class="search-block-label"><i class="fas fa-keyboard"></i> 關鍵字搜尋</div>
-          <input type="text" id="keywordInput" placeholder="例如： 案件名稱 廠商名稱">
+          <input type="text" id="keywordInput" placeholder="例如：案件編號(113001) 案件名稱 廠商名稱">
           <button id="searchBtn" class="primary"><i class="fas fa-search"></i> 開始搜尋</button>
           <button id="clearSearchBtn" class="secondary" style="display:none; background:#ffebee; border-color:#ffcdd2; color:#d32f2f;"><i class="fas fa-times"></i> 清除結果</button>
           <div id="searchStatus" class="small" style="margin-top:8px; color:#004080; font-weight:bold;"></div>
@@ -385,12 +385,12 @@
       <div class="card-section">
           <div class="card-title"><i class="fas fa-home"></i> 門牌查詢</div>
           <a href="https://addressrs.moi.gov.tw/address/index.cfm?city_id=67000" target="_blank" class="popup-btn" style="background:#28a745; color:white; border:none; width:100%; box-sizing:border-box; text-align:center; display:block; padding:10px;">
-              <i class="fas fa-map-marked-alt"></i> 臺南市門牌電子地圖查詢系統
+              <i class="fas fa-map-marked-alt"></i> 臺南市門牌電子地圖查詢系統 (內政部版)
           </a>
       </div>
       
       <div class="card-section">
-          <div class="card-title"><i class="fas fa-chart-network"></i> 空間群聚分析</div>
+          <div class="card-title"><i class="fas fa-chart-network"></i> 空間群聚分析 (戰情模式)</div>
           <label class="toggle-switch"><input type="checkbox" id="clusterToggle"> 啟動熱區分析</label>
           <div class="analysis-control">
               <div style="font-size:12px; color:#666;">群聚閾值 (半徑)：</div>
@@ -448,7 +448,7 @@
       <div class="card-section">
           <div class="card-title"><i class="fas fa-home"></i> 門牌查詢</div>
           <a href="https://addressrs.moi.gov.tw/address/index.cfm?city_id=67000" target="_blank" class="popup-btn" style="background:#28a745; color:white; border:none; width:100%; box-sizing:border-box; text-align:center; display:block; padding:10px;">
-              <i class="fas fa-map-marked-alt"></i> 臺南市門牌電子地圖查詢系統
+              <i class="fas fa-map-marked-alt"></i> 臺南市門牌電子地圖查詢系統 (內政部版)
           </a>
       </div>
 
@@ -1169,7 +1169,7 @@ map.on('contextmenu', (e) => {
         <div style="font-size:13px;">TWD97: ${twd.x}, ${twd.y}</div>
         <div style="font-size:13px;">WGS84: ${latlng.lat.toFixed(6)}, ${latlng.lng.toFixed(6)}</div>
         <div style="font-size:13px;">行政區: ${villageName}</div>
-        <div style="font-size:12px; color:#666; margin-top:5px;">(再點右鍵開啟功能選單;手機版請長按)</div>
+        <div style="font-size:12px; color:#666; margin-top:5px;">(再點右鍵開啟功能選單)</div>
     `;
 
     // 加到 pointLayer
@@ -1193,11 +1193,11 @@ function openCtxMenu(nativeEvent) {
 
 // === 右鍵選單點擊事件修正與新增地籍查詢 ===
 document.getElementById('ctxStreetView').onclick = () => { 
-    if(clickedLatLng) window.open(`https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=$${clickedLatLng.lat},${clickedLatLng.lng}`, '_blank'); 
+    if(clickedLatLng) window.open(`https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${clickedLatLng.lat},${clickedLatLng.lng}`, '_blank'); 
     ctxMenu.style.display='none'; 
 }
 document.getElementById('ctxGoogleNav').onclick = () => { 
-    if(clickedLatLng) window.open(`https://www.google.com/maps/dir/?api=1&destination=$${clickedLatLng.lat},${clickedLatLng.lng}`, '_blank'); 
+    if(clickedLatLng) window.open(`https://www.google.com/maps/dir/?api=1&destination=${clickedLatLng.lat},${clickedLatLng.lng}`, '_blank'); 
     ctxMenu.style.display='none'; 
 }
 document.getElementById('ctxCadastral').onclick = () => { 

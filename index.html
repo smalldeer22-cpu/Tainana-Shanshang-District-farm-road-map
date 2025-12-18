@@ -23,13 +23,12 @@
     --panel-height-min: 50px;
   }
   
-  /* 修正：使用 100dvh 解決手機瀏覽器網址列伸縮導致的高度問題 */
   body { 
       margin:0; 
       font-family:"Microsoft JhengHei", "Heiti TC", sans-serif; 
       display:flex; 
-      height: 100vh; /* Fallback */
-      height: 100dvh; /* Dynamic Viewport Height */
+      height: 100vh; 
+      height: 100dvh; 
       overflow:hidden; 
       position: relative; 
       background: var(--bg-light); 
@@ -163,9 +162,18 @@
   body.collapsed #bottomPanel { left: 0; } 
   #bottomPanel.open { transform: translateY(0); }
   
-  /* === 修正重點：手機版底部面板優化 === */
-  
-  /* 標題列：高度彈性，允許內容撐開 */
+  /* 縮小狀態：高度自動適應標題 (藍色框切齊) */
+  #bottomPanel.minimized { 
+      height: auto !important; 
+      transform: translateY(0) !important; 
+  }
+  /* 縮小時隱藏內容，確保藍色框包覆完整 */
+  #bottomPanel.minimized #timelineFilterBar,
+  #bottomPanel.minimized #timelineContainer {
+      display: none !important;
+  }
+
+  /* 底部面板標題列 - 自動高度 */
   #bottomPanelHeader { 
       padding: 8px 20px; 
       min-height: 50px; 
@@ -178,31 +186,34 @@
       flex-shrink: 0; 
   }
   
-  /* 統計文字：允許自動換行，確保資訊完整顯示 */
+  .header-left { display: flex; flex-direction: column; gap: 2px; justify-content: center; overflow: hidden; }
+  #panelTitle { font-size: 15px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  
+  /* 統計文字預設樣式 (電腦版) */
   #timelineStats { 
       font-size: 13px; 
       color: #ffeb3b; 
       font-weight: normal; 
       opacity: 1; 
       white-space: normal; /* 允許換行 */
-      line-height: 1.5;    /* 增加行距 */
+      line-height: 1.5;
       margin-top: 2px;
   }
-
-  /* 縮小狀態：高度自動適應標題 (藍色框切齊底部) */
-  #bottomPanel.minimized { 
-      height: auto !important; 
-      transform: translateY(0) !important; 
-  }
-  /* 縮小時隱藏內容，確保藍色框包覆完整 */
-  #bottomPanel.minimized #timelineFilterBar,
-  #bottomPanel.minimized #timelineContainer {
-      display: none !important;
-  }
-
-  .header-left { display: flex; flex-direction: column; gap: 2px; justify-content: center; overflow: hidden; }
-  #panelTitle { font-size: 15px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   
+  /* === 修正重點：手機版強制垂直三行顯示 === */
+  @media (max-width: 768px) {
+      #timelineStats {
+          display: flex;
+          flex-direction: column; /* 強制垂直排列 */
+          align-items: flex-start; /* 靠左對齊 */
+          line-height: 1.6;        /* 增加行距提升易讀性 */
+      }
+      /* 手機版隱藏分隔線符號 */
+      .stat-divider {
+          display: none;
+      }
+  }
+
   .header-right { display: flex; gap: 15px; align-items: center; flex-shrink: 0;}
   .control-btn { background:none; border:none; color:#fff; font-size:16px; cursor:pointer; padding: 5px; transition: color 0.2s; }
   .control-btn:hover { color: #ffeb3b; }
@@ -227,7 +238,10 @@
   .timeline-select:focus { outline: none; border-color: var(--primary-color); }
 
   #timelineContainer { flex: 1; overflow-x: auto; padding: 15px 20px; display: flex; align-items: flex-start; gap: 0; }
-  .h-item { width: 130px; text-align: center; cursor: pointer; position: relative; transition: transform 0.2s; }
+  
+  /* === 修正重點：增加時間軸項目寬度，解決日期重疊 === */
+  .h-item { width: 160px; text-align: center; cursor: pointer; position: relative; transition: transform 0.2s; }
+  
   .h-item:hover { transform: translateY(-5px); }
   .h-date { font-size: 13px; font-weight: bold; color: #333; margin-bottom: 8px; }
   .h-line-container { position: relative; height: 24px; display: flex; align-items: center; justify-content: center; }
@@ -2202,13 +2216,12 @@ function renderTimeline(matches) {
         }
     });
     
-    // --- 顯示統計 HTML ---
-    // 使用 span 帶入不同顏色，並確保在手機上過長時可橫向捲動
+    // --- 顯示統計 HTML (加入 .stat-divider 讓手機隱藏) ---
     const totalHtml = `<span style="color:#ffeb3b; font-weight:bold;">總計 $${totalCost.toLocaleString()} (${matches.length}次)</span>`;
     const genHtml = `<span style="color:#b3e5fc;">一般 $${genCost.toLocaleString()} (${genCount}次)</span>`;
     const emgHtml = `<span style="color:#ffcdd2;">搶修 $${emgCost.toLocaleString()} (${emgCount}次)</span>`;
     
-    statsDiv.innerHTML = `${totalHtml} <span style="opacity:0.5; margin:0 5px;">|</span> ${genHtml} <span style="opacity:0.5; margin:0 5px;">|</span> ${emgHtml}`;
+    statsDiv.innerHTML = `${totalHtml} <span class="stat-divider" style="opacity:0.5; margin:0 5px;">|</span> ${genHtml} <span class="stat-divider" style="opacity:0.5; margin:0 5px;">|</span> ${emgHtml}`;
     
     cont.innerHTML = '';
     matches.forEach((m, i) => {

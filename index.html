@@ -162,21 +162,47 @@
   }
   body.collapsed #bottomPanel { left: 0; } 
   #bottomPanel.open { transform: translateY(0); }
-  #bottomPanel.minimized { height: 50px !important; transform: translateY(0) !important; }
+  
+  /* === 修正重點：手機版底部面板優化 === */
+  
+  /* 標題列：高度彈性，允許內容撐開 */
+  #bottomPanelHeader { 
+      padding: 8px 20px; 
+      min-height: 50px; 
+      height: auto; 
+      background: var(--primary-color); 
+      color: white; 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      flex-shrink: 0; 
+  }
+  
+  /* 統計文字：允許自動換行，確保資訊完整顯示 */
+  #timelineStats { 
+      font-size: 13px; 
+      color: #ffeb3b; 
+      font-weight: normal; 
+      opacity: 1; 
+      white-space: normal; /* 允許換行 */
+      line-height: 1.5;    /* 增加行距 */
+      margin-top: 2px;
+  }
 
-  #bottomPanelHeader { padding: 0 20px; height: var(--panel-height-min); background: var(--primary-color); color: white; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+  /* 縮小狀態：高度自動適應標題 (藍色框切齊底部) */
+  #bottomPanel.minimized { 
+      height: auto !important; 
+      transform: translateY(0) !important; 
+  }
+  /* 縮小時隱藏內容，確保藍色框包覆完整 */
+  #bottomPanel.minimized #timelineFilterBar,
+  #bottomPanel.minimized #timelineContainer {
+      display: none !important;
+  }
+
   .header-left { display: flex; flex-direction: column; gap: 2px; justify-content: center; overflow: hidden; }
   #panelTitle { font-size: 15px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   
-  /* 修正：時間軸統計資訊，支援橫向捲動，避免手機版爆版 */
-  #timelineStats { 
-      font-size: 13px; color: #ffeb3b; font-weight: normal; opacity: 1; 
-      white-space: nowrap; overflow-x: auto; max-width: 100%; 
-      -webkit-overflow-scrolling: touch; /* iOS 流暢滑動 */
-      scrollbar-width: none; /* Firefox 隱藏捲軸 */
-  }
-  #timelineStats::-webkit-scrollbar { display: none; /* Chrome/Safari 隱藏捲軸 */ }
-
   .header-right { display: flex; gap: 15px; align-items: center; flex-shrink: 0;}
   .control-btn { background:none; border:none; color:#fff; font-size:16px; cursor:pointer; padding: 5px; transition: color 0.2s; }
   .control-btn:hover { color: #ffeb3b; }
@@ -1016,7 +1042,7 @@ document.getElementById('dupCheckBtn').addEventListener('click', function() {
             // 排序 (距離近優先)
             matches.sort((a, b) => parseFloat(a.dist) - parseFloat(b.dist));
             
-            let html = `<div style="color:#d32f2f; font-weight:bold; margin-bottom:5px;"⚠️ 發現 ${matches.length} 筆近 3 年紀錄：</div>`;
+            let html = `<div style="color:#d32f2f; font-weight:bold; margin-bottom:5px;">⚠️ 發現 ${matches.length} 筆近 3 年紀錄：</div>`;
             
             matches.forEach((m, index) => {
                 // 標示出舊案件位置 (黃色圓點，可點擊)

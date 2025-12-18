@@ -8,6 +8,8 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
+<!-- 新增：定位套件 CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol/dist/L.Control.Locate.min.css" />
 
 <style>
   /* === 1. 全局設定 === */
@@ -64,8 +66,22 @@
   .tab-pane.active { display: block; }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
+  /* 卡片區塊樣式 */
   .card-section { background: #fff; border-radius: 12px; padding: 12px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: 1px solid #f0f0f0; }
   .card-title { font-size: 14px; font-weight: bold; color: var(--primary-color); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 2px solid #f0f0f0; }
+  
+  /* 年度摺疊選單 */
+  .year-group { margin-bottom: 8px; border: 1px solid #eee; border-radius: 6px; overflow: hidden; }
+  .year-header { background: #f8fafc; padding: 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 13px; color: #475569; user-select: none; }
+  .year-header:hover { background: #e2e8f0; }
+  .year-content { display: none; padding: 8px 12px; background: #fff; border-top: 1px solid #eee; }
+  .year-group.open .year-content { display: block; }
+  .year-group.open .toggle-icon { transform: rotate(90deg); }
+  .toggle-icon { display:inline-block; transition: transform 0.2s; width:12px; margin-right:5px;}
+  .year-select-all { font-size: 12px; color: var(--primary-color); cursor: pointer; }
+  .checkbox-item { margin-bottom: 6px; display: flex; align-items: center; gap: 6px; font-size: 13px; }
+  .checkbox-item input { margin: 0; accent-color: var(--primary-color); }
+
   select, textarea, input[type="text"] { width: 100%; padding: 10px; margin-top: 5px; font-size: 14px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
   
   button.primary { width: 100%; padding: 10px; margin-top: 8px; cursor: pointer; border-radius: 6px; border: none; background: var(--primary-color); color: #fff; font-size: 14px; font-weight: bold; }
@@ -97,6 +113,46 @@
   .float-btn::after { content: attr(data-title); position: absolute; right: 50px; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.7); color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 12px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
   .float-btn:hover::after { opacity: 1; }
 
+  /* === 新增：覆寫定位套件樣式以符合原版設計 === */
+  .leaflet-control-locate {
+      border: none !important;
+      box-shadow: none !important;
+      margin: 0 !important;
+  }
+  .leaflet-control-locate a {
+      width: 40px !important;
+      height: 40px !important;
+      border-radius: 50% !important;
+      background: #fff !important;
+      color: #444 !important;
+      font-size: 16px !important;
+      line-height: 40px !important; /* 垂直置中 */
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
+      cursor: pointer !important;
+  }
+  .leaflet-control-locate a:hover {
+      background: #f0f0f0 !important;
+      color: #004080 !important;
+      transform: scale(1.1);
+  }
+  /* 定位啟用時的樣式 (藍色) */
+  .leaflet-control-locate.active a {
+      color: #2074b6 !important;
+      background: #fff !important;
+  }
+  /* 跟隨模式時的樣式 (橘色，類似 Google Maps 鎖定) */
+  .leaflet-control-locate.following a {
+      color: #e65100 !important;
+      border: 2px solid #e65100 !important;
+  }
+  /* 移除套件預設的 span icon 字體，因為我們用 FontAwesome */
+  .leaflet-control-locate a .leaflet-control-locate-location-arrow {
+      display: none;
+  }
+
   /* 聚合圖標 */
   .marker-cluster-custom { background-color: rgba(46, 204, 113, 0.6); border-radius: 50%; }
   .marker-cluster-custom div { width: 30px; height: 30px; margin-left: 5px; margin-top: 5px; text-align: center; border-radius: 50%; color: white; font-weight: bold; background-color: rgba(39, 174, 96, 0.9); line-height: 30px; font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
@@ -119,19 +175,7 @@
   input[type=range].custom-range::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: var(--primary-color); cursor: pointer; margin-top: -6px; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
   input[type=range].custom-range::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: #ddd; border-radius: 2px; }
 
-  /* === 5. 年度摺疊選單 === */
-  .year-group { margin-bottom: 8px; border: 1px solid #eee; border-radius: 6px; overflow: hidden; }
-  .year-header { background: #f8fafc; padding: 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 13px; color: #475569; user-select: none; }
-  .year-header:hover { background: #e2e8f0; }
-  .year-content { display: none; padding: 8px 12px; background: #fff; border-top: 1px solid #eee; }
-  .year-group.open .year-content { display: block; }
-  .year-group.open .toggle-icon { transform: rotate(90deg); }
-  .toggle-icon { display:inline-block; transition: transform 0.2s; width:12px; margin-right:5px;}
-  .year-select-all { font-size: 12px; color: var(--primary-color); cursor: pointer; }
-  .checkbox-item { margin-bottom: 6px; display: flex; align-items: center; gap: 6px; font-size: 13px; }
-  .checkbox-item input { margin: 0; accent-color: var(--primary-color); }
-
-  /* === 6. 底部時間軸面板 (修正縮放問題) === */
+  /* === 6. 底部時間軸面板 === */
   #bottomPanel { 
       position: absolute; 
       bottom: 0; 
@@ -150,12 +194,7 @@
   }
   body.collapsed #bottomPanel { left: 0; } 
   #bottomPanel.open { transform: translateY(0); }
-  
-  /* 縮小狀態：強制高度 50px 且位置固定 */
-  #bottomPanel.minimized { 
-      height: 50px !important; 
-      transform: translateY(0) !important;
-  }
+  #bottomPanel.minimized { height: 50px !important; transform: translateY(0) !important; }
 
   #bottomPanelHeader { padding: 0 20px; height: var(--panel-height-min); background: var(--primary-color); color: white; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
   .header-left { display: flex; flex-direction: column; gap: 2px; justify-content: center; }
@@ -192,16 +231,48 @@
   .h-line-container::before { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 3px; background: #ddd; z-index: 0; }
   .h-item.alert-right .h-line-container::after { content: ''; position: absolute; left: 50%; right: -50%; top: 50%; height: 4px; background: repeating-linear-gradient(45deg, #d32f2f, #d32f2f 5px, #ffcdd2 5px, #ffcdd2 10px); z-index: 0; animation: alertPulse 1.5s infinite; }
   @keyframes alertPulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
-  .h-dot { background: #fff; border: 4px solid var(--primary-color); border-radius: 50%; z-index: 1; position: relative; transition: all 0.2s; }
-  .h-item:hover .h-dot { transform: scale(1.4); border-color: var(--accent-color); }
-  .dot-sm { width: 12px; height: 12px; border-width: 3px; }
-  .dot-md { width: 16px; height: 16px; border-width: 4px; }
-  .dot-lg { width: 22px; height: 22px; border-width: 5px; box-shadow: 0 0 0 3px rgba(0, 64, 128, 0.2); }
   
-  .h-icon { margin-top: 8px; font-size: 24px; display: flex; justify-content: center; }
-  /* 強制圖示 */
-  .icon-urgent::before { content: "\f0ad"; font-family: "Font Awesome 6 Free"; font-weight: 900; color: #d32f2f; } 
-  .icon-normal::before { content: "\f111"; font-family: "Font Awesome 6 Free"; font-weight: 900; color: #1976d2; font-size: 18px; } 
+  /* 時間軸圓點 - 實心美化版 */
+  .h-dot { 
+      background: var(--primary-color); /* 深藍實心 */
+      border: 2px solid #fff;           /* 白色光暈邊框 */
+      border-radius: 50%; 
+      z-index: 1; 
+      position: relative; 
+      transition: all 0.2s; 
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3); /* 立體陰影 */
+  }
+  .h-item:hover .h-dot { 
+      transform: scale(1.3); 
+      background: var(--accent-color); /* 懸停變橘黃 */
+      border-color: #fff;
+  }
+  .dot-sm { width: 12px; height: 12px; }
+  .dot-md { width: 16px; height: 16px; }
+  .dot-lg { width: 22px; height: 22px; box-shadow: 0 0 0 3px rgba(0, 64, 128, 0.3); /* 大額案件加外光暈 */ }
+  
+  /* 新增：文字標籤樣式 (取代圖示) */
+  .h-badge {
+      margin-top: 8px;
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 12px; /* 膠囊圓角 */
+      font-size: 12px;
+      font-weight: bold;
+      color: #fff;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      white-space: nowrap;
+      position: relative;
+      z-index: 2;
+  }
+  .badge-normal {
+      background-color: var(--primary-color); /* 藍底 */
+      border: 1px solid #fff;
+  }
+  .badge-urgent {
+      background-color: #d32f2f; /* 紅底 */
+      border: 1px solid #fff;
+  }
 
   /* === 7. 右鍵選單 === */
   #contextMenu { display: none; position: fixed; z-index: 5000; background: #fff; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); overflow: hidden; min-width: 160px; border: 1px solid #ddd; top: 0; left: 0; }
@@ -248,19 +319,95 @@
   .measure-label { background: rgba(255,255,255,0.9); border: 1px solid #333; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 12px; white-space: nowrap; display: flex; align-items: center; gap: 5px; }
   .measure-close-btn { color: red; cursor: pointer; font-weight: bold; padding: 0 4px; }
 
-  /* 統計區塊雙欄樣式 */
+  /* 統計區塊雙欄與列表樣式 */
   .stats-columns { display: flex; gap: 8px; margin-top: 5px; }
-  .stats-col { flex: 1; padding: 8px; border-radius: 6px; text-align: center; }
+  .stats-col { flex: 1; padding: 8px; border-radius: 6px; overflow: hidden; }
   .col-general { background: #e3f2fd; border: 1px solid #bbdefb; } /* 淡藍 */
   .col-emergency { background: #ffebee; border: 1px solid #ffcdd2; } /* 淡紅 */
-  .stats-label { font-size: 12px; color: #555; margin-bottom: 4px; font-weight: bold; }
-  .stats-header { font-size: 13px; font-weight: bold; margin-bottom: 6px; padding-bottom: 4px; border-bottom: 1px dashed rgba(0,0,0,0.1); display:block; }
+  
+  .stats-header { 
+      font-size: 14px; font-weight: bold; text-align: center; margin-bottom: 8px; 
+      padding-bottom: 5px; border-bottom: 2px solid rgba(0,0,0,0.1); 
+  }
   .col-general .stats-header { color: #004080; }
   .col-emergency .stats-header { color: #d32f2f; }
-  .stats-val-count { font-size: 15px; font-weight: bold; color: #333; display: block; margin-bottom: 2px; }
-  .stats-val-amount { font-size: 14px; font-weight: bold; display: block; }
-  .col-general .stats-val-amount { color: #004080; }
-  .col-emergency .stats-val-amount { color: #d32f2f; }
+
+  .stat-year-row { margin-bottom: 8px; border-bottom: 1px dashed rgba(0,0,0,0.1); padding-bottom: 6px; }
+  .stat-year-row:last-child { border-bottom: none; }
+  
+  .stat-year-title { 
+      font-size: 13px; font-weight: bold; color: #444; 
+      display: flex; justify-content: space-between; align-items: center;
+  }
+  .stat-percent-text { font-size: 11px; color: #777; background: rgba(255,255,255,0.6); padding: 1px 4px; border-radius: 3px; }
+  
+  .stat-data-row { font-size: 13px; margin-top: 3px; color: #222; font-weight: bold; }
+  
+  /* 微型進度條 */
+  .stat-bar-bg { background: rgba(0,0,0,0.1); height: 5px; border-radius: 3px; width: 100%; margin-top: 5px; overflow: hidden; }
+  .stat-bar-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
+  .col-general .stat-bar-fill { background-color: var(--primary-color); }
+  .col-emergency .stat-bar-fill { background-color: #d32f2f; }
+  
+  /* === 8. 案件通報全螢幕視窗 (預設隱藏) === */
+  #reportOverlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: #f8faff; z-index: 9999; 
+    display: none; /* 預設隱藏 */
+    flex-direction: column; font-family: "Microsoft JhengHei", sans-serif;
+  }
+  .report-header { background: var(--primary-color); color: white; padding: 15px; display:flex; justify-content:space-between; align-items:center; }
+  .report-body { flex: 1; padding: 15px; overflow-y: auto; }
+  
+  /* 三欄式資訊佈局 */
+  .report-grid { display: flex; gap: 15px; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+  .report-col { flex: 1; display: flex; flex-direction: column; gap: 8px; justify-content: flex-start; }
+  .report-item { font-size: 14px; color: #333; }
+  .report-label { font-weight: bold; color: #555; margin-right: 5px; }
+  .report-textarea { width: 100%; height: 100%; min-height: 60px; resize: none; border: 1px solid #ccc; border-radius: 4px; padding: 8px; font-size: 14px; box-sizing: border-box; }
+  
+  /* 手機響應式：變為垂直堆疊 */
+  @media (max-width: 768px) {
+      .report-grid { flex-direction: column; gap: 15px; }
+      .report-textarea { height: 80px; }
+  }
+  
+  .photo-upload-container { display: flex; gap: 10px; margin-top: 15px; height: 200px; }
+  .photo-box { 
+    flex: 1; border: 2px dashed #ccc; border-radius: 8px; 
+    display: flex; flex-direction: column; align-items: center; justify-content: center; 
+    background: #fff; position: relative; overflow: hidden;
+  }
+  .photo-box.has-image { border-style: solid; border-color: #666; }
+  .photo-box img { width: 100%; height: 100%; object-fit: cover; display: none; }
+  .add-photo-btn { font-size: 40px; color: #ccc; cursor: pointer; }
+  .delete-photo-btn {
+    width: 100%; background: #d32f2f; color: white; border: none; padding: 8px;
+    font-weight: bold; cursor: pointer; margin-top: 5px; border-radius: 4px;
+    display: none; 
+  }
+  
+  .report-footer { padding: 15px; display: flex; justify-content: space-between; gap: 15px; background: #fff; border-top: 1px solid #eee; }
+  .btn-cancel { flex: 1; padding: 12px; background: #7f8c8d; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; }
+  .btn-submit { flex: 1; padding: 12px; background: var(--accent-color); color: black; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; }
+
+  /* 檢核結果列表樣式 (新增功能用) */
+  .dup-check-item {
+      padding: 8px;
+      border-bottom: 1px solid #eee;
+      font-size: 13px;
+      cursor: pointer; /* 讓滑鼠變成手型 */
+      transition: background-color 0.2s;
+  }
+  .dup-check-item:hover {
+      background-color: #f0f7ff; /* 滑鼠移入變色 */
+  }
+  .dup-check-item:last-child { border-bottom: none; }
+  .dup-check-title { font-weight: bold; color: #333; margin-bottom: 2px; }
+  .dup-check-info { color: #666; display:flex; justify-content:space-between; }
+  .dup-tag { font-size: 11px; padding: 1px 4px; border-radius: 3px; color: #fff; margin-left: 5px; }
+  .tag-gen { background: var(--primary-color); }
+  .tag-emg { background: #d32f2f; }
 
   #floatingCoords { position:absolute; pointer-events:none; background:rgba(255,255,255,0.9); border:1px solid #ccc; border-radius:4px; padding:4px 8px; font-size:11px; display:none; z-index:1300; bottom: 10px; right: 10px; }
 
@@ -282,10 +429,70 @@
 <button id="toggleSidebarBtn" title="切換選單"><i class="fas fa-bars"></i></button>
 
 <div class="map-floating-controls">
-    <button class="float-btn" id="locateBtn" data-title="我的位置"><i class="fas fa-crosshairs"></i></button>
+    <!-- 原本的靜態定位按鈕已移除，改由 JS 動態插入「完美版」定位按鈕 -->
     <button class="float-btn" id="toggleMapBtn" data-title="切換衛星/地圖"><i class="fas fa-layer-group"></i></button>
     <button class="float-btn" id="toggleCadastralBtn" data-title="地籍圖開關"><i class="fas fa-map"></i></button>
     <button class="float-btn" id="toggleClusterControlBtn" data-title="點位聚合設定"><i class="fas fa-circle-nodes"></i></button>
+    <!-- 案件通報按鈕 -->
+    <button class="float-btn" id="openReportBtn" data-title="案件通報" style="color:#d32f2f;"><i class="fas fa-camera"></i></button>
+</div>
+
+<!-- 案件通報全螢幕視窗 (預設隱藏) -->
+<div id="reportOverlay">
+    <div class="report-header">
+        <div style="font-size:18px; font-weight:bold;"><i class="fas fa-camera"></i> 案件通報</div>
+        <button onclick="closeReport()" style="background:none; border:none; color:white; font-size:20px;"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="report-body">
+        
+        <!-- 三欄式資訊佈局 -->
+        <div class="report-grid">
+            <!-- 左欄：基本資訊 -->
+            <div class="report-col">
+                <div class="report-item"><span class="report-label">案件編號：</span><span id="reportCaseId">載入中...</span></div>
+                <div class="report-item"><span class="report-label">通報時間：</span><span id="reportTime"></span></div>
+            </div>
+            <!-- 中欄：座標資訊 -->
+            <div class="report-col">
+                <div class="report-item"><span class="report-label">TWD97：</span><span id="reportTwd97">定位中...</span></div>
+                <div class="report-item"><span class="report-label">WGS84：</span><span id="reportWgs84">定位中...</span></div>
+            </div>
+            <!-- 右欄：案情描述 -->
+            <div class="report-col">
+                <div class="report-item"><span class="report-label">簡述案情：</span></div>
+                <textarea id="reportDesc" class="report-textarea" placeholder="請描述損壞情形 (例如：路面坑洞、路燈不亮)"></textarea>
+            </div>
+        </div>
+        
+        <div class="photo-upload-container">
+            <!-- 左視窗 -->
+            <div style="flex:1; display:flex; flex-direction:column;">
+                <div class="photo-box" id="photoBox1" onclick="triggerCamera(1)">
+                    <div class="add-photo-btn">+</div>
+                    <img id="imgPreview1">
+                    <input type="file" id="fileInput1" accept="image/*" capture="camera" style="display:none;" onchange="previewImage(this, 1)">
+                </div>
+                <button class="delete-photo-btn" id="delBtn1" onclick="deletePhoto(1)">刪除</button>
+            </div>
+            
+            <!-- 右視窗 -->
+            <div style="flex:1; display:flex; flex-direction:column;">
+                <div class="photo-box" id="photoBox2" onclick="triggerCamera(2)">
+                    <div class="add-photo-btn">+</div>
+                    <img id="imgPreview2">
+                    <input type="file" id="fileInput2" accept="image/*" capture="camera" style="display:none;" onchange="previewImage(this, 2)">
+                </div>
+                <button class="delete-photo-btn" id="delBtn2" onclick="deletePhoto(2)">刪除</button>
+            </div>
+        </div>
+        <div style="margin-top:10px; font-size:12px; color:#666; text-align:center;">
+            請點擊「+」拍攝兩張不同角度的照片
+        </div>
+    </div>
+    <div class="report-footer">
+        <button class="btn-cancel" onclick="closeReport()">取消</button>
+        <button class="btn-submit" onclick="submitReport()">上傳通報</button>
+    </div>
 </div>
 
 <div id="contextMenu">
@@ -343,6 +550,32 @@
           <div id="repairCheckboxes" style="max-height:400px; overflow-y:auto;"></div>
           <button class="secondary" id="clearRepairBtn"><i class="fas fa-eraser"></i> 清除所有顯示</button>
       </div>
+
+      <!-- 里別維修統計 (升級版：分年度 + 佔比) -->
+      <div class="card-section">
+          <div class="card-title"><i class="fas fa-calculator"></i> 里別維修統計</div>
+          <div class="small" style="margin-bottom:5px; color:#666;">系統將自動排除同案件重複計算</div>
+          <select id="statsVillageSelect" style="margin-bottom:10px;">
+              <option value="">(讀取中...)</option>
+          </select>
+          
+          <div id="statsResult" style="display:none;">
+              <div class="stats-columns">
+                  <!-- 左欄：一般工程 (List) -->
+                  <div class="stats-col col-general">
+                      <div class="stats-header">一般工程</div>
+                      <div id="statsGenList"></div>
+                  </div>
+                  <!-- 右欄：搶險搶修 (List) -->
+                  <div class="stats-col col-emergency">
+                      <div class="stats-header">搶險搶修</div>
+                      <div id="statsEmgList"></div>
+                  </div>
+              </div>
+          </div>
+          <!-- 新增：清除按鈕 -->
+          <button class="secondary" id="clearStatsBtn" style="margin-top:10px;"><i class="fas fa-eraser"></i> 清除所有顯示</button>
+      </div>
   </div>
 
   <div id="tab-search" class="tab-content-container tab-pane">
@@ -364,7 +597,7 @@
           <select id="contractorSelect" style="margin-bottom:10px;"><option value="">(讀取系統資料中...)</option></select>
           <div style="text-align:center; font-size:12px; color:#999; margin:5px 0;">- 或 -</div>
           <div class="search-block-label"><i class="fas fa-keyboard"></i> 關鍵字搜尋</div>
-          <input type="text" id="keywordInput" placeholder="例如： 案件名稱 廠商名稱">
+          <input type="text" id="keywordInput" placeholder="例如：案件編號(113001) 案件名稱 廠商名稱">
           <button id="searchBtn" class="primary"><i class="fas fa-search"></i> 開始搜尋</button>
           <button id="clearSearchBtn" class="secondary" style="display:none; background:#ffebee; border-color:#ffcdd2; color:#d32f2f;"><i class="fas fa-times"></i> 清除結果</button>
           <div id="searchStatus" class="small" style="margin-top:8px; color:#004080; font-weight:bold;"></div>
@@ -385,12 +618,12 @@
       <div class="card-section">
           <div class="card-title"><i class="fas fa-home"></i> 門牌查詢</div>
           <a href="https://addressrs.moi.gov.tw/address/index.cfm?city_id=67000" target="_blank" class="popup-btn" style="background:#28a745; color:white; border:none; width:100%; box-sizing:border-box; text-align:center; display:block; padding:10px;">
-              <i class="fas fa-map-marked-alt"></i> 臺南市門牌電子地圖查詢系統
+              <i class="fas fa-map-marked-alt"></i> 臺南市門牌電子地圖查詢系統 (內政部版)
           </a>
       </div>
       
       <div class="card-section">
-          <div class="card-title"><i class="fas fa-chart-network"></i> 空間群聚分析</div>
+          <div class="card-title"><i class="fas fa-chart-network"></i> 空間群聚分析 (戰情模式)</div>
           <label class="toggle-switch"><input type="checkbox" id="clusterToggle"> 啟動熱區分析</label>
           <div class="analysis-control">
               <div style="font-size:12px; color:#666;">群聚閾值 (半徑)：</div>
@@ -401,34 +634,17 @@
           </div>
       </div>
 
-      <!-- 新增：里別維修統計區塊 -->
+      <!-- 新增功能：重複性案件檢核 (含清除按鈕與結果點擊) -->
       <div class="card-section">
-          <div class="card-title"><i class="fas fa-calculator"></i> 里別維修統計</div>
-          <div class="small" style="margin-bottom:5px; color:#666;">系統將自動排除同案件重複計算</div>
-          <select id="statsVillageSelect" style="margin-bottom:10px;">
-              <option value="">(讀取中...)</option>
-          </select>
-          <!-- 統計結果儀表板 (雙欄) -->
-          <div id="statsResult" style="display:none;">
-              <div class="stats-columns">
-                  <!-- 左欄：一般工程 -->
-                  <div class="stats-col col-general">
-                      <span class="stats-header">一般工程</span>
-                      <span class="stats-label">案件數量</span>
-                      <span id="statsGenCount" class="stats-val-count">0 件</span>
-                      <span class="stats-label">總投入金額</span>
-                      <span id="statsGenAmount" class="stats-val-amount">$ 0</span>
-                  </div>
-                  <!-- 右欄：搶險搶修 -->
-                  <div class="stats-col col-emergency">
-                      <span class="stats-header">搶險搶修</span>
-                      <span class="stats-label">案件數量</span>
-                      <span id="statsEmgCount" class="stats-val-count">0 件</span>
-                      <span class="stats-label">總投入金額</span>
-                      <span id="statsEmgAmount" class="stats-val-amount">$ 0</span>
-                  </div>
-              </div>
+          <div class="card-title"><i class="fas fa-history"></i> 重複性案件檢核</div>
+          <div class="small" style="margin-bottom:5px;">輸入 TWD97 座標 (X,Y)</div>
+          <input type="text" id="dupCheckInput" placeholder="例如：181924,2555825">
+          <div style="display:flex; gap:5px; margin-top:5px;">
+            <button id="dupCheckBtn" class="primary" style="background:#e65100; margin-top:0;"><i class="fas fa-search"></i> 開始檢核</button>
+            <!-- 修正：清除按鈕不換行 -->
+            <button id="dupClearBtn" class="secondary" style="width:auto; margin-top:0; white-space:nowrap; flex-shrink:0;">清除</button>
           </div>
+          <div id="dupCheckResult" style="margin-top:10px; font-size:13px; color:#333;"></div>
       </div>
 
       <div style="text-align:center; color:#999; font-size:12px; margin-top:20px;">臺南市山上區公所</div>
@@ -448,7 +664,7 @@
       <div class="card-section">
           <div class="card-title"><i class="fas fa-home"></i> 門牌查詢</div>
           <a href="https://addressrs.moi.gov.tw/address/index.cfm?city_id=67000" target="_blank" class="popup-btn" style="background:#28a745; color:white; border:none; width:100%; box-sizing:border-box; text-align:center; display:block; padding:10px;">
-              <i class="fas fa-map-marked-alt"></i> 臺南市門牌電子地圖查詢系統
+              <i class="fas fa-map-marked-alt"></i> 臺南市門牌電子地圖查詢系統 (內政部版)
           </a>
       </div>
 
@@ -479,8 +695,63 @@
 <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
 <!-- 引入 TopoJSON 支援 -->
 <script src="https://unpkg.com/topojson-client@3"></script>
+<!-- 新增：定位套件 JS -->
+<script src="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol/dist/L.Control.Locate.min.js"></script>
 
 <script>
+/* === 1. 初始化 Map (必須放在所有圖層變數之前) === */
+const map = L.map('map', { zoomControl:false, doubleClickZoom: false }).setView([23.1025,120.3538], 13);
+const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
+const sat = L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', { attribution: '© Google Maps' });
+let isSat = false; 
+
+/* === 升級：完美定位導航功能整合 (Leaflet.LocateControl) === */
+// 初始化定位控制項 (設定參數以符合 Google Maps 體驗)
+const lc = L.control.locate({
+    position: 'topright', // 先放在預設位置，稍後用 JS 移動到自訂區塊
+    strings: {
+        title: "我的位置 (點擊追蹤)"
+    },
+    icon: 'fas fa-crosshairs', // 使用 FontAwesome 圖示
+    iconLoading: 'fas fa-spinner fa-spin',
+    setView: 'untilPan', // 鎖定視角，直到使用者手動拖曳地圖為止
+    keepCurrentZoomLevel: true, // 保持當前縮放層級
+    flyTo: true, // 平滑飛行效果
+    cacheLocation: true,
+    showPopup: false, // 不顯示預設的 "You are within x meters" 視窗
+    drawCircle: true, // 繪製準確度圓圈
+    drawMarker: true, // 繪製藍點
+    locateOptions: {
+        enableHighAccuracy: true,
+        watch: true // 關鍵：持續監聽位置變動
+    }
+}).addTo(map);
+
+// === 關鍵修改：將定位按鈕搬移到 .map-floating-controls 並保持原有樣式 ===
+const floatingContainer = document.querySelector('.map-floating-controls');
+const lcContainer = lc.getContainer(); // 取得套件生成的 DOM
+
+// 移除套件預設的 Leaflet Control 樣式類別，避免外觀衝突
+lcContainer.classList.remove('leaflet-bar', 'leaflet-control');
+
+// 將按鈕插入到自訂懸浮區塊的最上方 (prepend)
+floatingContainer.prepend(lcContainer);
+
+// 防止手機休眠 (Wake Lock) 邏輯
+let wakeLock = null;
+async function requestWakeLock() {
+    if ('wakeLock' in navigator) {
+        try {
+            wakeLock = await navigator.wakeLock.request('screen');
+            console.log('Screen Wake Lock active');
+        } catch (err) {
+            console.error(`${err.name}, ${err.message}`);
+        }
+    }
+}
+// 當開始定位時，申請螢幕恆亮
+map.on('locateactivate', requestWakeLock);
+
 /* === 全域變數宣告 === */
 let REPAIR_CONFIG = []; 
 let roadsLayer = null;  
@@ -489,6 +760,8 @@ let REPAIR_DATA_CACHE = {};
 let ALL_CONTRACTORS = new Set(); 
 let currentRouteAllMatches = []; 
 let villageGeoJSON = null; // 儲存里界資料
+let dupCheckLayer = L.layerGroup().addTo(map); // 重複性檢核圖層
+let dupMarkersMap = {}; // 儲存重複檢核的標記參照，以便點擊列表時縮放
 
 let isMeasuring = false;
 let measureStartLatLng = null;
@@ -496,6 +769,7 @@ let measureLine = null;
 let measureTooltip = null;
 let markersClusterGroup = null; 
 let activeRepairLayers = []; 
+let reportCaseNumber = 1; // 通報案件流水號模擬
 
 const DEEP_BLUE = '#004080'; 
 const LIGHT_BLUE = '#0066cc'; 
@@ -511,12 +785,6 @@ function twd97FromWgs84(lat,lng){
     return {x:Math.round(p[0]),y:Math.round(p[1])}; 
 }
 
-/* === 1. 初始化 Map 放在最前面，避免未定義錯誤 === */
-const map = L.map('map', { zoomControl:false, doubleClickZoom: false }).setView([23.1025,120.3538], 13);
-const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
-const sat = L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', { attribution: '© Google Maps' });
-let isSat = false; 
-
 /* === 2. 初始化其他圖層 === */
 const dengueLayer = L.layerGroup().addTo(map);
 const dengueRadiusLayer = L.layerGroup().addTo(map);
@@ -531,6 +799,287 @@ const routeMatchLayer = L.layerGroup().addTo(map).setZIndex(999); // 確保在�
 const searchResultLayer = L.featureGroup().addTo(map);
 const clusterLayer = L.featureGroup().addTo(map);
 const measureLayer = L.layerGroup().addTo(map).setZIndex(1001);
+
+/* === 案件通報相關邏輯 === */
+const reportOverlay = document.getElementById('reportOverlay');
+const openReportBtn = document.getElementById('openReportBtn');
+
+openReportBtn.addEventListener('click', function() {
+    reportOverlay.style.display = 'flex';
+    initReportData();
+});
+
+function closeReport() {
+    reportOverlay.style.display = 'none';
+    resetReportForm();
+}
+
+function initReportData() {
+    // 1. 生成案件編號：YYYMMDDNN
+    const now = new Date();
+    const year = now.getFullYear() - 1911;
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const num = String(reportCaseNumber).padStart(2, '0');
+    document.getElementById('reportCaseId').innerText = `${year}${month}${day}${num}`;
+    
+    // 2. 時間
+    document.getElementById('reportTime').innerText = now.toLocaleString();
+    
+    // 3. 座標定位
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                const lat = pos.coords.latitude;
+                const lng = pos.coords.longitude;
+                const twd = twd97FromWgs84(lat, lng);
+                document.getElementById('reportWgs84').innerText = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+                document.getElementById('reportTwd97').innerText = `${twd.x}, ${twd.y}`;
+            },
+            (err) => {
+                document.getElementById('reportWgs84').innerText = "定位失敗";
+                document.getElementById('reportTwd97').innerText = "定位失敗";
+            },
+            { enableHighAccuracy: true }
+        );
+    } else {
+        document.getElementById('reportWgs84').innerText = "不支援定位";
+    }
+}
+
+function triggerCamera(id) {
+    const fileInput = document.getElementById(`fileInput${id}`);
+    if (!document.getElementById(`imgPreview${id}`).src) {
+         fileInput.click();
+    }
+}
+
+function previewImage(input, id) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = document.getElementById(`imgPreview${id}`);
+            const box = document.getElementById(`photoBox${id}`);
+            const delBtn = document.getElementById(`delBtn${id}`);
+            
+            img.src = e.target.result;
+            img.style.display = 'block';
+            box.querySelector('.add-photo-btn').style.display = 'none';
+            box.classList.add('has-image');
+            delBtn.style.display = 'block';
+        }
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+function deletePhoto(id) {
+    const img = document.getElementById(`imgPreview${id}`);
+    const box = document.getElementById(`photoBox${id}`);
+    const input = document.getElementById(`fileInput${id}`);
+    const delBtn = document.getElementById(`delBtn${id}`);
+    
+    img.src = "";
+    img.style.display = 'none';
+    box.querySelector('.add-photo-btn').style.display = 'block';
+    box.classList.remove('has-image');
+    input.value = ""; // 清空 input
+    delBtn.style.display = 'none';
+}
+
+function resetReportForm() {
+    deletePhoto(1);
+    deletePhoto(2);
+    document.getElementById('reportDesc').value = ""; // 清空描述
+    document.getElementById('reportWgs84').innerText = "定位中...";
+    document.getElementById('reportTwd97').innerText = "定位中...";
+}
+
+function submitReport() {
+    if (confirm("確定要上傳此案件通報嗎？")) {
+        // 模擬上傳資料打包
+        const data = {
+            caseId: document.getElementById('reportCaseId').innerText,
+            time: document.getElementById('reportTime').innerText,
+            wgs84: document.getElementById('reportWgs84').innerText,
+            twd97: document.getElementById('reportTwd97').innerText,
+            description: document.getElementById('reportDesc').value, // 新增：案情描述
+            photo1: document.getElementById('imgPreview1').src ? "有照片" : "無",
+            photo2: document.getElementById('imgPreview2').src ? "有照片" : "無"
+        };
+        
+        console.log("上傳資料:", data);
+        
+        alert("案件通報成功！\n\n(此為前端模擬，資料已記錄於 Console)");
+        reportCaseNumber++; // 模擬編號增加
+        closeReport();
+    }
+}
+
+/* === 重複性案件檢核功能 (新) === */
+// 清除按鈕功能
+document.getElementById('dupClearBtn').addEventListener('click', function() {
+    dupCheckLayer.clearLayers();
+    document.getElementById('dupCheckResult').innerHTML = '';
+    document.getElementById('dupCheckInput').value = '';
+    dupMarkersMap = {};
+});
+
+// 全域函式：供檢核列表點擊呼叫
+window.focusDupMarker = function(index) {
+    const marker = dupMarkersMap[index];
+    if(marker) {
+        map.flyTo(marker.getLatLng(), 18);
+        marker.openPopup();
+        // 手機版自動收合側邊欄
+        if(window.innerWidth <= 768) document.body.classList.remove('sidebar-open');
+    }
+};
+
+document.getElementById('dupCheckBtn').addEventListener('click', function() {
+    const input = document.getElementById('dupCheckInput').value.trim();
+    const resultDiv = document.getElementById('dupCheckResult');
+    dupCheckLayer.clearLayers();
+    resultDiv.innerHTML = '';
+    dupMarkersMap = {}; // 重置
+    
+    if (!input) {
+        alert('請輸入 TWD97 座標，例如 181924,2555825');
+        return;
+    }
+    
+    const parts = input.split(/[, \t]+/);
+    if (parts.length < 2) {
+        alert('座標格式錯誤');
+        return;
+    }
+    
+    const x = parseFloat(parts[0]);
+    const y = parseFloat(parts[1]);
+    
+    if (isNaN(x) || isNaN(y)) {
+        alert('座標數值錯誤');
+        return;
+    }
+    
+    // 轉換為 WGS84
+    try {
+        const w = proj4('EPSG:3826', 'EPSG:4326', [x, y]);
+        const centerLatLng = L.latLng(w[1], w[0]);
+        
+        // 1. 地圖飛到該點 & 畫紅圈 (50m)
+        map.setView(centerLatLng, 18);
+        L.circle(centerLatLng, {
+            color: 'red',
+            fillColor: '#f03',
+            fillOpacity: 0.2,
+            radius: 50 // 50公尺半徑
+        }).addTo(dupCheckLayer);
+        
+        L.marker(centerLatLng).addTo(dupCheckLayer).bindPopup(`檢核中心點<br>TWD97: ${x}, ${y}`).openPopup();
+        
+        // 2. 搜尋 50m 內且 3年內的案件
+        const matches = [];
+        const now = new Date();
+        const threeYearsAgo = new Date();
+        threeYearsAgo.setFullYear(now.getFullYear() - 3); // 3年前
+        
+        REPAIR_CONFIG.forEach(conf => {
+            const data = REPAIR_DATA_CACHE[conf.value];
+            if (!data) return;
+            
+            data.features.forEach(f => {
+                if (f.geometry.type !== 'Point') return;
+                
+                const pt = L.latLng(f.geometry.coordinates[1], f.geometry.coordinates[0]);
+                const dist = centerLatLng.distanceTo(pt);
+                
+                if (dist <= 50) {
+                    // 檢查時間
+                    const dateStr = f.properties['完工日期']; // e.g. "1130520"
+                    if (dateStr && dateStr.length === 7) {
+                        const y = parseInt(dateStr.substring(0, 3)) + 1911;
+                        const m = parseInt(dateStr.substring(3, 5)) - 1;
+                        const d = parseInt(dateStr.substring(5, 7));
+                        const finishDate = new Date(y, m, d);
+                        
+                        if (finishDate >= threeYearsAgo) {
+                            // 計算距今多久 (更精確的 年+月)
+                            let diffMonths = (now.getFullYear() - finishDate.getFullYear()) * 12 + (now.getMonth() - finishDate.getMonth());
+                            if (now.getDate() < finishDate.getDate()) {
+                                diffMonths--;
+                            }
+                            const years = Math.floor(diffMonths / 12);
+                            const months = diffMonths % 12;
+                            const timeAgoStr = `${years} 年 ${months} 個月`;
+                            
+                            const isEmergency = /搶修|災害|緊急/.test(conf.label);
+                            
+                            matches.push({
+                                name: conf.label,
+                                props: f.properties,
+                                date: dateStr,
+                                timeAgo: timeAgoStr,
+                                dist: dist.toFixed(1),
+                                isEmergency: isEmergency,
+                                latlng: pt
+                            });
+                        }
+                    }
+                }
+            });
+        });
+        
+        // 3. 顯示結果
+        if (matches.length === 0) {
+            resultDiv.innerHTML = '<div style="color:green; font-weight:bold;"><i class="fas fa-check-circle"></i> 此範圍 50m 內近 3 年無相關紀錄</div>';
+        } else {
+            // 排序 (距離近優先)
+            matches.sort((a, b) => parseFloat(a.dist) - parseFloat(b.dist));
+            
+            let html = `<div style="color:#d32f2f; font-weight:bold; margin-bottom:5px;">⚠️ 發現 ${matches.length} 筆近 3 年紀錄：</div>`;
+            
+            matches.forEach((m, index) => {
+                // 標示出舊案件位置 (黃色圓點，可點擊)
+                const marker = L.circleMarker(m.latlng, { radius: 8, color: '#d32f2f', weight: 2, fillColor: '#ffeb3b', fillOpacity: 1 }).addTo(dupCheckLayer);
+                
+                // 綁定 Popup (共用之前的 createPopup 邏輯)
+                const distToLine = distToRoad(m.latlng, roadsLayer); // 計算距路徑距離以保持一致性
+                marker.bindPopup(createPopup({ 
+                    fileName: m.name, 
+                    props: m.props, 
+                    lat: m.latlng.lat, 
+                    lng: m.latlng.lng, 
+                    dist: distToLine 
+                }), { className: 'custom-popup' });
+                
+                // 儲存參照
+                dupMarkersMap[index] = marker;
+
+                const tagClass = m.isEmergency ? 'tag-emg' : 'tag-gen';
+                const tagName = m.isEmergency ? '搶修' : '一般';
+                
+                // 格式：點擊呼叫 focusDupMarker
+                html += `
+                    <div class="dup-check-item" onclick="focusDupMarker(${index})">
+                        <div class="dup-check-title">${m.name}<span class="dup-tag ${tagClass}">${tagName}</span></div>
+                        <div class="dup-check-info">
+                            <span>完工：${m.props['完工日期']} (距今 ${m.timeAgo})</span>
+                        </div>
+                        <div class="dup-check-info">
+                            <span>距離：${m.dist} 公尺</span>
+                        </div>
+                    </div>
+                `;
+            });
+            resultDiv.innerHTML = html;
+        }
+        
+    } catch (e) {
+        console.error(e);
+        alert('座標轉換失敗');
+    }
+});
+
 
 /* === UI 控制與事件 === */
 window.switchTab = function(tabId) {
@@ -572,7 +1121,7 @@ togglePanelSizeBtn.addEventListener('click', () => {
 
 /* === 資料載入 === */
 fetch('tainan_districts.geojson').then(r=>r.json()).then(data=>{
-    // Layer 1: Solid Neon Purple Line (Tech Style)
+    // Layer 1: Solid Neon Purple Line (Tech Style) - 紫色粗虛線
     L.geoJSON(data, {
         interactive: false,
         style: f => {
@@ -581,7 +1130,7 @@ fetch('tainan_districts.geojson').then(r=>r.json()).then(data=>{
                 color: '#d500f9', // Neon Purple
                 weight: isTarget ? 4 : 1, 
                 opacity: 1,
-                dashArray: isTarget ? '15, 10' : '', // Long dashes look less "broken"
+                dashArray: isTarget ? '15, 10' : '', // Dashed pattern
                 fillOpacity: 0
             };
         }
@@ -610,7 +1159,7 @@ fetch('t22.json').then(r => r.json()).then(topology => {
     const vSelSearch = document.getElementById('villageSelect');
     vSelSearch.innerHTML = '<option value="">-- 請選擇行政區 --</option>';
     
-    // 2. 填入「工具分頁-里別維修統計」下拉選單
+    // 2. 填入「透明分頁-里別維修統計」下拉選單
     const vSelStats = document.getElementById('statsVillageSelect');
     vSelStats.innerHTML = '<option value="">-- 請選擇行政區 --</option>';
 
@@ -731,13 +1280,17 @@ document.getElementById('villageSelect').addEventListener('change', function() {
     if(clusterToggle.checked) setTimeout(calculateClusters, 100);
 });
 
-/* 新增監聽：里別維修統計 (工具分頁) - 雙欄 + 地圖連動 */
+/* 新增監聽：里別維修統計 (透明分頁) - 升級版：分年度統計 */
 document.getElementById('statsVillageSelect').addEventListener('change', function() {
     const selectedVillage = this.value;
     const statsResult = document.getElementById('statsResult');
+    const statsGenList = document.getElementById('statsGenList');
+    const statsEmgList = document.getElementById('statsEmgList');
     
-    // 清除地圖舊點位
+    // 清除舊資料 & 地圖點位
     searchResultLayer.clearLayers();
+    statsGenList.innerHTML = '';
+    statsEmgList.innerHTML = '';
 
     if (!selectedVillage) {
         statsResult.style.display = 'none';
@@ -747,27 +1300,68 @@ document.getElementById('statsVillageSelect').addEventListener('change', functio
     const villageFeature = villageGeoJSON.features.find(f => (f.properties.VILLAGE || f.properties.VILLNAME) === selectedVillage);
     if (!villageFeature) return;
 
-    // 變數初始化：分左右兩欄
-    let genCount = 0, genAmount = 0;
-    let emgCount = 0, emgAmount = 0;
-    let genSet = new Set(), emgSet = new Set(); // 兩個獨立的去重 Set
+    // --- 步驟 1: 計算「全區」各年度總金額 (分母) ---
+    // 結構: globalYearTotals = { '114': { gen: 0, emg: 0 }, '113': ... }
+    let globalYearTotals = {};
+    let globalProcessedCases = new Set(); // 全區去重
+
+    REPAIR_CONFIG.forEach(conf => {
+        const data = REPAIR_DATA_CACHE[conf.value];
+        if (!data || !data.features) return;
+        
+        // 取得年份 (從檔名 '搶險搶修114年' 提取 '114')
+        const yearMatch = conf.label.match(/(\d{3})年/);
+        const year = yearMatch ? yearMatch[1] : '其他';
+        const isEmergency = /搶修|災害|緊急/.test(conf.label);
+
+        if (!globalYearTotals[year]) globalYearTotals[year] = { gen: 0, emg: 0 };
+
+        data.features.forEach(f => {
+            try {
+                const props = f.properties;
+                const caseNo = props['案件編號'];
+                const amount = formatMoney(props['決標金額']);
+                
+                // 全區金額計算 (含去重)
+                if (caseNo && caseNo.trim() !== "") {
+                    if (!globalProcessedCases.has(caseNo)) {
+                        globalProcessedCases.add(caseNo);
+                        if (isEmergency) globalYearTotals[year].emg += amount;
+                        else globalYearTotals[year].gen += amount;
+                    }
+                } else {
+                    if (isEmergency) globalYearTotals[year].emg += amount;
+                    else globalYearTotals[year].gen += amount;
+                }
+            } catch(e){}
+        });
+    });
+
+    // --- 步驟 2: 計算「該里」各年度數據 (分子) & 繪製地圖 ---
+    // 結構: villageYearStats = { '114': { genCount: 0, genAmount: 0, ... } }
+    let villageYearStats = {};
+    let villageProcessedCases = new Set(); // 里內去重
 
     REPAIR_CONFIG.forEach(conf => {
         const data = REPAIR_DATA_CACHE[conf.value];
         if (!data || !data.features) return;
 
-        // 判斷是否為「搶險搶修」案件
-        // 關鍵字：搶修, 災害, 緊急
+        const yearMatch = conf.label.match(/(\d{3})年/);
+        const year = yearMatch ? yearMatch[1] : '其他';
         const isEmergency = /搶修|災害|緊急/.test(conf.label);
+        
+        if (!villageYearStats[year]) {
+            villageYearStats[year] = { genCount: 0, genAmount: 0, emgCount: 0, emgAmount: 0 };
+        }
 
         data.features.forEach(f => {
             try {
                 if (f.geometry.type !== 'Point') return;
                 
-                // 空間判斷：是否在該里
+                // 空間判斷
                 if (turf.booleanPointInPolygon(turf.point(f.geometry.coordinates), villageFeature)) {
                     
-                    // --- 1. 地圖連動顯示 (畫黃色圓點) ---
+                    // 繪製地圖點位
                     const [lng, lat] = f.geometry.coordinates;
                     const ll = L.latLng(lat, lng);
                     L.circleMarker(ll, { radius: 18, fillColor: '#ffd700', color: '#ff8c00', weight: 2, fillOpacity: 0.6 }).addTo(searchResultLayer);
@@ -775,34 +1369,28 @@ document.getElementById('statsVillageSelect').addEventListener('change', functio
                     marker.feature = f;
                     marker.bindPopup(createPopup({ fileName: conf.label, props: f.properties, lat, lng, dist: distToRoad(ll, roadsLayer) }), { className: 'custom-popup' });
 
-                    // --- 2. 統計運算 ---
+                    // 統計計算
                     const props = f.properties;
                     const caseNo = props['案件編號'];
                     const amount = formatMoney(props['決標金額']);
-
-                    if (isEmergency) {
-                        // 右欄：搶險搶修
-                        if (caseNo && caseNo.trim() !== "") {
-                            if (!emgSet.has(caseNo)) {
-                                emgSet.add(caseNo);
-                                emgCount++;
-                                emgAmount += amount;
-                            }
-                        } else {
-                            emgCount++;
-                            emgAmount += amount;
+                    
+                    let shouldAdd = false;
+                    if (caseNo && caseNo.trim() !== "") {
+                        if (!villageProcessedCases.has(caseNo)) {
+                            villageProcessedCases.add(caseNo);
+                            shouldAdd = true;
                         }
                     } else {
-                        // 左欄：一般工程
-                        if (caseNo && caseNo.trim() !== "") {
-                            if (!genSet.has(caseNo)) {
-                                genSet.add(caseNo);
-                                genCount++;
-                                genAmount += amount;
-                            }
+                        shouldAdd = true;
+                    }
+
+                    if (shouldAdd) {
+                        if (isEmergency) {
+                            villageYearStats[year].emgCount++;
+                            villageYearStats[year].emgAmount += amount;
                         } else {
-                            genCount++;
-                            genAmount += amount;
+                            villageYearStats[year].genCount++;
+                            villageYearStats[year].genAmount += amount;
                         }
                     }
                 }
@@ -810,19 +1398,64 @@ document.getElementById('statsVillageSelect').addEventListener('change', functio
         });
     });
 
-    // --- 3. 地圖自動縮放 ---
+    // --- 步驟 3: 產生 HTML 列表 (按年份倒序) ---
+    const sortedYears = Object.keys(villageYearStats).sort().reverse();
+    
+    sortedYears.forEach(y => {
+        const stats = villageYearStats[y];
+        const globalTotals = globalYearTotals[y] || { gen: 1, emg: 1 }; // 避免除以0
+        
+        // 一般工程 HTML
+        if (stats.genCount > 0) {
+            const pct = globalTotals.gen > 0 ? (stats.genAmount / globalTotals.gen * 100).toFixed(0) : 0;
+            const html = `
+                <div class="stat-year-row">
+                    <div class="stat-year-title">
+                        <span>${y}年度</span>
+                        <span class="stat-percent-text">佔全區 ${pct}%</span>
+                    </div>
+                    <div class="stat-data-row">${stats.genCount} 件 / $ ${stats.genAmount.toLocaleString()}</div>
+                    <div class="stat-bar-bg"><div class="stat-bar-fill" style="width:${pct}%"></div></div>
+                </div>`;
+            statsGenList.innerHTML += html;
+        }
+
+        // 搶險搶修 HTML
+        if (stats.emgCount > 0) {
+            const pct = globalTotals.emg > 0 ? (stats.emgAmount / globalTotals.emg * 100).toFixed(0) : 0;
+            const html = `
+                <div class="stat-year-row">
+                    <div class="stat-year-title">
+                        <span>${y}年度</span>
+                        <span class="stat-percent-text">佔全區 ${pct}%</span>
+                    </div>
+                    <div class="stat-data-row">${stats.emgCount} 件 / $ ${stats.emgAmount.toLocaleString()}</div>
+                    <div class="stat-bar-bg"><div class="stat-bar-fill" style="width:${pct}%"></div></div>
+                </div>`;
+            statsEmgList.innerHTML += html;
+        }
+    });
+
+    // 若無資料顯示提示
+    if (statsGenList.innerHTML === '') statsGenList.innerHTML = '<div style="color:#999;font-size:12px;text-align:center;padding:10px;">無資料</div>';
+    if (statsEmgList.innerHTML === '') statsEmgList.innerHTML = '<div style="color:#999;font-size:12px;text-align:center;padding:10px;">無資料</div>';
+
+    // 地圖縮放
     const bounds = L.geoJSON(villageFeature).getBounds();
     map.fitBounds(bounds);
     if(window.innerWidth <= 768) document.body.classList.remove('sidebar-open');
 
-    // 顯示結果到雙欄
-    document.getElementById('statsGenCount').innerText = genCount + " 件";
-    document.getElementById('statsGenAmount').innerText = "$ " + genAmount.toLocaleString();
-    
-    document.getElementById('statsEmgCount').innerText = emgCount + " 件";
-    document.getElementById('statsEmgAmount').innerText = "$ " + emgAmount.toLocaleString();
-
     statsResult.style.display = 'block';
+});
+
+// 新增監聽：清除所有顯示按鈕 (透明分頁下)
+document.getElementById('clearStatsBtn').addEventListener('click', function() {
+    // 1. 清空地圖點位
+    searchResultLayer.clearLayers();
+    // 2. 重置下拉選單
+    document.getElementById('statsVillageSelect').value = "";
+    // 3. 隱藏統計儀表板
+    document.getElementById('statsResult').style.display = 'none';
 });
 
 fetch('farmroads.geojson').then(r=>r.json()).then(data=>{
@@ -1258,8 +1891,6 @@ map.on('mousemove', e => {
     }
 });
 
-document.getElementById('locateBtn').onclick = () => map.locate({setView:true, maxZoom:16});
-map.on('locationfound', e => L.circleMarker(e.latlng, {color:'blue', radius:8}).addTo(map).bindPopup('我的位置').openPopup());
 document.getElementById('toggleMapBtn').onclick = function() {
     if(isSat) { map.removeLayer(sat); osm.addTo(map); this.classList.remove('active'); }
     else { map.removeLayer(osm); sat.addTo(map); this.classList.add('active'); }
@@ -1570,7 +2201,10 @@ function renderTimeline(matches) {
         item.innerHTML = `
             <div class="h-date">${m.props['完工日期']||'未知'}</div>
             <div class="h-line-container"><div class="h-dot ${sizeClass}"></div></div>
-            <div class="h-icon ${iconClass}" title="${title}"></div>
+            <!-- 修改為文字標籤 (Badge) -->
+            <div class="h-badge ${labelName.includes('搶修')||labelName.includes('災害')||labelName.includes('緊急') ? 'badge-urgent' : 'badge-normal'}">
+                ${labelName.includes('搶修')||labelName.includes('災害')||labelName.includes('緊急') ? '搶修' : '一般'}
+            </div>
         `;
         item.addEventListener('mouseenter', () => { marker.setStyle({ radius: 20, color:'#ffd700', weight:4, fillColor:'#d32f2f' }); marker.bringToFront(); marker.openPopup(); });
         item.addEventListener('mouseleave', () => { marker.setStyle({ radius: 14, color:'#fff', weight:1, fillColor:DEEP_BLUE }); marker.closePopup(); });

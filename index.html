@@ -148,7 +148,7 @@
       bottom: 0; 
       left: var(--sidebar-width); 
       right: 0; 
-      /* 修改：增加高度至 280px，讓內容更寬裕 */
+      /* 高度優化：280px */
       height: 280px; 
       background: rgba(255, 255, 255, 0.98); 
       box-shadow: 0 -4px 16px rgba(0,0,0,0.1); 
@@ -616,6 +616,24 @@
           
           <div class="search-block-label"><i class="fas fa-filter"></i> 依廠商快篩</div>
           <select id="contractorSelect" style="margin-bottom:10px;"><option value="">(讀取系統資料中...)</option></select>
+          
+          <!-- 新增：廠商履歷儀表板 (比照透明分頁樣式) -->
+          <div id="contractorStatsResult" style="display:none; margin-top:10px;">
+              <div class="stats-columns">
+                  <!-- 左欄：一般工程 -->
+                  <div class="stats-col col-general">
+                      <div class="stats-header">一般工程</div>
+                      <div id="contractorGenList"></div>
+                  </div>
+                  <!-- 右欄：搶險搶修 -->
+                  <div class="stats-col col-emergency">
+                      <div class="stats-header">搶險搶修</div>
+                      <div id="contractorEmgList"></div>
+                  </div>
+              </div>
+              <button class="secondary" id="clearContractorStatsBtn" style="margin-top:10px;"><i class="fas fa-eraser"></i> 清除所有顯示</button>
+          </div>
+
           <div style="text-align:center; font-size:12px; color:#999; margin:5px 0;">- 或 -</div>
           <div class="search-block-label"><i class="fas fa-keyboard"></i> 關鍵字搜尋</div>
           <input type="text" id="keywordInput" placeholder="例如：案件編號(113001) 案件名稱 廠商名稱">
@@ -1704,10 +1722,159 @@ async function preloadAllDataForContractors() {
     const sortedC = Array.from(ALL_CONTRACTORS).sort();
     cSel.innerHTML = '<option value="">-- 請選擇廠商 (' + sortedC.length + ') --</option>' + sortedC.map(c => `<option value="${c}">${c}</option>`).join('');
     cSel.addEventListener('change', function() {
-        if(this.value) { document.getElementById('keywordInput').value=''; document.getElementById('villageSelect').value=''; performSearch(p=>p['施工廠商']?.trim()===this.value, `廠商：${this.value}`); }
-        else clearSearchResults();
+        if(this.value) { 
+            document.getElementById('keywordInput').value=''; 
+            document.getElementById('villageSelect').value=''; 
+            
+            // 1. 執行地圖定位
+            performSearch(p=>p['施工廠商']?.trim()===this.value, `廠商：${this.value}`); 
+            
+            // 2. 執行廠商履歷統計
+            updateContractorStats(this.value);
+        }
+        else {
+            clearSearchResults();
+        }
     });
 }
+
+// 新增功能：計算並顯示廠商履歷儀表板
+function updateContractorStats(contractorName) {
+    const statsResult = document.getElementById('contractorStatsResult');
+    const genList = document.getElementById('contractorGenList');
+    const emgList = document.getElementById('contractorEmgList');
+    
+    genList.innerHTML = '';
+    emgList.innerHTML = '';
+    
+    if (!contractorName) {
+        statsResult.style.display = 'none';
+        return;
+    }
+
+    // --- 步驟 1: 計算「全區」各年度總金額 (分母) ---
+    let globalYearTotals = {};
+    let globalProcessedCases = new Set(); 
+
+    REPAIR_CONFIG.forEach(conf => {
+        const data = REPAIR_DATA_CACHE[conf.value];
+        if (!data || !data.features) return;
+        
+        const yearMatch = conf.label.match(/(\d{3})年/);
+        const year = yearMatch ? yearMatch[1] : '其他';
+        const isEmergency = /搶修|災害|緊急/.test(conf.label);
+
+        if (!globalYearTotals[year]) globalYearTotals[year] = { gen: 0, emg: 0 };
+
+        data.features.forEach(f => {
+            const props = f.properties;
+            const caseNo = props['案件編號'];
+            const amount = formatMoney(props['決標金額']);
+            
+            if (caseNo && caseNo.trim() !== "") {
+                if (!globalProcessedCases.has(caseNo)) {
+                    globalProcessedCases.add(caseNo);
+                    if (isEmergency) globalYearTotals[year].emg += amount;
+                    else globalYearTotals[year].gen += amount;
+                }
+            } else {
+                if (isEmergency) globalYearTotals[year].emg += amount;
+                else globalYearTotals[year].gen += amount;
+            }
+        });
+    });
+
+    // --- 步驟 2: 計算「該廠商」各年度數據 (分子) ---
+    let contractorYearStats = {};
+    let contractorProcessedCases = new Set();
+
+    REPAIR_CONFIG.forEach(conf => {
+        const data = REPAIR_DATA_CACHE[conf.value];
+        if (!data || !data.features) return;
+
+        const yearMatch = conf.label.match(/(\d{3})年/);
+        const year = yearMatch ? yearMatch[1] : '其他';
+        const isEmergency = /搶修|災害|緊急/.test(conf.label);
+        
+        if (!contractorYearStats[year]) {
+            contractorYearStats[year] = { genCount: 0, genAmount: 0, emgCount: 0, emgAmount: 0 };
+        }
+
+        data.features.forEach(f => {
+            if (f.properties['施工廠商']?.trim() === contractorName) {
+                const props = f.properties;
+                const caseNo = props['案件編號'];
+                const amount = formatMoney(props['決標金額']);
+                
+                let shouldAdd = false;
+                if (caseNo && caseNo.trim() !== "") {
+                    if (!contractorProcessedCases.has(caseNo)) {
+                        contractorProcessedCases.add(caseNo);
+                        shouldAdd = true;
+                    }
+                } else {
+                    shouldAdd = true;
+                }
+
+                if (shouldAdd) {
+                    if (isEmergency) {
+                        contractorYearStats[year].emgCount++;
+                        contractorYearStats[year].emgAmount += amount;
+                    } else {
+                        contractorYearStats[year].genCount++;
+                        contractorYearStats[year].genAmount += amount;
+                    }
+                }
+            }
+        });
+    });
+
+    // --- 步驟 3: 產生 HTML 列表 ---
+    const sortedYears = Object.keys(contractorYearStats).sort().reverse();
+    
+    sortedYears.forEach(y => {
+        const stats = contractorYearStats[y];
+        const globalTotals = globalYearTotals[y] || { gen: 1, emg: 1 };
+        
+        // 一般工程
+        if (stats.genCount > 0) {
+            const pct = globalTotals.gen > 0 ? (stats.genAmount / globalTotals.gen * 100).toFixed(0) : 0;
+            const html = `
+                <div class="stat-year-row">
+                    <div class="stat-year-title">
+                        <span>${y}年度</span>
+                        <span class="stat-percent-text">市佔 ${pct}%</span>
+                    </div>
+                    <div class="stat-data-row">${stats.genCount} 件 / $ ${stats.genAmount.toLocaleString()}</div>
+                    <div class="stat-bar-bg"><div class="stat-bar-fill" style="width:${pct}%"></div></div>
+                </div>`;
+            genList.innerHTML += html;
+        }
+
+        // 搶險搶修
+        if (stats.emgCount > 0) {
+            const pct = globalTotals.emg > 0 ? (stats.emgAmount / globalTotals.emg * 100).toFixed(0) : 0;
+            const html = `
+                <div class="stat-year-row">
+                    <div class="stat-year-title">
+                        <span>${y}年度</span>
+                        <span class="stat-percent-text">市佔 ${pct}%</span>
+                    </div>
+                    <div class="stat-data-row">${stats.emgCount} 件 / $ ${stats.emgAmount.toLocaleString()}</div>
+                    <div class="stat-bar-bg"><div class="stat-bar-fill" style="width:${pct}%"></div></div>
+                </div>`;
+            emgList.innerHTML += html;
+        }
+    });
+
+    if (genList.innerHTML === '') genList.innerHTML = '<div style="color:#999;font-size:12px;text-align:center;padding:10px;">無資料</div>';
+    if (emgList.innerHTML === '') emgList.innerHTML = '<div style="color:#999;font-size:12px;text-align:center;padding:10px;">無資料</div>';
+
+    statsResult.style.display = 'block';
+}
+
+// 監聽：廠商儀表板的清除按鈕
+document.getElementById('clearContractorStatsBtn').addEventListener('click', clearSearchResults);
 
 async function performSearch(predicate, label) {
     const status = document.getElementById('searchStatus');
@@ -1749,6 +1916,7 @@ document.getElementById('searchBtn').addEventListener('click', () => {
     if(!kw) return alert('請輸入關鍵字');
     document.getElementById('contractorSelect').value = '';
     document.getElementById('villageSelect').value = '';
+    document.getElementById('contractorStatsResult').style.display = 'none'; // 隱藏廠商統計
     performSearch(p => Object.values(p).join(' ').toLowerCase().includes(kw), kw);
 });
 
@@ -1760,6 +1928,7 @@ function clearSearchResults() {
     document.getElementById('villageSelect').value = '';
     document.getElementById('searchStatus').innerText = '';
     document.getElementById('clearSearchBtn').style.display = 'none';
+    document.getElementById('contractorStatsResult').style.display = 'none'; // 隱藏廠商統計
 }
 
 document.getElementById('roadSelect').addEventListener('change', (e) => handleMapClickSelection(e.target.value, false));

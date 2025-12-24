@@ -809,7 +809,8 @@ let currentRouteAllMatches = [];
 let villageGeoJSON = null; // 儲存里界資料
 let dupCheckLayer = L.layerGroup().addTo(map); // 重複性檢核圖層
 let dupMarkersMap = {}; // 儲存重複檢核的標記參照，以便點擊列表時縮放
-let CURRENT_DUPLICATE_GROUPS = []; // 新增：儲存當前的重複案件群組資料 (供鑽取使用)
+let CURRENT_DUPLICATE_GROUPS = []; // 儲存自動檢核的重複群組 (供工具頁面鑽取使用)
+let CURRENT_MAP_GROUPS = {}; // 新增：儲存地圖主要顯示層的重複群組 (供地圖鑽取使用)
 
 let isMeasuring = false;
 let measureStartLatLng = null;
@@ -1001,7 +1002,7 @@ document.getElementById('autoDupCheckToggle').addEventListener('change', functio
     }
 });
 
-// === 新增：鑽取 (Drill-down) 顯示詳細視窗 ===
+// === 新增：鑽取 (Drill-down) 顯示詳細視窗 (用於工具分頁的重複檢核) ===
 window.showDupDetailPopup = function(groupIdx, caseIdx) {
     const group = CURRENT_DUPLICATE_GROUPS[groupIdx];
     if(!group) return;
@@ -1024,6 +1025,29 @@ window.showDupDetailPopup = function(groupIdx, caseIdx) {
     });
 
     // 開啟新的 Popup (使用 openOn 會自動關閉前一個)
+    L.popup()
+        .setLatLng(item.latlng)
+        .setContent(content)
+        .openOn(map);
+};
+
+// === 新增：地圖主要層鑽取功能 (用於透明分頁地圖顯示) ===
+window.showMapDetailPopup = function(key, index) {
+    const group = CURRENT_MAP_GROUPS[key];
+    if(!group || !group[index]) return;
+    const item = group[index];
+    
+    // Calculate dist
+    const dist = distToRoad(item.latlng, roadsLayer);
+
+    const content = createPopup({
+        fileName: item.configLabel,
+        props: item.feature.properties,
+        lat: item.latlng.lat,
+        lng: item.latlng.lng,
+        dist: dist
+    });
+    
     L.popup()
         .setLatLng(item.latlng)
         .setContent(content)
@@ -1767,47 +1791,101 @@ function createPopup(data) {
     `;
 }
 
+// === 核心修改：重寫 updateRepairPoints 邏輯 (支援自動分組與列表顯示) ===
 function updateRepairPoints() {
     if(markersClusterGroup) {
         markersClusterGroup.clearLayers();
         map.removeLayer(markersClusterGroup);
     }
     
-    const checked = document.querySelectorAll('.repair-cb:checked');
     activeRepairLayers = []; 
+    CURRENT_MAP_GROUPS = {}; // 清空地圖分組資料
+    
     const panel = document.getElementById('clusterControlPanel');
-    const toggleBtn = document.getElementById('toggleClusterControlBtn'); // 取得按鈕
+    const toggleBtn = document.getElementById('toggleClusterControlBtn'); 
+    const checked = document.querySelectorAll('.repair-cb:checked');
 
+    // 1. 收集並分組資料
     checked.forEach(cb => {
         const fileKey = cb.value;
         if(REPAIR_DATA_CACHE[fileKey]) {
             const data = REPAIR_DATA_CACHE[fileKey];
             const config = REPAIR_CONFIG.find(c => c.value === fileKey);
             
-            L.geoJSON(data, {
-                pointToLayer: (f, ll) => {
-                    const dist = distToRoad(ll, roadsLayer);
-                    const isFar = (!isNaN(dist) && dist > 30);
-                    const color = isFar ? '#ef4444' : '#004080';
-                    const iconHtml = `<div style="width:14px; height:14px; background:${color}; border:2px solid #fff; border-radius:50%; box-shadow:0 2px 4px rgba(0,0,0,0.2);"></div>`;
-                    const icon = L.divIcon({ html: iconHtml, className: 'custom-dot-marker', iconSize: [18, 18], iconAnchor: [9, 9] });
-                    const marker = L.marker(ll, { icon: icon });
-                    marker.bindPopup(createPopup({ fileName: config.label, props: f.properties, lat: ll.lat, lng: ll.lng, dist }), { className: 'custom-popup' });
-                    // 重要：確保 feature 被保留在 marker 上，供熱區分析使用
-                    marker.feature = f; 
-                    activeRepairLayers.push(marker);
-                    return marker;
+            data.features.forEach(f => {
+                if(f.geometry.type === 'Point') {
+                    const key = f.geometry.coordinates.join(','); // 使用座標作為 Key
+                    if(!CURRENT_MAP_GROUPS[key]) CURRENT_MAP_GROUPS[key] = [];
+                    
+                    CURRENT_MAP_GROUPS[key].push({
+                        feature: f,
+                        configLabel: config.label,
+                        latlng: L.latLng(f.geometry.coordinates[1], f.geometry.coordinates[0])
+                    });
                 }
             });
         }
     });
 
-    // 修正邏輯：不再自動顯示面板，只在點位數為 0 時強制隱藏
+    // 2. 渲染標記
+    Object.keys(CURRENT_MAP_GROUPS).forEach(key => {
+        const group = CURRENT_MAP_GROUPS[key];
+        const firstItem = group[0];
+        const pt = firstItem.latlng;
+        
+        // 樣式判斷 (距離)
+        const dist = distToRoad(pt, roadsLayer);
+        const isFar = (!isNaN(dist) && dist > 30);
+        const color = isFar ? '#ef4444' : '#004080';
+        const iconHtml = `<div style="width:14px; height:14px; background:${color}; border:2px solid #fff; border-radius:50%; box-shadow:0 2px 4px rgba(0,0,0,0.2);"></div>`;
+        const icon = L.divIcon({ html: iconHtml, className: 'custom-dot-marker', iconSize: [18, 18], iconAnchor: [9, 9] });
+        
+        const marker = L.marker(pt, { icon: icon });
+        
+        // 判斷：單筆 vs 多筆
+        if(group.length === 1) {
+            // 單筆案件 -> 原本的詳細資訊 Popup
+            marker.bindPopup(createPopup({ 
+                fileName: firstItem.configLabel, 
+                props: firstItem.feature.properties, 
+                lat: pt.lat, 
+                lng: pt.lng, 
+                dist: dist 
+            }), { className: 'custom-popup' });
+        } else {
+            // 多筆案件 -> 列表 Popup (支援鑽取)
+            let listHtml = `<div class="info-header">重複座標點位資訊 (${group.length}筆)</div>
+                            <div class="info-body" style="max-height:250px; overflow-y:auto;">
+                            <div style="font-size:12px; color:#666; margin-bottom:5px;">點擊案件名稱可查看詳細資料</div>`;
+            
+            group.forEach((item, index) => {
+                listHtml += `<div style="border-bottom:1px dashed #ccc; padding:8px 0; cursor:pointer;" 
+                               onclick="showMapDetailPopup('${key}', ${index})"
+                               onmouseover="this.style.backgroundColor='#f0f7ff'"
+                               onmouseout="this.style.backgroundColor='transparent'">
+                    <b style="color:#004080; text-decoration:underline;">${index+1}. ${item.configLabel}</b><br>
+                    <span style="color:#333; font-size:12px;">
+                    案件編號: ${item.feature.properties['案件編號']||'無'}<br>
+                    完工日期: ${item.feature.properties['完工日期']||'無'}
+                    </span>
+                </div>`;
+            });
+            listHtml += `</div>`;
+            
+            marker.bindPopup(listHtml, { className: 'custom-popup', maxWidth: 300 });
+        }
+
+        // 重要：保留 feature 供熱區分析使用 (取第一筆代表)
+        marker.feature = firstItem.feature;
+
+        activeRepairLayers.push(marker);
+    });
+
+    // UI 狀態處理
     if (activeRepairLayers.length === 0) {
         panel.style.display = 'none';
         toggleBtn.classList.remove('active');
     }
-    // 如果點位數 > 0，則面板狀態由使用者點擊按鈕決定
     
     renderClusterGroup();
     calculateClusters(); 

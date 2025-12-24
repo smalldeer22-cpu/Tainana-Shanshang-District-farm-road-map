@@ -678,6 +678,11 @@
       <!-- 新增功能：重複性案件檢核 (含清除按鈕與結果點擊) -->
       <div class="card-section">
           <div class="card-title"><i class="fas fa-history"></i> 重複性案件檢核</div>
+          <!-- 新增：自動檢核勾選框 -->
+          <label class="toggle-switch" style="margin-bottom:10px;">
+              <input type="checkbox" id="autoDupCheckToggle"> 啟動自動檢核重複性案件
+          </label>
+          
           <div class="small" style="margin-bottom:5px;">輸入 TWD97 座標 (X,Y)</div>
           <input type="text" id="dupCheckInput" placeholder="例如：181924,2555825">
           <div style="display:flex; gap:5px; margin-top:5px;">
@@ -804,6 +809,7 @@ let currentRouteAllMatches = [];
 let villageGeoJSON = null; // 儲存里界資料
 let dupCheckLayer = L.layerGroup().addTo(map); // 重複性檢核圖層
 let dupMarkersMap = {}; // 儲存重複檢核的標記參照，以便點擊列表時縮放
+let CURRENT_DUPLICATE_GROUPS = []; // 新增：儲存當前的重複案件群組資料 (供鑽取使用)
 
 let isMeasuring = false;
 let measureStartLatLng = null;
@@ -963,7 +969,10 @@ document.getElementById('dupClearBtn').addEventListener('click', function() {
     dupCheckLayer.clearLayers();
     document.getElementById('dupCheckResult').innerHTML = '';
     document.getElementById('dupCheckInput').value = '';
+    // 若自動檢核開啟，也順便關閉
+    document.getElementById('autoDupCheckToggle').checked = false;
     dupMarkersMap = {};
+    CURRENT_DUPLICATE_GROUPS = [];
 });
 
 // 全域函式：供檢核列表點擊呼叫
@@ -977,12 +986,156 @@ window.focusDupMarker = function(index) {
     }
 };
 
+/* 新增：自動檢核重複性案件邏輯 */
+document.getElementById('autoDupCheckToggle').addEventListener('change', function() {
+    if(this.checked) {
+        // 清空手動輸入框，避免混淆
+        document.getElementById('dupCheckInput').value = '';
+        performAutoDuplicateCheck();
+    } else {
+        // 取消勾選時，清除結果
+        dupCheckLayer.clearLayers();
+        document.getElementById('dupCheckResult').innerHTML = '';
+        dupMarkersMap = {};
+        CURRENT_DUPLICATE_GROUPS = [];
+    }
+});
+
+// === 新增：鑽取 (Drill-down) 顯示詳細視窗 ===
+window.showDupDetailPopup = function(groupIdx, caseIdx) {
+    const group = CURRENT_DUPLICATE_GROUPS[groupIdx];
+    if(!group) return;
+    const item = group[caseIdx];
+
+    // 取得該點位資料
+    const lat = item.latlng.lat;
+    const lng = item.latlng.lng;
+    
+    // 計算距離 (利用現有的函式)
+    const distToLine = distToRoad(item.latlng, roadsLayer); 
+    
+    // 生成詳細內容
+    const content = createPopup({ 
+        fileName: item.name, 
+        props: item.props, 
+        lat: lat, 
+        lng: lng, 
+        dist: distToLine 
+    });
+
+    // 開啟新的 Popup (使用 openOn 會自動關閉前一個)
+    L.popup()
+        .setLatLng(item.latlng)
+        .setContent(content)
+        .openOn(map);
+};
+
+function performAutoDuplicateCheck() {
+    const resDiv = document.getElementById('dupCheckResult');
+    resDiv.innerHTML = '<div style="padding:10px; color:#666;">掃描資料庫中...</div>';
+    
+    // 1. 收集所有點位資料
+    let coordMap = {}; // Key: "lng,lat", Value: [ {caseNo, date, name...} ]
+
+    REPAIR_CONFIG.forEach(conf => {
+        const data = REPAIR_DATA_CACHE[conf.value];
+        if(!data || !data.features) return;
+        data.features.forEach(f => {
+            if(f.geometry.type !== 'Point') return;
+            // 使用座標字串作為唯一 Key (完全一樣)
+            const key = f.geometry.coordinates.join(',');
+            if(!coordMap[key]) coordMap[key] = [];
+            coordMap[key].push({
+                name: conf.label,
+                props: f.properties,
+                latlng: L.latLng(f.geometry.coordinates[1], f.geometry.coordinates[0])
+            });
+        });
+    });
+
+    // 2. 篩選出有重複的 (長度 > 1)
+    let duplicates = [];
+    Object.keys(coordMap).forEach(k => {
+        if(coordMap[k].length > 1) {
+            duplicates.push(coordMap[k]);
+        }
+    });
+
+    // 儲存至全域變數，供鑽取功能使用
+    CURRENT_DUPLICATE_GROUPS = duplicates;
+
+    // 3. 渲染結果
+    dupCheckLayer.clearLayers();
+    resDiv.innerHTML = '';
+    dupMarkersMap = {};
+
+    if(duplicates.length === 0) {
+         resDiv.innerHTML = '<div style="padding:10px; color:green;">未發現完全重疊的案件座標。</div>';
+         return;
+    }
+
+    let html = `<div style="color:#d32f2f; font-weight:bold; margin-bottom:5px;">⚠️ 發現 ${duplicates.length} 組重複座標點位：</div>`;
+
+    duplicates.forEach((group, idx) => {
+        const pt = group[0].latlng; // 座標都一樣，取第一個即可
+        const twd = twd97FromWgs84(pt.lat, pt.lng); // 轉換 TWD97 供側邊欄顯示
+
+        // 地圖標記 (紅色圓點 + 黃色光暈)
+        const marker = L.circleMarker(pt, {
+            radius: 10, color: '#d32f2f', fillColor: '#ffeb3b', fillOpacity: 0.9, weight:2
+        }).addTo(dupCheckLayer);
+
+        // === 修改：Popup 內容改為清單，並加入點擊事件 (Drill-down) ===
+        let popupHTML = `<div class="info-header">重複座標點位資訊 (${group.length}筆)</div>
+                         <div class="info-body" style="max-height:250px; overflow-y:auto;">
+                         <div style="font-size:12px; color:#666; margin-bottom:5px;">點擊案件名稱可查看詳細資料</div>`;
+        
+        group.forEach((item, i) => {
+            // 加入 onclick 事件呼叫 showDupDetailPopup(群組索引, 案件索引)
+            // 加入 cursor:pointer 讓滑鼠變手型
+            popupHTML += `<div style="border-bottom:1px dashed #ccc; padding:8px 0; cursor:pointer;" 
+                               onclick="showDupDetailPopup(${idx}, ${i})"
+                               onmouseover="this.style.backgroundColor='#f0f7ff'"
+                               onmouseout="this.style.backgroundColor='transparent'">
+                <b style="color:#004080; text-decoration:underline;">${i+1}. ${item.name}</b><br>
+                <span style="color:#333; font-size:12px;">案件編號: ${item.props['案件編號']||'無'}<br>
+                完工日期: ${item.props['完工日期']||'無'}</span>
+            </div>`;
+        });
+        popupHTML += `</div>`;
+        
+        marker.bindPopup(popupHTML, { className: 'custom-popup', maxWidth: 300 });
+
+        // 儲存參照
+        dupMarkersMap[idx] = marker;
+
+        // 建立列表項目
+        const dates = group.map(g => g.props['完工日期'] || '').sort();
+        const dateRange = dates[0] ? `${dates[0]} ~ ${dates[dates.length-1]}` : '日期未知';
+
+        // === 修改：側邊欄標題顯示 TWD97 座標 ===
+        html += `<div class="dup-check-item" onclick="focusDupMarker(${idx})">
+            <div class="dup-check-title">📍 座標重複群組 #${idx+1} <br><span style="font-size:11px; color:#555;">(TWD97: ${twd.x}, ${twd.y})</span></div>
+            <div class="dup-check-info" style="color:#d32f2f; font-weight:bold;">包含 ${group.length} 筆案件</div>
+            <div class="dup-check-info" style="font-size:11px; color:#666;">${dateRange}</div>
+        </div>`;
+    });
+
+    resDiv.innerHTML = html;
+}
+
+// 監聽手動檢核按鈕 (若點擊，取消自動勾選)
 document.getElementById('dupCheckBtn').addEventListener('click', function() {
+    // 若自動檢核開啟，先關閉它
+    const autoCheck = document.getElementById('autoDupCheckToggle');
+    if(autoCheck.checked) autoCheck.checked = false;
+    
     const input = document.getElementById('dupCheckInput').value.trim();
     const resultDiv = document.getElementById('dupCheckResult');
     dupCheckLayer.clearLayers();
     resultDiv.innerHTML = '';
     dupMarkersMap = {}; // 重置
+    CURRENT_DUPLICATE_GROUPS = [];
     
     if (!input) {
         alert('請輸入 TWD97 座標，例如 181924,2555825');

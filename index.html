@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (登革熱防治整合版)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.1141229)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -87,6 +87,8 @@
   button.primary:hover { background: #003366; }
   button.secondary { width: 100%; padding: 8px; margin-top: 8px; cursor: pointer; border-radius: 6px; border: 1px solid #ddd; background: #fff; color: #555; font-size: 13px; }
   button.secondary:hover { background: #f5f5f5; }
+  /* 禁用狀態樣式 */
+  button:disabled { background: #ccc !important; cursor: not-allowed; color: #666 !important; }
 
   /* === 登革熱專用樣式 === */
   .dengue-option { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; cursor: pointer; font-weight: bold; color: #555; }
@@ -470,7 +472,7 @@
         <div class="report-grid">
             <!-- 左欄：基本資訊 -->
             <div class="report-col">
-                <div class="report-item"><span class="report-label">案件編號：</span><span id="reportCaseId">載入中...</span></div>
+                <div class="report-item"><span class="report-label">案件編號：</span><span id="reportCaseId" style="color:#666; font-style:italic;">(待系統取號)</span></div>
                 <div class="report-item"><span class="report-label">通報時間：</span><span id="reportTime"></span></div>
             </div>
             <!-- 中欄：座標資訊 -->
@@ -512,7 +514,7 @@
     </div>
     <div class="report-footer">
         <button class="btn-cancel" onclick="closeReport()">取消</button>
-        <button class="btn-submit" onclick="submitReport()">上傳通報</button>
+        <button class="btn-submit" id="btnSubmitReport" onclick="submitReport()">上傳通報</button>
     </div>
 </div>
 
@@ -746,6 +748,9 @@
 <script src="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol/dist/L.Control.Locate.min.js"></script>
 
 <script>
+/* === 0. Google Apps Script 網址 (請替換為您的部署網址) === */
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwb88r-ifPxx9bBcD1sF0tLVxOIjw60RoLWWJZXk8T82TP3GhSV8bb3dTNEGcgggwr5/exec";
+
 /* === 1. 初始化 Map (必須放在所有圖層變數之前) === */
 const map = L.map('map', { zoomControl:false, doubleClickZoom: false }).setView([23.1025,120.3538], 13);
 const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
@@ -818,7 +823,7 @@ let measureLine = null;
 let measureTooltip = null;
 let markersClusterGroup = null; 
 let activeRepairLayers = []; 
-let reportCaseNumber = 1; // 通報案件流水號模擬
+// reportCaseNumber 已移除，改由後端取號
 
 const DEEP_BLUE = '#004080'; 
 const LIGHT_BLUE = '#0066cc'; 
@@ -864,15 +869,11 @@ function closeReport() {
 }
 
 function initReportData() {
-    // 1. 生成案件編號：YYYMMDDNN
-    const now = new Date();
-    const year = now.getFullYear() - 1911;
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    const num = String(reportCaseNumber).padStart(2, '0');
-    document.getElementById('reportCaseId').innerText = `${year}${month}${day}${num}`;
+    // 1. 改為顯示 "待系統取號"
+    document.getElementById('reportCaseId').innerText = "(待系統取號)";
     
     // 2. 時間
+    const now = new Date();
     document.getElementById('reportTime').innerText = now.toLocaleString();
     
     // 3. 座標定位
@@ -905,20 +906,44 @@ function triggerCamera(id) {
 
 function previewImage(input, id) {
     if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
+        const file = input.files[0];
+        // 基本的圖片壓縮處理，避免 Base64 太大
+        compressImage(file, 800, 0.7, function(compressedDataUrl) {
             const img = document.getElementById(`imgPreview${id}`);
             const box = document.getElementById(`photoBox${id}`);
             const delBtn = document.getElementById(`delBtn${id}`);
             
-            img.src = e.target.result;
+            img.src = compressedDataUrl;
             img.style.display = 'block';
             box.querySelector('.add-photo-btn').style.display = 'none';
             box.classList.add('has-image');
             delBtn.style.display = 'block';
-        }
-        reader.readAsDataURL(input.files[0]);
+        });
     }
+}
+
+// 輔助函式：圖片壓縮
+function compressImage(file, maxWidth, quality, callback) {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = function (event) {
+        const img = new Image();
+        img.src = event.target.result;
+        img.onload = function () {
+            let width = img.width;
+            let height = img.height;
+            if (width > maxWidth) {
+                height = Math.round(height * (maxWidth / width));
+                width = maxWidth;
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            callback(canvas.toDataURL('image/jpeg', quality));
+        };
+    };
 }
 
 function deletePhoto(id) {
@@ -928,6 +953,7 @@ function deletePhoto(id) {
     const delBtn = document.getElementById(`delBtn${id}`);
     
     img.src = "";
+    img.removeAttribute('src'); // 徹底移除 src
     img.style.display = 'none';
     box.querySelector('.add-photo-btn').style.display = 'block';
     box.classList.remove('has-image');
@@ -943,24 +969,63 @@ function resetReportForm() {
     document.getElementById('reportTwd97').innerText = "定位中...";
 }
 
-function submitReport() {
-    if (confirm("確定要上傳此案件通報嗎？")) {
-        // 模擬上傳資料打包
-        const data = {
-            caseId: document.getElementById('reportCaseId').innerText,
+async function submitReport() {
+    if (GOOGLE_SCRIPT_URL.includes("您的SCRIPT_ID")) {
+        alert("請先設定 Google Apps Script URL！");
+        return;
+    }
+
+    const desc = document.getElementById('reportDesc').value;
+    if (!desc.trim()) {
+        alert("請輸入案情描述！");
+        return;
+    }
+
+    if (!confirm("確定要上傳此案件通報嗎？")) return;
+
+    // 鎖定按鈕避免重複發送
+    const btn = document.getElementById('btnSubmitReport');
+    const originalText = btn.innerText;
+    btn.disabled = true;
+    btn.innerText = "資料上傳中...";
+
+    try {
+        // 準備資料
+        const img1 = document.getElementById('imgPreview1');
+        const img2 = document.getElementById('imgPreview2');
+        
+        const payload = {
+            // caseId 由後端生成，這裡不需要傳
             time: document.getElementById('reportTime').innerText,
             wgs84: document.getElementById('reportWgs84').innerText,
             twd97: document.getElementById('reportTwd97').innerText,
-            description: document.getElementById('reportDesc').value, // 新增：案情描述
-            photo1: document.getElementById('imgPreview1').src ? "有照片" : "無",
-            photo2: document.getElementById('imgPreview2').src ? "有照片" : "無"
+            description: desc,
+            photo1: (img1.src && img1.src.startsWith('data:')) ? img1.src : "",
+            photo2: (img2.src && img2.src.startsWith('data:')) ? img2.src : ""
         };
-        
-        console.log("上傳資料:", data);
-        
-        alert("案件通報成功！\n\n(此為前端模擬，資料已記錄於 Console)");
-        reportCaseNumber++; // 模擬編號增加
-        closeReport();
+
+        // 發送至 Google Apps Script
+        const response = await fetch(GOOGLE_SCRIPT_URL, {
+            method: "POST",
+            body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+
+        if (result.result === "success") {
+            // 顯示後端回傳的案件編號
+            alert(`✅ 案件通報成功！\n\n案件編號：${result.caseId}\n資料已寫入雲端試算表。`);
+            closeReport();
+        } else {
+            alert("❌ 上傳失敗: " + (result.error || "未知錯誤"));
+        }
+
+    } catch (error) {
+        console.error(error);
+        alert("❌ 連線錯誤，請檢查網路或稍後再試。");
+    } finally {
+        btn.disabled = false;
+        btn.innerText = originalText;
     }
 }
 

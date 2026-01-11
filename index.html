@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.1150111-V10-CompactMobile)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.1150111-V11-MobileIdFix)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -262,7 +262,7 @@
   .dot:hover { background: #cbd5e1; }
   .dot.active { background: var(--accent-color); color: #fff; border-color: var(--accent-color); transform: scale(1.1); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
 
-  /* === Mobile Style (針對手機版優化 V10) === */
+  /* === Mobile Style (針對手機版優化 V11) === */
   .mobile-compact-header, .mobile-photo-tabs, .mobile-details-toggle { display: none; } 
   .desktop-only { display: block; }
 
@@ -282,7 +282,14 @@
       }
       .m-row-1 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
       .m-row-1 .status-pill { margin: 0; font-size: 10px; padding: 2px 8px; }
-      .m-row-1 .case-id { font-size: 18px; margin: 0; }
+      
+      /* V11 修正：手機版案件編號樣式 */
+      .m-row-1 .case-id { 
+          font-size: 14px; /* 縮小字體以容納「案件編號：114年第155案」 */
+          font-weight: bold;
+          color: #333;
+          margin: 0; 
+      }
       
       .m-row-2 { display: flex; align-items: baseline; gap: 8px; }
       .m-row-2 .price-val { font-size: 16px; font-weight: 900; color: #d35400; white-space: nowrap; flex-shrink: 0; }
@@ -755,7 +762,7 @@ const searchResultLayer = L.featureGroup().addTo(map);
 const clusterLayer = L.featureGroup().addTo(map);
 const measureLayer = L.layerGroup().addTo(map).setZIndex(1001);
 
-/* === 核心功能：新版泡泡窗生成函式 (3-Column + Sync + Wan + Mobile Opt V10) === */
+/* === 核心功能：新版泡泡窗生成函式 (3-Column + Sync + Wan + Mobile Opt V11) === */
 
 // 手機版切換照片 Tab 的函數
 window.switchMobilePhotoTab = function(el, type) {
@@ -842,6 +849,15 @@ function createPopup(data) {
     if(status.includes('施工') || status.includes('派工')) pillClass = 'pill-working';
     else if(status.includes('緊急') || status.includes('搶修')) pillClass = 'pill-urgent';
 
+    // V11: 手機版案件編號格式化邏輯 (如 114-155 -> 114年第155案)
+    let mobileCaseIdDisplay = caseId;
+    const idMatch = caseId.match(/^(\d+)-(\d+)$/);
+    if(idMatch) {
+        mobileCaseIdDisplay = `案件編號：${idMatch[1]}年第${idMatch[2]}案`;
+    } else {
+        mobileCaseIdDisplay = `案件編號：${caseId}`;
+    }
+
     const getPhotoArray = (str) => {
         if(!str) return [];
         return str.split(/[;\n\r]+/).map(u => u.trim()).filter(u => u.length > 0);
@@ -888,7 +904,8 @@ function createPopup(data) {
             <div class="mobile-compact-header">
                 <div class="m-row-1">
                     <div class="status-pill ${pillClass}">${status}</div>
-                    <div class="case-id">${caseId}</div>
+                    <!-- V11 使用格式化後的文字 -->
+                    <div class="case-id mobile-id-text">${mobileCaseIdDisplay}</div>
                 </div>
                 <div class="m-row-2">
                     <div class="price-val">${price}</div>

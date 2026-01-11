@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.1150111-V9-MobileOpt)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.1150111-V10-CompactMobile)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -247,7 +247,8 @@
   .popup-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .popup-btn-new { background: white; color: var(--popup-text-main); border: 1px solid var(--popup-border); padding: 8px 0; border-radius: 8px; font-size: 10px; font-weight: 900; display: flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none; transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
   .popup-btn-new:hover { background: var(--popup-text-main); color: white; border-color: var(--popup-text-main); }
-  
+  .btn-full { grid-column: span 2; background: #ecfdf5; }
+
   /* 照片輪播 */
   .photo-section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
   .photo-title { font-size: 11px; font-weight: 900; color: var(--popup-text-main); display: flex; align-items: center; gap: 5px; }
@@ -261,44 +262,57 @@
   .dot:hover { background: #cbd5e1; }
   .dot.active { background: var(--accent-color); color: #fff; border-color: var(--accent-color); transform: scale(1.1); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
 
-  /* === Mobile Style (針對手機版優化) === */
-  .mobile-photo-tabs, .mobile-details-toggle { display: none; } /* 電腦版隱藏 */
+  /* === Mobile Style (針對手機版優化 V10) === */
+  .mobile-compact-header, .mobile-photo-tabs, .mobile-details-toggle { display: none; } 
+  .desktop-only { display: block; }
 
   @media (max-width: 768px) {
       .custom-popup .leaflet-popup-content { width: 300px !important; }
+      .desktop-only { display: none !important; }
       
       /* 重設佈局：使用 Flex column 與 order 屬性重排 */
       .popup-card { flex-direction: column; min-height: auto; }
       .popup-deco-strip { width: 100%; height: 6px; border-radius: 20px 20px 0 0; background: #a7f3d0; order: 0; }
+      .popup-col-info { display: contents; } /* 讓子元素能參與 order 排列 */
       
-      /* 資訊欄使用 display: contents 讓子元素能參與 popup-card 的 flex 排列 */
-      .popup-col-info { display: contents; }
+      /* Row 1 & 2: 極致緊湊標頭 */
+      .mobile-compact-header { 
+          order: 1; display: block; 
+          padding: 8px 12px; background: #fff; border-bottom: 1px dashed #eee; 
+      }
+      .m-row-1 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+      .m-row-1 .status-pill { margin: 0; font-size: 10px; padding: 2px 8px; }
+      .m-row-1 .case-id { font-size: 18px; margin: 0; }
       
-      /* 1. 核心資訊 (Header) */
-      .info-header-block { order: 1; padding: 15px; background: #fff; border-bottom: 1px dashed #eee; }
-      .case-id { font-size: 22px; } .price-val { font-size: 20px; color: #d35400; }
+      .m-row-2 { display: flex; align-items: baseline; gap: 8px; }
+      .m-row-2 .price-val { font-size: 16px; font-weight: 900; color: #d35400; white-space: nowrap; flex-shrink: 0; }
+      .m-tags-line { 
+          flex: 1; display: flex; gap: 5px; overflow: hidden; white-space: nowrap; 
+          font-size: 11px; color: #555; align-items: center; min-width: 0;
+      }
+      .m-tags-line span { 
+          background: #f1f5f9; padding: 1px 4px; border-radius: 4px; 
+          overflow: hidden; text-overflow: ellipsis; 
+      }
+
+      /* Row 3: 照片 Tabs + Photo */
+      .mobile-photo-tabs { order: 2; display: flex; background: #f8fafc; padding: 2px; gap: 2px; justify-content: center; border-bottom: 1px solid #f1f5f9; }
+      .m-tab { flex: 1; padding: 6px; text-align: center; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer; color: #94a3b8; transition:all 0.2s; }
+      .m-tab.active { background: #fff; color: var(--primary-color); box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
       
-      /* 2. 照片切換 Tabs (方案 A) */
-      .mobile-photo-tabs { order: 2; display: flex; background: #f1f5f9; padding: 5px; gap: 5px; justify-content: center; border-bottom: 1px solid #e2e8f0; }
-      .m-tab { flex: 1; padding: 8px; text-align: center; border-radius: 20px; font-size: 12px; font-weight: bold; cursor: pointer; transition: all 0.2s; color: #64748b; border: 1px solid transparent; }
-      .m-tab.active { background: #fff; color: var(--primary-color); border-color: #cbd5e1; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-      
-      /* 3. 照片區 (方案 A - 預設顯示施工後) */
-      .popup-col-photo { order: 3; height: 250px; border: none; padding: 10px; display: none; } /* 預設隱藏 */
+      .popup-col-photo { order: 3; height: 220px; border: none; padding: 5px; display: none; margin: 0; } /* 更緊湊的高度 */
       .popup-col-photo.active-view { display: block; animation: fadeIn 0.3s; }
-      .photo-section-header { display: none; } /* 手機版隱藏原本的小標題，因為有 Tabs 了 */
+      .photo-section-header { display: none; }
       
-      /* 4. 功能按鈕 (方案 B - 圖示化) */
-      .popup-btns { order: 4; display: flex; gap: 10px; padding: 10px 15px; background: #fff; border-top: 1px solid #eee; overflow-x: auto; }
-      .popup-btn-new { flex: 1; border-radius: 50%; width: 40px; height: 40px; border: 1px solid #ddd; font-size: 16px; padding: 0; min-width: 40px; color: #555; background: #f8fafc; }
-      .popup-btn-new span { display: none; } /* 隱藏文字 */
+      /* Row 4: 圖示按鈕 */
+      .popup-btns { order: 4; display: flex; gap: 8px; padding: 8px; background: #fff; border-top: 1px solid #f1f5f9; }
+      .popup-btn-new { flex: 1; border-radius: 8px; height: 36px; font-size: 16px; padding: 0; color: #555; background: #f8fafc; border: 1px solid #e2e8f0; }
+      .popup-btn-new span { display: none; } /* 隱藏文字，只留 Icon */
       .popup-btn-new:hover { background: var(--primary-color); color: #fff; }
       
-      /* 5. 詳細資訊折疊 (方案 C) */
-      .mobile-details-toggle { order: 5; display: block; text-align: center; padding: 10px; background: #f0f9ff; color: var(--primary-color); font-weight: bold; font-size: 12px; cursor: pointer; border-top: 1px solid #e0f2fe; }
-      .mobile-details-toggle:hover { background: #e0f2fe; }
-      
-      .info-details-block { order: 6; display: none; padding: 15px; background: #fff; animation: slideDown 0.3s; }
+      /* Row 5: 折疊詳情 */
+      .mobile-details-toggle { order: 5; display: block; text-align: center; padding: 8px; background: #f0f9ff; color: var(--primary-color); font-weight: bold; font-size: 11px; cursor: pointer; border-top: 1px solid #e0f2fe; }
+      .info-details-block { order: 6; display: none; padding: 10px; background: #fff; animation: slideDown 0.3s; }
       .info-details-block.open { display: block; }
   }
   @keyframes slideDown { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:translateY(0); } }
@@ -741,7 +755,7 @@ const searchResultLayer = L.featureGroup().addTo(map);
 const clusterLayer = L.featureGroup().addTo(map);
 const measureLayer = L.layerGroup().addTo(map).setZIndex(1001);
 
-/* === 核心功能：新版泡泡窗生成函式 (3-Column + Sync + Wan + Mobile Opt) === */
+/* === 核心功能：新版泡泡窗生成函式 (3-Column + Sync + Wan + Mobile Opt V10) === */
 
 // 手機版切換照片 Tab 的函數
 window.switchMobilePhotoTab = function(el, type) {
@@ -766,7 +780,6 @@ window.switchMobilePhotoTab = function(el, type) {
 window.toggleMobileDetails = function(el) {
     const card = el.closest('.popup-card');
     const details = card.querySelector('.info-details-block');
-    const icon = el.querySelector('i');
     
     if(details.classList.contains('open')) {
         details.classList.remove('open');
@@ -777,7 +790,7 @@ window.toggleMobileDetails = function(el) {
     }
 };
 
-// 全域函數：切換照片 (點擊圓點時觸發，包含聯動功能)
+// 全域函數：切換照片
 window.switchPhotoSet = function(el, index) {
     const card = el.closest('.popup-card');
     if(!card) return;
@@ -806,7 +819,6 @@ function createPopup(data) {
     const twd = twd97FromWgs84(lat, lng);
     const distText = isNaN(dist) ? 'N/A' : dist.toFixed(0) + 'm';
     
-    // 資料處理
     const caseId = props['案件編號'] || '無編號';
     const status = props['案件狀態'] || '已完工';
     const timing = props['派工時機'] || '一般';
@@ -867,39 +879,52 @@ function createPopup(data) {
         ? `<a href="${procurementUrl}" target="_blank" class="popup-btn-new"><i class="fas fa-file-alt"></i><span>決標</span></a>` 
         : `<span class="popup-btn-new" style="opacity:0.5;cursor:not-allowed;"><i class="fas fa-file-alt"></i><span>無公告</span></span>`;
 
-    // 關鍵修改：重新組織 HTML 結構以適應手機版 Grid/Flex 重排
     return `
     <div class="popup-card">
         <div class="popup-deco-strip"></div>
         <div class="popup-col-info">
             
-            <!-- 手機版 Header Block -->
-            <div class="info-header-block">
+            <!-- 手機版極致緊湊 Header (Row 1 & 2) -->
+            <div class="mobile-compact-header">
+                <div class="m-row-1">
+                    <div class="status-pill ${pillClass}">${status}</div>
+                    <div class="case-id">${caseId}</div>
+                </div>
+                <div class="m-row-2">
+                    <div class="price-val">${price}</div>
+                    <div class="m-tags-line">
+                        <span>${fileName}</span>
+                        <span>${type}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 電腦版 Header (手機隱藏) -->
+            <div class="desktop-only">
                 <div class="status-pill ${pillClass}">進度：${status}</div>
                 <div class="case-id">${caseId}</div>
-                <div class="price-val">${price}</div>
                 <div class="case-meta">
                     <span class="file-tag">${fileName}</span>
                     <span class="type-tag">${type}</span>
                 </div>
+                <div class="popup-tags">
+                    <div class="tag-pill tag-dark"><i class="fas fa-clock"></i> ${timing}</div>
+                    <div class="tag-pill tag-light"><i class="fas fa-map-marker-alt" style="color:#10b981;"></i> 距路線 ${distText}</div>
+                </div>
+                <div class="price-block">
+                    <div class="price-label">決標金額</div>
+                    <div class="price-val">${price}</div>
+                </div>
             </div>
 
-            <!-- 手機版 Tabs -->
+            <!-- 手機版 Tabs (Row 3 part 1) -->
             <div class="mobile-photo-tabs">
                 <div class="m-tab" onclick="switchMobilePhotoTab(this, 'before')">施工前</div>
                 <div class="m-tab active" onclick="switchMobilePhotoTab(this, 'after')">● 施工後</div>
             </div>
 
-            <!-- 詳細資訊 (手機版折疊) -->
+            <!-- 詳細資訊區塊 (手機版折疊 / 電腦版常駐) -->
             <div class="info-details-block">
-                <div class="popup-tags">
-                    <div class="tag-pill tag-dark"><i class="fas fa-clock"></i> ${timing}</div>
-                    <div class="tag-pill tag-light"><i class="fas fa-map-marker-alt" style="color:#10b981;"></i> 距路線 ${distText}</div>
-                </div>
-                <div class="price-block desktop-only"> <!-- 電腦版已顯示在上方，這裡保留結構給 JS 邏輯使用 -->
-                    <div class="price-label">決標金額</div>
-                    <div class="price-val">${price}</div>
-                </div>
                 <div class="compact-list">
                     <div class="compact-item">
                         <span class="compact-label">施工廠商</span>
@@ -922,7 +947,7 @@ function createPopup(data) {
                 </div>
             </div>
             
-            <!-- 功能按鈕 -->
+            <!-- 功能按鈕 (Row 4) -->
             <div class="popup-btns">
                 ${tenderBtn}
                 <a href="https://maps.nlsc.gov.tw/go/${lng}/${lat}" target="_blank" class="popup-btn-new"><i class="fas fa-map"></i><span>地籍</span></a>
@@ -930,11 +955,12 @@ function createPopup(data) {
                 <a href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}" target="_blank" class="popup-btn-new"><i class="fas fa-location-arrow"></i><span>導航</span></a>
             </div>
 
-            <!-- 手機版折疊開關 -->
+            <!-- 手機版折疊開關 (Row 5) -->
             <div class="mobile-details-toggle" onclick="toggleMobileDetails(this)">▼ 查看詳細資訊 (廠商、座標、日期)</div>
 
         </div>
 
+        <!-- 照片區塊 (Row 3 part 2) -->
         <div class="popup-col-photo photo-col-before">
             ${generatePhotoSection('施工前', arrBefore, 'before')}
         </div>

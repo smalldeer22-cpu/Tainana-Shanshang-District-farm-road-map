@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.1150111-V12-LineFix)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.1150111-V13-SmartID)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -783,7 +783,7 @@ const searchResultLayer = L.featureGroup().addTo(map);
 const clusterLayer = L.featureGroup().addTo(map);
 const measureLayer = L.layerGroup().addTo(map).setZIndex(1001);
 
-/* === 核心功能：新版泡泡窗生成函式 (3-Column + Sync + Wan + Mobile Opt V11) === */
+/* === 核心功能：新版泡泡窗生成函式 (3-Column + Sync + Wan + Mobile Opt V13) === */
 
 // 手機版切換照片 Tab 的函數
 window.switchMobilePhotoTab = function(el, type) {
@@ -847,7 +847,6 @@ function createPopup(data) {
     const twd = twd97FromWgs84(lat, lng);
     const distText = isNaN(dist) ? 'N/A' : dist.toFixed(0) + 'm';
     
-    const caseId = props['案件編號'] || '無編號';
     const status = props['案件狀態'] || '已完工';
     const timing = props['派工時機'] || '一般';
     const type = props['搶修類型'] || '一般工程';
@@ -855,6 +854,23 @@ function createPopup(data) {
     const supervisor = props['監造廠商'] || '-';
     const date = props['完工日期'] || '-';
     const procurementUrl = props['採購網址'] ? props['採購網址'].trim() : '';
+
+    const rawCaseId = props['案件編號'] || '無編號';
+
+    // === V13 Logic: 智慧型案件編號顯示 (Smart Case ID) ===
+    let formattedCaseId = rawCaseId; 
+    const idParts = rawCaseId.split('-');
+    if (idParts.length >= 2) {
+        const numStr = idParts[idParts.length - 1]; 
+        const num = parseInt(numStr, 10);
+        if (!isNaN(num)) {
+            // 電腦版顯示：[Label]第[Number]案 (e.g. 114年搶險搶修第56案)
+            formattedCaseId = `${fileName}第${num}案`;
+        }
+    }
+
+    // 手機版顯示：加上前綴
+    const mobileCaseIdDisplay = `案件編號：${formattedCaseId}`;
 
     let price = 'NT$ 0';
     const rawPrice = props['決標金額'];
@@ -869,15 +885,6 @@ function createPopup(data) {
     let pillClass = 'pill-done';
     if(status.includes('施工') || status.includes('派工')) pillClass = 'pill-working';
     else if(status.includes('緊急') || status.includes('搶修')) pillClass = 'pill-urgent';
-
-    // V11: 手機版案件編號格式化邏輯 (如 114-155 -> 114年第155案)
-    let mobileCaseIdDisplay = caseId;
-    const idMatch = caseId.match(/^(\d+)-(\d+)$/);
-    if(idMatch) {
-        mobileCaseIdDisplay = `案件編號：${idMatch[1]}年第${idMatch[2]}案`;
-    } else {
-        mobileCaseIdDisplay = `案件編號：${caseId}`;
-    }
 
     const getPhotoArray = (str) => {
         if(!str) return [];
@@ -925,7 +932,7 @@ function createPopup(data) {
             <div class="mobile-compact-header">
                 <div class="m-row-1">
                     <div class="status-pill ${pillClass}">${status}</div>
-                    <!-- V11 使用格式化後的文字 -->
+                    <!-- V13 手機版顯示 -->
                     <div class="case-id mobile-id-text">${mobileCaseIdDisplay}</div>
                 </div>
                 <div class="m-row-2">
@@ -940,7 +947,8 @@ function createPopup(data) {
             <!-- 電腦版 Header (手機隱藏) -->
             <div class="desktop-only">
                 <div class="status-pill ${pillClass}">進度：${status}</div>
-                <div class="case-id">${caseId}</div>
+                <!-- V13 電腦版顯示 -->
+                <div class="case-id">${formattedCaseId}</div>
                 <div class="case-meta">
                     <span class="file-tag">${fileName}</span>
                     <span class="type-tag">${type}</span>

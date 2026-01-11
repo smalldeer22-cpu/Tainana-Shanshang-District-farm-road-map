@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.1150111-V11-MobileIdFix)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.1150111-V12-LineFix)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -262,7 +262,7 @@
   .dot:hover { background: #cbd5e1; }
   .dot.active { background: var(--accent-color); color: #fff; border-color: var(--accent-color); transform: scale(1.1); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
 
-  /* === Mobile Style (針對手機版優化 V11) === */
+  /* === Mobile Style (針對手機版優化 V12) === */
   .mobile-compact-header, .mobile-photo-tabs, .mobile-details-toggle { display: none; } 
   .desktop-only { display: block; }
 
@@ -278,17 +278,38 @@
       /* Row 1 & 2: 極致緊湊標頭 */
       .mobile-compact-header { 
           order: 1; display: block; 
-          padding: 8px 12px; background: #fff; border-bottom: 1px dashed #eee; 
+          padding: 8px 12px;
+          padding-right: 40px; /* V12: 增加右側 Padding 避開 X 按鈕 */
+          background: #fff; border-bottom: 1px dashed #eee;
+          position: relative;
       }
-      .m-row-1 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
-      .m-row-1 .status-pill { margin: 0; font-size: 10px; padding: 2px 8px; }
       
-      /* V11 修正：手機版案件編號樣式 */
+      /* V12: 修改排版邏輯為絕對置中 */
+      .m-row-1 { 
+          display: flex; 
+          align-items: center; 
+          justify-content: center; /* 讓內容居中 */
+          margin-bottom: 4px;
+          position: relative;
+          min-height: 24px;
+      }
+      .m-row-1 .status-pill { 
+          position: absolute; /* 絕對定位在左側 */
+          left: 0;
+          top: 50%;
+          transform: translateY(-50%);
+          margin: 0; 
+          font-size: 10px; 
+          padding: 2px 8px; 
+          z-index: 2;
+      }
       .m-row-1 .case-id { 
-          font-size: 14px; /* 縮小字體以容納「案件編號：114年第155案」 */
+          font-size: 14px; 
           font-weight: bold;
           color: #333;
           margin: 0; 
+          text-align: center; /* 文字居中 */
+          z-index: 1;
       }
       
       .m-row-2 { display: flex; align-items: baseline; gap: 8px; }
@@ -1858,6 +1879,43 @@ function updateDengueRadius() {
     for(let i=0; i<radios.length; i++){ if(radios[i].checked) r = parseInt(radios[i].value); }
     if(r === 0) return; dengueLayer.eachLayer(marker => { L.circle(marker.getLatLng(), { radius: r, color: 'none', fillColor: '#ff9800', fillOpacity: 0.3 }).addTo(dengueRadiusLayer); });
 }
+
+// === 0111V12 新增：解決 LINE 瀏覽器返回後不記憶泡泡窗的問題 ===
+map.on('popupopen', function(e) {
+    var content = e.popup.getContent();
+    var latlng = e.popup.getLatLng();
+    // 將當前開啟的泡泡窗狀態存入 SessionStorage
+    sessionStorage.setItem('savedPopup', JSON.stringify({
+        lat: latlng.lat,
+        lng: latlng.lng,
+        content: content,
+        zoom: map.getZoom()
+    }));
+});
+
+map.on('popupclose', function(e) {
+    // 關閉時清除記憶
+    sessionStorage.removeItem('savedPopup');
+});
+
+// 當頁面載入完成 (包含 LINE 返回重新整理) 時，檢查是否有記憶的泡泡窗
+window.addEventListener('load', function() {
+    setTimeout(function(){
+        var saved = sessionStorage.getItem('savedPopup');
+        if(saved) {
+            try {
+                var data = JSON.parse(saved);
+                map.setView([data.lat, data.lng], data.zoom || 18);
+                L.popup({className:'custom-popup', maxWidth:960})
+                 .setLatLng([data.lat, data.lng])
+                 .setContent(data.content)
+                 .openOn(map);
+            } catch(e) {
+                console.error("Restore popup failed", e);
+            }
+        }
+    }, 500); // 稍微延遲以確保地圖初始化完畢
+});
 </script>
 </body>
 </html>

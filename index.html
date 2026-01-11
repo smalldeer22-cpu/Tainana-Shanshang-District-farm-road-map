@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.1150111-V6-ReportEnhanced)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.1150111-V7-UXFix)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -714,7 +714,7 @@ let dupCheckLayer = L.layerGroup().addTo(map);
 let dupMarkersMap = {}; 
 let CURRENT_DUPLICATE_GROUPS = []; 
 let CURRENT_MAP_GROUPS = {}; 
-let reportNearbyMatches = []; // 0111V6 新增：儲存通報時搜尋到的附近案件
+let reportNearbyMatches = []; 
 
 let isMeasuring = false;
 let measureStartLatLng = null;
@@ -722,6 +722,7 @@ let measureLine = null;
 let measureTooltip = null;
 let markersClusterGroup = null; 
 let activeRepairLayers = []; 
+let selectedTimelineMarker = null; // 0111V7 新增：記錄目前被鎖定的時間軸標記
 
 const DEEP_BLUE = '#004080'; 
 const LIGHT_BLUE = '#0066cc'; 
@@ -1516,7 +1517,15 @@ function handleMapClickSelection(idx, isInteractive) {
 }
 map.on('click', (e) => {
     if(isMeasuring) { if(measureStartLatLng) finishMeasure(e.latlng); } 
-    else { document.getElementById('contextMenu').style.display='none'; document.getElementById('roadSelect').value = ""; if(roadsLayer) roadsLayer.eachLayer(l => l.setStyle({ color: DEEP_BLUE, weight: 3 })); map.closePopup(); bottomPanel.classList.remove('open'); routeMatchLayer.clearLayers(); }
+    else { 
+        document.getElementById('contextMenu').style.display='none'; 
+        document.getElementById('roadSelect').value = ""; 
+        if(roadsLayer) roadsLayer.eachLayer(l => l.setStyle({ color: DEEP_BLUE, weight: 3 })); 
+        map.closePopup(); 
+        bottomPanel.classList.remove('open'); 
+        routeMatchLayer.clearLayers(); 
+        selectedTimelineMarker = null; // 0111V7 新增：點擊地圖時重置鎖定狀態
+    }
 });
 const ctxMenu = document.getElementById('contextMenu'); let clickedLatLng = null;
 map.on('contextmenu', (e) => {
@@ -1708,6 +1717,7 @@ function renderTimeline(matches) {
     // 修正：優先清除容器，避免程式中途錯誤導致 "讀取中" 殘留
     cont.innerHTML = '';
     routeMatchLayer.clearLayers(); 
+    selectedTimelineMarker = null; // 重置鎖定狀態
 
     if(matches.length === 0) { cont.innerHTML = '<div style="padding:20px;">無符合篩選條件的紀錄</div>'; statsDiv.innerHTML = '總花費：<span>$0</span> | 維修：<span>0 次</span>'; return; }
     
@@ -1729,8 +1739,12 @@ function renderTimeline(matches) {
         const emgHtml = `<span style="color:#ffcdd2;">搶修 $${emgCost.toLocaleString()} (${emgCount}次)</span>`;
         statsDiv.innerHTML = `${totalHtml} <span class="stat-divider" style="opacity:0.5; margin:0 5px;">|</span> ${genHtml} <span class="stat-divider" style="opacity:0.5; margin:0 5px;">|</span> ${emgHtml}`;
 
+        // 定義樣式以避免重複
+        const normalStyle = { radius: 14, color: '#fff', fillColor: DEEP_BLUE, weight:1, fillOpacity:0.9 };
+        const highlightStyle = { radius: 20, color:'#ffd700', weight:4, fillColor:'#d32f2f' };
+
         matches.forEach((m, i) => {
-            const marker = L.circleMarker([m.lat, m.lng], { radius: 14, color: '#fff', fillColor: DEEP_BLUE, weight:1, fillOpacity:0.9 }).addTo(routeMatchLayer);
+            const marker = L.circleMarker([m.lat, m.lng], normalStyle).addTo(routeMatchLayer);
             // 確保 createPopup 接收到的資料是正確的
             marker.bindPopup(createPopup({ fileName: m.label, props: m.props, lat: m.lat, lng: m.lng, dist: m.dist }), {className:'custom-popup', maxWidth:960});
             
@@ -1750,9 +1764,33 @@ function renderTimeline(matches) {
             const alertClass = isFrequent ? 'alert-right' : '';
             const item = document.createElement('div'); item.className = `h-item ${alertClass}`;
             item.innerHTML = `<div class="h-date">${m.props['完工日期']||'未知'}</div><div class="h-line-container"><div class="h-dot ${sizeClass}"></div></div><div class="h-badge ${labelName.includes('搶修')||labelName.includes('災害')||labelName.includes('緊急') ? 'badge-urgent' : 'badge-normal'}">${labelName.includes('搶修')||labelName.includes('災害')||labelName.includes('緊急') ? '搶修' : '一般'}</div>`;
-            item.addEventListener('mouseenter', () => { marker.setStyle({ radius: 20, color:'#ffd700', weight:4, fillColor:'#d32f2f' }); marker.bringToFront(); marker.openPopup(); });
-            item.addEventListener('mouseleave', () => { marker.setStyle({ radius: 14, color:'#fff', weight:1, fillColor:DEEP_BLUE }); marker.closePopup(); });
-            item.addEventListener('click', () => map.flyTo([m.lat, m.lng], 18));
+            
+            // === 0111V7 修正 UX 事件 ===
+            item.addEventListener('mouseenter', () => { 
+                if (selectedTimelineMarker === marker) return;
+                marker.setStyle(highlightStyle); marker.bringToFront(); marker.openPopup(); 
+            });
+            item.addEventListener('mouseleave', () => { 
+                if (selectedTimelineMarker === marker) return;
+                marker.setStyle(normalStyle); marker.closePopup(); 
+            });
+            item.addEventListener('click', (e) => {
+                e.stopPropagation(); // 防止冒泡
+                // 1. 若之前有選中且不是這一個，則復原上一個
+                if (selectedTimelineMarker && selectedTimelineMarker !== marker) {
+                     selectedTimelineMarker.setStyle(normalStyle);
+                     selectedTimelineMarker.closePopup();
+                }
+                // 2. 設定當前為選中
+                selectedTimelineMarker = marker;
+                // 3. 套用高亮樣式並開啟
+                marker.setStyle(highlightStyle);
+                marker.bringToFront();
+                marker.openPopup();
+                // 4. 飛往該點
+                map.flyTo([m.lat, m.lng], 18);
+            });
+            
             cont.appendChild(item);
         });
     } catch(err) {

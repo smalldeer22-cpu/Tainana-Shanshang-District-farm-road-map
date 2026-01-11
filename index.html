@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.1150111-V14-AdvancedFilters)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.1150111-V15-FormatFix)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -262,7 +262,7 @@
   .dot:hover { background: #cbd5e1; }
   .dot.active { background: var(--accent-color); color: #fff; border-color: var(--accent-color); transform: scale(1.1); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
 
-  /* === Mobile Style (針對手機版優化 V12) === */
+  /* === Mobile Style (針對手機版優化 V12+V15) === */
   .mobile-compact-header, .mobile-photo-tabs, .mobile-details-toggle { display: none; } 
   .desktop-only { display: block; }
 
@@ -873,13 +873,25 @@ function createPopup(data) {
     const date = props['完工日期'] || '-';
     const procurementUrl = props['採購網址'] ? props['採購網址'].trim() : '';
 
-    let price = 'NT$ 0';
+    // V15: 金額格式優化
+    let price = '0元';
     const rawPrice = props['決標金額'];
     if(rawPrice) {
         const num = parseInt(rawPrice.toString().replace(/,/g, ''));
         if(!isNaN(num)) {
-            if(num < 10000) { price = `NT$ ${num}`; } 
-            else { const w = Math.floor(num / 10000); const r = num % 10000; price = `NT$ ${w}萬${r > 0 ? r : ''}`; }
+            // V15 Formatter: X萬0000元 with comma
+            const formatPriceV15 = (n) => {
+                if(n < 10000) return n.toLocaleString() + '元';
+                const w = Math.floor(n / 10000);
+                const r = n % 10000;
+                let rStr = r.toString().padStart(4, '0');
+                // 若後4位大於等於1000，加上千分位逗號
+                if(r >= 1000) {
+                    rStr = rStr.substring(0, 1) + ',' + rStr.substring(1);
+                }
+                return `${w}萬${rStr}元`;
+            };
+            price = formatPriceV15(num);
         }
     }
 
@@ -897,7 +909,9 @@ function createPopup(data) {
             formattedCaseId = `${fileName}第${num}案`;
         }
     }
-    const mobileCaseIdDisplay = `案件編號：${formattedCaseId}`;
+    
+    // V15: 手機版標題簡化 (直接顯示文字，不加前綴)
+    const mobileCaseIdDisplay = formattedCaseId;
 
     const getPhotoArray = (str) => {
         if(!str) return [];
@@ -945,6 +959,7 @@ function createPopup(data) {
             <div class="mobile-compact-header">
                 <div class="m-row-1">
                     <div class="status-pill ${pillClass}">${status}</div>
+                    <!-- V15 手機版顯示 (簡化標題) -->
                     <div class="case-id mobile-id-text">${mobileCaseIdDisplay}</div>
                 </div>
                 <div class="m-row-2">
@@ -959,6 +974,7 @@ function createPopup(data) {
             <!-- 電腦版 Header (手機隱藏) -->
             <div class="desktop-only">
                 <div class="status-pill ${pillClass}">進度：${status}</div>
+                <!-- V13 電腦版顯示 -->
                 <div class="case-id">${formattedCaseId}</div>
                 <div class="case-meta">
                     <span class="file-tag">${fileName}</span>

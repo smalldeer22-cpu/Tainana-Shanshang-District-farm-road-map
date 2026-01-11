@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.1150111-V13-SmartID)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.1150111-V14-AdvancedFilters)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -618,6 +618,19 @@
               <button class="secondary" id="clearContractorStatsBtn" style="margin-top:10px;"><i class="fas fa-eraser"></i> 清除所有顯示</button>
           </div>
           <div style="text-align:center; font-size:12px; color:#999; margin:5px 0;">- 或 -</div>
+          
+          <!-- V14 新增：進階篩選 (派工時機、搶修類型) -->
+          <div class="search-block-label"><i class="fas fa-clock"></i> 依派工時機快篩</div>
+          <select id="timingSelect" style="margin-bottom:10px;">
+              <option value="">(讀取系統資料中...)</option>
+          </select>
+          
+          <div class="search-block-label"><i class="fas fa-tools"></i> 依維修類型快篩</div>
+          <select id="typeSelect" style="margin-bottom:10px;">
+              <option value="">(讀取系統資料中...)</option>
+          </select>
+          <div style="text-align:center; font-size:12px; color:#999; margin:5px 0;">- 或 -</div>
+          
           <div class="search-block-label"><i class="fas fa-keyboard"></i> 關鍵字搜尋</div>
           <input type="text" id="keywordInput" placeholder="例如：案件編號(113001) 案件名稱 廠商名稱">
           <button id="searchBtn" class="primary"><i class="fas fa-search"></i> 開始搜尋</button>
@@ -744,6 +757,10 @@ let roadsLayer = null;
 let roadLayersArray = [];
 let REPAIR_DATA_CACHE = {}; 
 let ALL_CONTRACTORS = new Set(); 
+// V14 新增：全域 Set 儲存唯一值
+let ALL_TIMINGS = new Set();
+let ALL_TYPES = new Set();
+
 let currentRouteAllMatches = []; 
 let villageGeoJSON = null; 
 let dupCheckLayer = L.layerGroup().addTo(map); 
@@ -847,6 +864,7 @@ function createPopup(data) {
     const twd = twd97FromWgs84(lat, lng);
     const distText = isNaN(dist) ? 'N/A' : dist.toFixed(0) + 'm';
     
+    const caseId = props['案件編號'] || '無編號';
     const status = props['案件狀態'] || '已完工';
     const timing = props['派工時機'] || '一般';
     const type = props['搶修類型'] || '一般工程';
@@ -854,23 +872,6 @@ function createPopup(data) {
     const supervisor = props['監造廠商'] || '-';
     const date = props['完工日期'] || '-';
     const procurementUrl = props['採購網址'] ? props['採購網址'].trim() : '';
-
-    const rawCaseId = props['案件編號'] || '無編號';
-
-    // === V13 Logic: 智慧型案件編號顯示 (Smart Case ID) ===
-    let formattedCaseId = rawCaseId; 
-    const idParts = rawCaseId.split('-');
-    if (idParts.length >= 2) {
-        const numStr = idParts[idParts.length - 1]; 
-        const num = parseInt(numStr, 10);
-        if (!isNaN(num)) {
-            // 電腦版顯示：[Label]第[Number]案 (e.g. 114年搶險搶修第56案)
-            formattedCaseId = `${fileName}第${num}案`;
-        }
-    }
-
-    // 手機版顯示：加上前綴
-    const mobileCaseIdDisplay = `案件編號：${formattedCaseId}`;
 
     let price = 'NT$ 0';
     const rawPrice = props['決標金額'];
@@ -885,6 +886,18 @@ function createPopup(data) {
     let pillClass = 'pill-done';
     if(status.includes('施工') || status.includes('派工')) pillClass = 'pill-working';
     else if(status.includes('緊急') || status.includes('搶修')) pillClass = 'pill-urgent';
+
+    // V13: 智慧型案件編號顯示
+    let formattedCaseId = caseId; 
+    const idParts = caseId.split('-');
+    if (idParts.length >= 2) {
+        const numStr = idParts[idParts.length - 1]; 
+        const num = parseInt(numStr, 10);
+        if (!isNaN(num)) {
+            formattedCaseId = `${fileName}第${num}案`;
+        }
+    }
+    const mobileCaseIdDisplay = `案件編號：${formattedCaseId}`;
 
     const getPhotoArray = (str) => {
         if(!str) return [];
@@ -932,7 +945,6 @@ function createPopup(data) {
             <div class="mobile-compact-header">
                 <div class="m-row-1">
                     <div class="status-pill ${pillClass}">${status}</div>
-                    <!-- V13 手機版顯示 -->
                     <div class="case-id mobile-id-text">${mobileCaseIdDisplay}</div>
                 </div>
                 <div class="m-row-2">
@@ -947,7 +959,6 @@ function createPopup(data) {
             <!-- 電腦版 Header (手機隱藏) -->
             <div class="desktop-only">
                 <div class="status-pill ${pillClass}">進度：${status}</div>
-                <!-- V13 電腦版顯示 -->
                 <div class="case-id">${formattedCaseId}</div>
                 <div class="case-meta">
                     <span class="file-tag">${fileName}</span>
@@ -1342,7 +1353,9 @@ function getVillageName(lat, lng) {
 
 document.getElementById('villageSelect').addEventListener('change', function() {
     const selectedVillage = this.value; const status = document.getElementById('searchStatus'), clearBtn = document.getElementById('clearSearchBtn');
-    document.getElementById('keywordInput').value = ''; document.getElementById('contractorSelect').value = ''; searchResultLayer.clearLayers();
+    document.getElementById('keywordInput').value = ''; document.getElementById('contractorSelect').value = ''; 
+    document.getElementById('timingSelect').value = ''; document.getElementById('typeSelect').value = '';
+    searchResultLayer.clearLayers();
     if (!selectedVillage) { status.innerText = ''; clearBtn.style.display = 'none'; return; }
     const villageFeature = villageGeoJSON.features.find(f => (f.properties.VILLAGE || f.properties.VILLNAME) === selectedVillage); if (!villageFeature) return;
     let count = 0;
@@ -1517,14 +1530,55 @@ closeClusterControlBtn.addEventListener('click', function() { clusterControlPane
 
 async function preloadAllDataForContractors() {
     const cSel = document.getElementById('contractorSelect');
+    const tSel = document.getElementById('timingSelect');
+    const typeSel = document.getElementById('typeSelect');
+
     await Promise.all(REPAIR_CONFIG.map(async item => {
         if (!REPAIR_DATA_CACHE[item.value]) { 
-            try { const res = await fetch(item.value + '.geojson'); if(res.ok) { const json = await res.json(); REPAIR_DATA_CACHE[item.value] = json; json.features?.forEach(f => { const c = f.properties['施工廠商']?.trim(); if(c) ALL_CONTRACTORS.add(c); }); } } catch(e){}
+            try { const res = await fetch(item.value + '.geojson'); if(res.ok) { const json = await res.json(); REPAIR_DATA_CACHE[item.value] = json; json.features?.forEach(f => { 
+                const c = f.properties['施工廠商']?.trim(); if(c) ALL_CONTRACTORS.add(c);
+                const t = f.properties['派工時機']?.trim(); if(t) ALL_TIMINGS.add(t);
+                const tp = f.properties['搶修類型']?.trim(); if(tp) ALL_TYPES.add(tp);
+            }); } } catch(e){}
         }
     }));
     const sortedC = Array.from(ALL_CONTRACTORS).sort();
     cSel.innerHTML = '<option value="">-- 請選擇廠商 (' + sortedC.length + ') --</option>' + sortedC.map(c => `<option value="${c}">${c}</option>`).join('');
-    cSel.addEventListener('change', function() { if(this.value) { document.getElementById('keywordInput').value=''; document.getElementById('villageSelect').value=''; performSearch(p=>p['施工廠商']?.trim()===this.value, `廠商：${this.value}`); updateContractorStats(this.value); } else { clearSearchResults(); } });
+    cSel.addEventListener('change', function() { 
+        if(this.value) { 
+            document.getElementById('keywordInput').value=''; 
+            document.getElementById('villageSelect').value=''; 
+            document.getElementById('timingSelect').value=''; 
+            document.getElementById('typeSelect').value=''; 
+            performSearch(p=>p['施工廠商']?.trim()===this.value, `廠商：${this.value}`); updateContractorStats(this.value); 
+        } else { clearSearchResults(); } 
+    });
+
+    // Populate Timing Select
+    const sortedT = Array.from(ALL_TIMINGS).sort();
+    tSel.innerHTML = '<option value="">-- 請選擇派工時機 --</option>' + sortedT.map(t => `<option value="${t}">${t}</option>`).join('');
+    tSel.addEventListener('change', function() {
+        if(this.value) {
+            document.getElementById('keywordInput').value=''; 
+            document.getElementById('villageSelect').value=''; 
+            document.getElementById('contractorSelect').value=''; 
+            document.getElementById('typeSelect').value=''; 
+            performSearch(p=>p['派工時機']?.trim()===this.value, `派工時機：${this.value}`);
+        } else { clearSearchResults(); }
+    });
+
+    // Populate Type Select
+    const sortedType = Array.from(ALL_TYPES).sort();
+    typeSel.innerHTML = '<option value="">-- 請選擇維修類型 --</option>' + sortedType.map(tp => `<option value="${tp}">${tp}</option>`).join('');
+    typeSel.addEventListener('change', function() {
+        if(this.value) {
+            document.getElementById('keywordInput').value=''; 
+            document.getElementById('villageSelect').value=''; 
+            document.getElementById('contractorSelect').value=''; 
+            document.getElementById('timingSelect').value=''; 
+            performSearch(p=>p['搶修類型']?.trim()===this.value, `維修類型：${this.value}`);
+        } else { clearSearchResults(); }
+    });
 }
 
 function updateContractorStats(contractorName) {
@@ -1592,11 +1646,23 @@ async function performSearch(predicate, label) {
 document.getElementById('searchBtn').addEventListener('click', () => {
     const kw = document.getElementById('keywordInput').value.trim().toLowerCase();
     if(!kw) return alert('請輸入關鍵字');
-    document.getElementById('contractorSelect').value = ''; document.getElementById('villageSelect').value = ''; document.getElementById('contractorStatsResult').style.display = 'none';
+    document.getElementById('contractorSelect').value = ''; document.getElementById('villageSelect').value = ''; 
+    document.getElementById('timingSelect').value = ''; document.getElementById('typeSelect').value = '';
+    document.getElementById('contractorStatsResult').style.display = 'none';
     performSearch(p => Object.values(p).join(' ').toLowerCase().includes(kw), kw);
 });
 document.getElementById('clearSearchBtn').addEventListener('click', clearSearchResults);
-function clearSearchResults() { searchResultLayer.clearLayers(); document.getElementById('keywordInput').value = ''; document.getElementById('contractorSelect').value = ''; document.getElementById('villageSelect').value = ''; document.getElementById('searchStatus').innerText = ''; document.getElementById('clearSearchBtn').style.display = 'none'; document.getElementById('contractorStatsResult').style.display = 'none'; }
+function clearSearchResults() { 
+    searchResultLayer.clearLayers(); 
+    document.getElementById('keywordInput').value = ''; 
+    document.getElementById('contractorSelect').value = ''; 
+    document.getElementById('villageSelect').value = ''; 
+    document.getElementById('timingSelect').value = ''; 
+    document.getElementById('typeSelect').value = ''; 
+    document.getElementById('searchStatus').innerText = ''; 
+    document.getElementById('clearSearchBtn').style.display = 'none'; 
+    document.getElementById('contractorStatsResult').style.display = 'none'; 
+}
 document.getElementById('roadSelect').addEventListener('change', (e) => handleMapClickSelection(e.target.value, false));
 function handleMapClickSelection(idx, isInteractive) {
     if(idx==="" || idx===null) return; if(roadsLayer) roadsLayer.eachLayer(l => l.setStyle({color: DEEP_BLUE, weight:3}));

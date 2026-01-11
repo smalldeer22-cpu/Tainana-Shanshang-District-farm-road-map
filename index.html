@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.1150111-V7-UXFix)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.1150111-V9-MobileOpt)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -162,37 +162,23 @@
   .control-btn { background:none; border:none; color:#fff; font-size:16px; cursor:pointer; padding: 5px; transition: color 0.2s; }
   .control-btn:hover { color: #ffeb3b; }
 
-  /* 0111V4 修正：篩選列排版優化 (Fit Content) */
   #timelineFilterBar { 
-      background: #f1f5f9; padding: 8px 10px; /* 縮小左右內距 */
+      background: #f1f5f9; padding: 8px 10px; 
       border-bottom: 1px solid #e0e0e0; 
-      display: flex; gap: 6px; /* 縮小間距 */
+      display: flex; gap: 6px; 
       align-items: center; flex-shrink: 0; 
       height: auto; min-height: 50px; box-sizing: border-box; 
-      flex-wrap: nowrap; /* 強制不換行 */
-      overflow-x: auto; /* 手機上可左右滑動 */
+      flex-wrap: nowrap; 
+      overflow-x: auto; 
   }
-  /* 隱藏滾動條但保留功能 (針對 Webkit 瀏覽器) */
   #timelineFilterBar::-webkit-scrollbar { height: 0px; background: transparent; }
   
   .filter-label { font-size: 12px; color: #333; font-weight: bold; white-space: nowrap; display: flex; align-items: center; gap: 4px; margin-right: 2px; flex-shrink: 0; }
   
-  /* 圓角下拉選單 (Pill Select) 瘦身版 */
   .timeline-select-pill {
-      padding: 4px 8px; /* 縮小內距 */
-      border: 1px solid #cbd5e1;
-      border-radius: 20px;
-      background-color: #fff;
-      font-size: 12px; /* 縮小字體 */
-      font-weight: bold;
-      color: #334155;
-      cursor: pointer;
-      outline: none;
-      transition: all 0.2s;
-      min-width: auto; /* 移除最小寬度，讓內容決定 */
-      max-width: 180px; /* 防止過長 */
-      flex-shrink: 0;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+      padding: 4px 8px; border: 1px solid #cbd5e1; border-radius: 20px; background-color: #fff;
+      font-size: 12px; font-weight: bold; color: #334155; cursor: pointer; outline: none; transition: all 0.2s;
+      min-width: auto; max-width: 180px; flex-shrink: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.05);
       background-image: linear-gradient(to bottom, #fff, #f8fafc);
   }
   .timeline-select-pill:hover { border-color: var(--primary-color); color: var(--primary-color); }
@@ -221,45 +207,37 @@
   .ctx-item:hover { background: #f5faff; color: var(--primary-color); }
   .ctx-item i { width: 20px; text-align: center; }
 
-  /* === 關鍵修改：3欄式 Popup CSS (v.0109-3Column) === */
-  /* 加寬至 960px 以容納三欄 */
+  /* === 關鍵修改：3欄式 Popup CSS (v.0109-3Column) + 手機版優化 === */
   .custom-popup .leaflet-popup-content-wrapper { padding: 0 !important; border-radius: 20px !important; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.15) !important; border: 2px solid var(--popup-border) !important; background: rgba(242, 252, 245, 0.95) !important; backdrop-filter: blur(5px); }
   .custom-popup .leaflet-popup-content { margin: 0 !important; width: 960px !important; max-width: 90vw !important; }
   .custom-popup .leaflet-popup-tip { background: var(--popup-border) !important; }
 
-  /* 3欄式佈局容器 */
   .popup-card { display: flex; flex-direction: row; min-height: 320px; }
   .popup-deco-strip { width: 8px; background: var(--popup-text-sub); flex-shrink: 0; }
   
-  /* 左欄：資訊區 (Compact Mode) */
+  /* 左欄：資訊區 */
   .popup-col-info { width: 280px; padding: 20px; display: flex; flex-direction: column; justify-content: space-between; border-right: 1px solid #e0e0e0; flex-shrink: 0; background: rgba(255,255,255,0.6); }
   
-  /* 中欄/右欄：照片區 */
-  .popup-col-photo { flex: 1; padding: 15px; display: flex; flex-direction: column; gap: 10px; border-right: 1px solid #e0e0e0; background: #fff; min-width: 0; /* 防止 flex child 撐開 */ }
+  /* 照片區 */
+  .popup-col-photo { flex: 1; padding: 15px; display: flex; flex-direction: column; gap: 10px; border-right: 1px solid #e0e0e0; background: #fff; min-width: 0; }
   .popup-col-photo:last-child { border-right: none; }
 
-  /* 資訊區內容樣式 */
+  /* 資訊元件 */
   .status-pill { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 900; letter-spacing: 0.5px; color: #fff; align-self: flex-start; margin-bottom: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-  .pill-working { background: #10b981; } 
-  .pill-done { background: #64748b; }    
-  .pill-urgent { background: #f59e0b; }  
-
+  .pill-working { background: #10b981; } .pill-done { background: #64748b; } .pill-urgent { background: #f59e0b; }  
   .case-id { font-size: 24px; font-weight: 900; color: #1e293b; line-height: 1.1; letter-spacing: -0.5px; margin-bottom: 4px; }
   .case-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; color: #3d5a80; margin-bottom: 10px; }
   .file-tag { background: #ecfdf5; padding: 2px 6px; border-radius: 4px; font-family: monospace; letter-spacing: -0.5px; opacity: 0.8; }
   .type-tag { background: rgba(16, 185, 129, 0.1); color: var(--popup-text-sub); padding: 2px 6px; border-radius: 4px; }
-
   .price-block { margin: 10px 0; border-bottom: 1px dashed #ccc; padding-bottom: 10px; }
   .price-label { font-size: 9px; color: var(--popup-text-sub); font-weight: 900; letter-spacing: 1px; text-transform: uppercase; }
   .price-val { font-size: 22px; font-weight: 900; color: #064e3b; font-style: italic; letter-spacing: -0.5px; line-height: 1.2; }
 
-  /* 緊湊型資訊列表 (Compact List) */
   .compact-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; }
   .compact-item { font-size: 11px; line-height: 1.4; color: #334155; }
   .compact-label { font-weight: 900; color: var(--popup-accent); font-size: 10px; text-transform: uppercase; display: block; margin-bottom: 1px; }
-  .compact-val { font-weight: bold; word-break: break-word; } /* 允許廠商名稱換行 */
+  .compact-val { font-weight: bold; word-break: break-word; }
   .compact-row { display: flex; gap: 10px; }
-  
   .popup-tags { display: flex; gap: 6px; margin-bottom: 15px; flex-wrap: wrap; }
   .tag-pill { padding: 3px 10px; border-radius: 8px; font-size: 10px; font-weight: bold; box-shadow: 0 1px 2px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 4px; }
   .tag-dark { background: var(--popup-text-sub); color: white; }
@@ -269,43 +247,61 @@
   .popup-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .popup-btn-new { background: white; color: var(--popup-text-main); border: 1px solid var(--popup-border); padding: 8px 0; border-radius: 8px; font-size: 10px; font-weight: 900; display: flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none; transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
   .popup-btn-new:hover { background: var(--popup-text-main); color: white; border-color: var(--popup-text-main); }
-  .btn-full { grid-column: span 2; background: #ecfdf5; }
-
-  /* 照片輪播區 (Carousel) 修改版：淺色背景 + object-fit: cover */
+  
+  /* 照片輪播 */
   .photo-section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
   .photo-title { font-size: 11px; font-weight: 900; color: var(--popup-text-main); display: flex; align-items: center; gap: 5px; }
-  
-  /* 修正：背景改淺色，避免載入失敗時一片漆黑 */
   .photo-viewer { flex: 1; position: relative; border-radius: 8px; border: 1px solid var(--popup-border); background: #f1f5f9; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-  
-  /* 修正：cover 填滿模式，移除黑邊 */
   .photo-viewer img { width: 100%; height: 100%; object-fit: cover; display: none; }
-  
   .photo-viewer img.active { display: block; }
   .photo-viewer .no-photo { color: #666; font-size: 24px; display: flex; flex-direction: column; align-items: center; gap:5px; background: #f0fdf4; width:100%; height:100%; justify-content:center; }
   .photo-viewer .no-photo span { font-size: 10px; font-weight: bold; }
-
-  /* 圓點指示器 (升級版：數字圓點 + 聯動) */
   .carousel-dots { display: flex; justify-content: center; gap: 8px; margin-top: 10px; height: 22px; }
   .dot { width: 22px; height: 22px; border-radius: 50%; background: #e2e8f0; color: #64748b; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 900; border: 1px solid #cbd5e1; user-select: none; }
   .dot:hover { background: #cbd5e1; }
-  /* 選中狀態：橘色高亮 */
   .dot.active { background: var(--accent-color); color: #fff; border-color: var(--accent-color); transform: scale(1.1); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
 
-  /* Mobile Style */
+  /* === Mobile Style (針對手機版優化) === */
+  .mobile-photo-tabs, .mobile-details-toggle { display: none; } /* 電腦版隱藏 */
+
   @media (max-width: 768px) {
       .custom-popup .leaflet-popup-content { width: 300px !important; }
+      
+      /* 重設佈局：使用 Flex column 與 order 屬性重排 */
       .popup-card { flex-direction: column; min-height: auto; }
-      .popup-deco-strip { width: 100%; height: 6px; border-radius: 20px 20px 0 0; background: #a7f3d0; }
+      .popup-deco-strip { width: 100%; height: 6px; border-radius: 20px 20px 0 0; background: #a7f3d0; order: 0; }
       
-      .popup-col-info { width: auto; border-right: none; border-bottom: 1px solid #e0e0e0; padding: 15px; }
-      .popup-col-photo { height: 250px; border-right: none; border-bottom: 1px solid #e0e0e0; }
+      /* 資訊欄使用 display: contents 讓子元素能參與 popup-card 的 flex 排列 */
+      .popup-col-info { display: contents; }
       
-      .popup-btns { display: flex; flex-wrap: wrap; }
-      .popup-btn-new { flex: 1; min-width: 80px; }
-      .case-id { font-size: 20px; }
-      .price-val { font-size: 18px; }
+      /* 1. 核心資訊 (Header) */
+      .info-header-block { order: 1; padding: 15px; background: #fff; border-bottom: 1px dashed #eee; }
+      .case-id { font-size: 22px; } .price-val { font-size: 20px; color: #d35400; }
+      
+      /* 2. 照片切換 Tabs (方案 A) */
+      .mobile-photo-tabs { order: 2; display: flex; background: #f1f5f9; padding: 5px; gap: 5px; justify-content: center; border-bottom: 1px solid #e2e8f0; }
+      .m-tab { flex: 1; padding: 8px; text-align: center; border-radius: 20px; font-size: 12px; font-weight: bold; cursor: pointer; transition: all 0.2s; color: #64748b; border: 1px solid transparent; }
+      .m-tab.active { background: #fff; color: var(--primary-color); border-color: #cbd5e1; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+      
+      /* 3. 照片區 (方案 A - 預設顯示施工後) */
+      .popup-col-photo { order: 3; height: 250px; border: none; padding: 10px; display: none; } /* 預設隱藏 */
+      .popup-col-photo.active-view { display: block; animation: fadeIn 0.3s; }
+      .photo-section-header { display: none; } /* 手機版隱藏原本的小標題，因為有 Tabs 了 */
+      
+      /* 4. 功能按鈕 (方案 B - 圖示化) */
+      .popup-btns { order: 4; display: flex; gap: 10px; padding: 10px 15px; background: #fff; border-top: 1px solid #eee; overflow-x: auto; }
+      .popup-btn-new { flex: 1; border-radius: 50%; width: 40px; height: 40px; border: 1px solid #ddd; font-size: 16px; padding: 0; min-width: 40px; color: #555; background: #f8fafc; }
+      .popup-btn-new span { display: none; } /* 隱藏文字 */
+      .popup-btn-new:hover { background: var(--primary-color); color: #fff; }
+      
+      /* 5. 詳細資訊折疊 (方案 C) */
+      .mobile-details-toggle { order: 5; display: block; text-align: center; padding: 10px; background: #f0f9ff; color: var(--primary-color); font-weight: bold; font-size: 12px; cursor: pointer; border-top: 1px solid #e0f2fe; }
+      .mobile-details-toggle:hover { background: #e0f2fe; }
+      
+      .info-details-block { order: 6; display: none; padding: 15px; background: #fff; animation: slideDown 0.3s; }
+      .info-details-block.open { display: block; }
   }
+  @keyframes slideDown { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:translateY(0); } }
 
   /* === 其他原有樣式 === */
   .analysis-control { margin-top: 10px; padding: 10px; background: #fff3e0; border-radius: 8px; border: 1px solid #ffe0b2; }
@@ -425,7 +421,6 @@
             </div>
         </div>
 
-        <!-- 0111V6 新增：定位點歷史案件區塊 -->
         <div id="nearbyHistorySection" style="margin-bottom:15px; border:1px solid #ffd700; background:#fffbe6; border-radius:6px; padding:10px; display:none;">
             <div style="font-weight:bold; color:#d35400; margin-bottom:5px; font-size:14px; display:flex; justify-content:space-between; align-items:center;">
                 <span><i class="fas fa-history"></i> 定位點過往3年內周遭20公尺的維修案件</span>
@@ -460,7 +455,6 @@
     </div>
 </div>
 
-<!-- 0111V6 新增：詳細資訊懸浮視窗 (Modal) -->
 <div id="reportDetailModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:10000; align-items:center; justify-content:center;">
     <div style="position:relative; max-width:960px; width:95%; max-height:90vh; overflow-y:auto; background:transparent; display:flex; flex-direction:column;">
         <button onclick="closeReportDetailModal()" style="align-self:flex-end; margin-bottom:10px; color:white; font-size:16px; background:rgba(0,0,0,0.5); border:1px solid #fff; border-radius:20px; padding:5px 15px; cursor:pointer;"><i class="fas fa-times"></i> 關閉視窗</button>
@@ -722,7 +716,7 @@ let measureLine = null;
 let measureTooltip = null;
 let markersClusterGroup = null; 
 let activeRepairLayers = []; 
-let selectedTimelineMarker = null; // 0111V7 新增：記錄目前被鎖定的時間軸標記
+let selectedTimelineMarker = null;
 
 const DEEP_BLUE = '#004080'; 
 const LIGHT_BLUE = '#0066cc'; 
@@ -747,7 +741,41 @@ const searchResultLayer = L.featureGroup().addTo(map);
 const clusterLayer = L.featureGroup().addTo(map);
 const measureLayer = L.layerGroup().addTo(map).setZIndex(1001);
 
-/* === 核心功能：新版泡泡窗生成函式 (3-Column + Sync + Wan) === */
+/* === 核心功能：新版泡泡窗生成函式 (3-Column + Sync + Wan + Mobile Opt) === */
+
+// 手機版切換照片 Tab 的函數
+window.switchMobilePhotoTab = function(el, type) {
+    const card = el.closest('.popup-card');
+    const tabs = card.querySelectorAll('.m-tab');
+    tabs.forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    
+    const beforeView = card.querySelector('.photo-col-before');
+    const afterView = card.querySelector('.photo-col-after');
+    
+    if(type === 'before') {
+        beforeView.classList.add('active-view');
+        afterView.classList.remove('active-view');
+    } else {
+        beforeView.classList.remove('active-view');
+        afterView.classList.add('active-view');
+    }
+};
+
+// 手機版切換詳細資訊折疊的函數
+window.toggleMobileDetails = function(el) {
+    const card = el.closest('.popup-card');
+    const details = card.querySelector('.info-details-block');
+    const icon = el.querySelector('i');
+    
+    if(details.classList.contains('open')) {
+        details.classList.remove('open');
+        el.innerHTML = '▼ 查看詳細資訊 (廠商、座標、日期)';
+    } else {
+        details.classList.add('open');
+        el.innerHTML = '▲ 收起詳細資訊';
+    }
+};
 
 // 全域函數：切換照片 (點擊圓點時觸發，包含聯動功能)
 window.switchPhotoSet = function(el, index) {
@@ -788,19 +816,13 @@ function createPopup(data) {
     const date = props['完工日期'] || '-';
     const procurementUrl = props['採購網址'] ? props['採購網址'].trim() : '';
 
-    // === 金額格式化邏輯 (加入「萬」字) ===
     let price = 'NT$ 0';
     const rawPrice = props['決標金額'];
     if(rawPrice) {
         const num = parseInt(rawPrice.toString().replace(/,/g, ''));
         if(!isNaN(num)) {
-            if(num < 10000) {
-                price = `NT$ ${num}`;
-            } else {
-                const w = Math.floor(num / 10000);
-                const r = num % 10000;
-                price = `NT$ ${w}萬${r > 0 ? r : ''}`;
-            }
+            if(num < 10000) { price = `NT$ ${num}`; } 
+            else { const w = Math.floor(num / 10000); const r = num % 10000; price = `NT$ ${w}萬${r > 0 ? r : ''}`; }
         }
     }
 
@@ -808,7 +830,6 @@ function createPopup(data) {
     if(status.includes('施工') || status.includes('派工')) pillClass = 'pill-working';
     else if(status.includes('緊急') || status.includes('搶修')) pillClass = 'pill-urgent';
 
-    // === 多照片處理 ===
     const getPhotoArray = (str) => {
         if(!str) return [];
         return str.split(/[;\n\r]+/).map(u => u.trim()).filter(u => u.length > 0);
@@ -819,27 +840,17 @@ function createPopup(data) {
     const generatePhotoSection = (title, urls, typeKey) => {
         const uid = Math.random().toString(36).substr(2, 9);
         const viewerId = `viewer-${typeKey}-${uid}`;
-        
         let imgsHtml = '';
         let dotsHtml = '';
 
         if(urls.length > 0) {
-            urls.forEach((url, i) => {
-                const activeClass = i === 0 ? 'active' : '';
-                imgsHtml += `<img src="${url.trim()}" class="${activeClass}">`;
-            });
-
+            urls.forEach((url, i) => { const activeClass = i === 0 ? 'active' : ''; imgsHtml += `<img src="${url.trim()}" class="${activeClass}">`; });
             if(urls.length > 1) {
                 dotsHtml = `<div class="carousel-dots">`;
-                urls.forEach((_, i) => {
-                    const activeClass = i === 0 ? 'active' : '';
-                    dotsHtml += `<div class="dot ${activeClass}" onclick="switchPhotoSet(this, ${i})">${i+1}</div>`;
-                });
+                urls.forEach((_, i) => { const activeClass = i === 0 ? 'active' : ''; dotsHtml += `<div class="dot ${activeClass}" onclick="switchPhotoSet(this, ${i})">${i+1}</div>`; });
                 dotsHtml += `</div>`;
             }
-        } else {
-            imgsHtml = `<div class="no-photo"><i class="fas fa-image"></i><span>暫無影像</span></div>`;
-        }
+        } else { imgsHtml = `<div class="no-photo"><i class="fas fa-image"></i><span>暫無影像</span></div>`; }
 
         return `
             <div class="photo-section-header">
@@ -853,25 +864,39 @@ function createPopup(data) {
     };
 
     const tenderBtn = procurementUrl 
-        ? `<a href="${procurementUrl}" target="_blank" class="popup-btn-new"><i class="fas fa-file-alt"></i> 決標公告</a>` 
-        : `<span class="popup-btn-new" style="opacity:0.5;cursor:not-allowed;"><i class="fas fa-file-alt"></i> 無公告</span>`;
+        ? `<a href="${procurementUrl}" target="_blank" class="popup-btn-new"><i class="fas fa-file-alt"></i><span>決標</span></a>` 
+        : `<span class="popup-btn-new" style="opacity:0.5;cursor:not-allowed;"><i class="fas fa-file-alt"></i><span>無公告</span></span>`;
 
+    // 關鍵修改：重新組織 HTML 結構以適應手機版 Grid/Flex 重排
     return `
     <div class="popup-card">
         <div class="popup-deco-strip"></div>
         <div class="popup-col-info">
-            <div>
+            
+            <!-- 手機版 Header Block -->
+            <div class="info-header-block">
                 <div class="status-pill ${pillClass}">進度：${status}</div>
                 <div class="case-id">${caseId}</div>
+                <div class="price-val">${price}</div>
                 <div class="case-meta">
                     <span class="file-tag">${fileName}</span>
                     <span class="type-tag">${type}</span>
                 </div>
+            </div>
+
+            <!-- 手機版 Tabs -->
+            <div class="mobile-photo-tabs">
+                <div class="m-tab" onclick="switchMobilePhotoTab(this, 'before')">施工前</div>
+                <div class="m-tab active" onclick="switchMobilePhotoTab(this, 'after')">● 施工後</div>
+            </div>
+
+            <!-- 詳細資訊 (手機版折疊) -->
+            <div class="info-details-block">
                 <div class="popup-tags">
                     <div class="tag-pill tag-dark"><i class="fas fa-clock"></i> ${timing}</div>
                     <div class="tag-pill tag-light"><i class="fas fa-map-marker-alt" style="color:#10b981;"></i> 距路線 ${distText}</div>
                 </div>
-                <div class="price-block">
+                <div class="price-block desktop-only"> <!-- 電腦版已顯示在上方，這裡保留結構給 JS 邏輯使用 -->
                     <div class="price-label">決標金額</div>
                     <div class="price-val">${price}</div>
                 </div>
@@ -896,17 +921,24 @@ function createPopup(data) {
                     </div>
                 </div>
             </div>
+            
+            <!-- 功能按鈕 -->
             <div class="popup-btns">
                 ${tenderBtn}
-                <a href="https://maps.nlsc.gov.tw/go/${lng}/${lat}" target="_blank" class="popup-btn-new"><i class="fas fa-map"></i> 地籍</a>
-                <a href="https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${lat},${lng}" target="_blank" class="popup-btn-new"><i class="fas fa-camera"></i> 街景</a>
-                <a href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}" target="_blank" class="popup-btn-new"><i class="fas fa-location-arrow"></i> 導航</a>
+                <a href="https://maps.nlsc.gov.tw/go/${lng}/${lat}" target="_blank" class="popup-btn-new"><i class="fas fa-map"></i><span>地籍</span></a>
+                <a href="https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${lat},${lng}" target="_blank" class="popup-btn-new"><i class="fas fa-camera"></i><span>街景</span></a>
+                <a href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}" target="_blank" class="popup-btn-new"><i class="fas fa-location-arrow"></i><span>導航</span></a>
             </div>
+
+            <!-- 手機版折疊開關 -->
+            <div class="mobile-details-toggle" onclick="toggleMobileDetails(this)">▼ 查看詳細資訊 (廠商、座標、日期)</div>
+
         </div>
-        <div class="popup-col-photo">
+
+        <div class="popup-col-photo photo-col-before">
             ${generatePhotoSection('施工前', arrBefore, 'before')}
         </div>
-        <div class="popup-col-photo">
+        <div class="popup-col-photo photo-col-after active-view">
             ${generatePhotoSection('施工後', arrAfter, 'after')}
         </div>
     </div>
@@ -919,12 +951,10 @@ const openReportBtn = document.getElementById('openReportBtn');
 openReportBtn.addEventListener('click', function() { reportOverlay.style.display = 'flex'; initReportData(); });
 function closeReport() { reportOverlay.style.display = 'none'; resetReportForm(); }
 
-// 0111V6 修改：初始化時觸發周遭歷史案件檢查
 function initReportData() {
     document.getElementById('reportCaseId').innerText = "(待系統取號)";
     document.getElementById('reportTime').innerText = new Date().toLocaleString();
     
-    // 重置歷史列表區域
     const historySection = document.getElementById('nearbyHistorySection');
     const historyList = document.getElementById('nearbyHistoryList');
     historySection.style.display = 'none';
@@ -938,7 +968,6 @@ function initReportData() {
                 const twd = twd97FromWgs84(lat, lng);
                 document.getElementById('reportWgs84').innerText = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
                 document.getElementById('reportTwd97').innerText = `${twd.x}, ${twd.y}`;
-                // 觸發搜尋
                 checkNearbyHistory(lat, lng);
             },
             () => { document.getElementById('reportWgs84').innerText = "定位失敗"; document.getElementById('reportTwd97').innerText = "定位失敗"; },
@@ -947,20 +976,17 @@ function initReportData() {
     } else { document.getElementById('reportWgs84').innerText = "不支援定位"; }
 }
 
-// 0111V6 新增：檢查定位點周遭歷史案件
 function checkNearbyHistory(lat, lng) {
     const historySection = document.getElementById('nearbyHistorySection');
     const historyList = document.getElementById('nearbyHistoryList');
     const centerLatLng = L.latLng(lat, lng);
     
-    // 設定時間範圍 (3年內)
     const now = new Date();
     const threeYearsAgo = new Date();
     threeYearsAgo.setFullYear(now.getFullYear() - 3);
 
     reportNearbyMatches = [];
 
-    // 搜尋資料庫
     REPAIR_CONFIG.forEach(conf => {
         const data = REPAIR_DATA_CACHE[conf.value]; 
         if(!data || !data.features) return;
@@ -969,10 +995,9 @@ function checkNearbyHistory(lat, lng) {
             if(f.geometry.type !== 'Point') return;
             const pt = L.latLng(f.geometry.coordinates[1], f.geometry.coordinates[0]);
             
-            // 距離 <= 20公尺
             const dist = centerLatLng.distanceTo(pt);
             if(dist <= 20) {
-                const dateStr = f.properties['完工日期']; // 格式 e.g. 1120501
+                const dateStr = f.properties['完工日期']; 
                 if(dateStr && dateStr.length === 7) {
                     const y = parseInt(dateStr.substring(0,3)) + 1911;
                     const m = parseInt(dateStr.substring(3,5)) - 1;
@@ -997,11 +1022,9 @@ function checkNearbyHistory(lat, lng) {
         });
     });
 
-    // 渲染結果
     historyList.innerHTML = '';
     if(reportNearbyMatches.length > 0) {
         historySection.style.display = 'block';
-        // 按日期降序排列
         reportNearbyMatches.sort((a,b) => b.jsDate - a.jsDate);
         
         reportNearbyMatches.forEach((item, index) => {
@@ -1026,18 +1049,15 @@ function checkNearbyHistory(lat, lng) {
     }
 }
 
-// 0111V6 新增：顯示詳細資訊 Modal
 function showReportDetail(index) {
     const item = reportNearbyMatches[index];
     if(!item) return;
-    
-    // 生成 Popup 內容
     const content = createPopup({
         fileName: item.label,
         props: item.props,
         lat: item.lat,
         lng: item.lng,
-        dist: parseFloat(item.dist) // 這裡傳入距離數值
+        dist: parseFloat(item.dist) 
     });
     
     document.getElementById('reportDetailContent').innerHTML = content;
@@ -1645,15 +1665,22 @@ function showTimeline(routeLayer) {
         const data = REPAIR_DATA_CACHE[conf.value]; if(!data) return;
         data.features.forEach(f => {
             if(f.geometry.type !== 'Point') return;
-            const pt = turf.point(f.geometry.coordinates); const dist = turf.pointToLineDistance(pt, routeLine, {units:'meters'});
-            if(dist <= 50) currentRouteAllMatches.push({ label: conf.label, props: f.properties, lat: f.geometry.coordinates[1], lng: f.geometry.coordinates[0], dist });
+            const pt = turf.point(f.geometry.coordinates); 
+            const dist = turf.pointToLineDistance(pt, routeLine, {units:'meters'});
+            
+            // 0111V8 修改：最短距離排他性檢核 (Nearest Neighbor Check)
+            if(dist <= 50) {
+                 const pLatLng = L.latLng(f.geometry.coordinates[1], f.geometry.coordinates[0]);
+                 const globalMinDist = distToRoad(pLatLng, roadsLayer);
+                 if ((dist - globalMinDist) <= 1.0) {
+                     currentRouteAllMatches.push({ label: conf.label, props: f.properties, lat: f.geometry.coordinates[1], lng: f.geometry.coordinates[0], dist });
+                 }
+            }
         });
     });
 
-    // 2. 清空並重建篩選列
     filterBar.innerHTML = '<span class="filter-label"><i class="fas fa-filter"></i> 篩選：</span>';
 
-    // 3. 提取唯一值 (用於生成選單)
     const getUniqueValues = (data, key) => {
         const set = new Set();
         data.forEach(item => {
@@ -1667,7 +1694,6 @@ function showTimeline(routeLayer) {
     const timings = getUniqueValues(currentRouteAllMatches, '派工時機');
     const types = getUniqueValues(currentRouteAllMatches, '搶修類型');
 
-    // 4. 輔助函數：建立下拉選單
     const createSelect = (options, placeholder, onChange) => {
         const sel = document.createElement('select');
         sel.className = 'timeline-select-pill';
@@ -1683,7 +1709,6 @@ function showTimeline(routeLayer) {
         return sel;
     };
 
-    // 5. 建立三個選單並加入畫面
     const selYear = createSelect(years, '年度/案件來源 (全選)', filterData);
     const selTiming = createSelect(timings, '派工時機 (全選)', filterData);
     const selType = createSelect(types, '搶修類型 (全選)', filterData);
@@ -1692,7 +1717,6 @@ function showTimeline(routeLayer) {
     filterBar.appendChild(selTiming);
     filterBar.appendChild(selType);
 
-    // 6. 篩選邏輯 (AND)
     function filterData() {
         const vYear = selYear.value;
         const vTiming = selTiming.value;
@@ -1707,26 +1731,22 @@ function showTimeline(routeLayer) {
         renderTimeline(filtered);
     }
 
-    // 初始顯示全部
     renderTimeline(currentRouteAllMatches);
 }
 
 function renderTimeline(matches) {
     const cont = document.getElementById('timelineContainer'), statsDiv = document.getElementById('timelineStats');
     
-    // 修正：優先清除容器，避免程式中途錯誤導致 "讀取中" 殘留
     cont.innerHTML = '';
     routeMatchLayer.clearLayers(); 
-    selectedTimelineMarker = null; // 重置鎖定狀態
+    selectedTimelineMarker = null; 
 
     if(matches.length === 0) { cont.innerHTML = '<div style="padding:20px;">無符合篩選條件的紀錄</div>'; statsDiv.innerHTML = '總花費：<span>$0</span> | 維修：<span>0 次</span>'; return; }
     
-    // 修正：加入 String() 轉型，防止 Excel 數字格式導致 sort 崩潰
     matches.sort((a,b) => String(b.props['完工日期']||'').localeCompare(String(a.props['完工日期']||'')));
     
     let totalCost = 0, genCost = 0, genCount = 0, emgCost = 0, emgCount = 0, processedCases = new Set();
     
-    // 使用 try-catch 包裹迴圈，防止單筆資料錯誤導致整個面板空白
     try {
         matches.forEach(m => {
             const caseNo = m.props['案件編號'], money = formatMoney(m.props['決標金額']), labelName = String(m.label || ""), isEmergency = /搶修|災害|緊急/.test(labelName);
@@ -1739,13 +1759,11 @@ function renderTimeline(matches) {
         const emgHtml = `<span style="color:#ffcdd2;">搶修 $${emgCost.toLocaleString()} (${emgCount}次)</span>`;
         statsDiv.innerHTML = `${totalHtml} <span class="stat-divider" style="opacity:0.5; margin:0 5px;">|</span> ${genHtml} <span class="stat-divider" style="opacity:0.5; margin:0 5px;">|</span> ${emgHtml}`;
 
-        // 定義樣式以避免重複
         const normalStyle = { radius: 14, color: '#fff', fillColor: DEEP_BLUE, weight:1, fillOpacity:0.9 };
         const highlightStyle = { radius: 20, color:'#ffd700', weight:4, fillColor:'#d32f2f' };
 
         matches.forEach((m, i) => {
             const marker = L.circleMarker([m.lat, m.lng], normalStyle).addTo(routeMatchLayer);
-            // 確保 createPopup 接收到的資料是正確的
             marker.bindPopup(createPopup({ fileName: m.label, props: m.props, lat: m.lat, lng: m.lng, dist: m.dist }), {className:'custom-popup', maxWidth:960});
             
             const labelName = String(m.label || ""); 
@@ -1755,7 +1773,6 @@ function renderTimeline(matches) {
             let isFrequent = false; 
             if (i < matches.length - 1) { 
                 const nextItem = matches[i+1]; 
-                // 這裡也需要防止 nextItem 為空
                 if(nextItem && nextItem.props) {
                     const days = getDateDiffDays(m.props['完工日期'], nextItem.props['完工日期']); 
                     if (days < 180) isFrequent = true; 
@@ -1765,7 +1782,6 @@ function renderTimeline(matches) {
             const item = document.createElement('div'); item.className = `h-item ${alertClass}`;
             item.innerHTML = `<div class="h-date">${m.props['完工日期']||'未知'}</div><div class="h-line-container"><div class="h-dot ${sizeClass}"></div></div><div class="h-badge ${labelName.includes('搶修')||labelName.includes('災害')||labelName.includes('緊急') ? 'badge-urgent' : 'badge-normal'}">${labelName.includes('搶修')||labelName.includes('災害')||labelName.includes('緊急') ? '搶修' : '一般'}</div>`;
             
-            // === 0111V7 修正 UX 事件 ===
             item.addEventListener('mouseenter', () => { 
                 if (selectedTimelineMarker === marker) return;
                 marker.setStyle(highlightStyle); marker.bringToFront(); marker.openPopup(); 
@@ -1775,19 +1791,15 @@ function renderTimeline(matches) {
                 marker.setStyle(normalStyle); marker.closePopup(); 
             });
             item.addEventListener('click', (e) => {
-                e.stopPropagation(); // 防止冒泡
-                // 1. 若之前有選中且不是這一個，則復原上一個
+                e.stopPropagation(); 
                 if (selectedTimelineMarker && selectedTimelineMarker !== marker) {
                      selectedTimelineMarker.setStyle(normalStyle);
                      selectedTimelineMarker.closePopup();
                 }
-                // 2. 設定當前為選中
                 selectedTimelineMarker = marker;
-                // 3. 套用高亮樣式並開啟
                 marker.setStyle(highlightStyle);
                 marker.bringToFront();
                 marker.openPopup();
-                // 4. 飛往該點
                 map.flyTo([m.lat, m.lng], 18);
             });
             

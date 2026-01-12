@@ -1097,8 +1097,11 @@ function checkNearbyHistory(lat, lng) {
             // V16: 修正搜尋半徑為 50m
             const dist = centerLatLng.distanceTo(pt);
             if(dist <= 50) {
-                const dateStr = f.properties['完工日期']; 
-                if(dateStr && dateStr.length === 7) {
+                // V16: 修正日期格式判斷 (加入 String() 轉型)
+                const rawDate = f.properties['完工日期'];
+                const dateStr = rawDate ? String(rawDate).trim() : "";
+                
+                if(dateStr.length === 7) {
                     const y = parseInt(dateStr.substring(0,3)) + 1911;
                     const m = parseInt(dateStr.substring(3,5)) - 1;
                     const d = parseInt(dateStr.substring(5,7));

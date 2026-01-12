@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.1150111-V17-OverlapFix)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.1150112)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -206,29 +206,6 @@
   .ctx-item { padding: 10px 15px; cursor: pointer; font-size: 14px; color: #333; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #f0f0f0; }
   .ctx-item:hover { background: #f5faff; color: var(--primary-color); }
   .ctx-item i { width: 20px; text-align: center; }
-
-  /* === V17 新增：重疊點位選單樣式 === */
-  .overlap-list { max-height: 220px; overflow-y: auto; padding: 0; margin: 0; }
-  .overlap-item { 
-      padding: 12px 15px; 
-      border-bottom: 1px solid #eee; 
-      cursor: pointer; 
-      font-size: 14px; 
-      font-weight: bold; 
-      color: #004080; 
-      transition: background 0.2s;
-  }
-  .overlap-item:last-child { border-bottom: none; }
-  .overlap-item:hover { background: #f0f9ff; }
-  .overlap-title { 
-      background: #333; color: #fff; 
-      padding: 8px 12px; font-size: 13px; 
-      font-weight: bold; border-radius: 4px 4px 0 0; 
-  }
-  .overlap-index {
-      display: inline-block; width: 20px; 
-      color: #888; font-size: 12px;
-  }
 
   /* === 關鍵修改：3欄式 Popup CSS (v.0109-3Column) + 手機版優化 === */
   .custom-popup .leaflet-popup-content-wrapper { padding: 0 !important; border-radius: 20px !important; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.15) !important; border: 2px solid var(--popup-border) !important; background: rgba(242, 252, 245, 0.95) !important; backdrop-filter: blur(5px); }
@@ -1485,13 +1462,7 @@ fetch('farmroads.geojson').then(r=>r.json()).then(data=>{
             l.bindTooltip(f.properties?.name || "道路", { sticky: true, direction: 'top' });
             l.on('mouseover', () => { l.setStyle({ weight: 5, color: LIGHT_BLUE }); map.getContainer().style.cursor='pointer'; });
             l.on('mouseout', () => { l.setStyle({ weight: 3, color: DEEP_BLUE }); map.getContainer().style.cursor='default'; });
-            // V17: 改為使用 handleMarkerClick 來處理重疊
-            // 但這裡是 LineString，不是 Marker，所以保留 click 事件
-            l.on('click', (e) => { 
-                L.DomEvent.stopPropagation(e); 
-                handleMapClickSelection(roadLayersArray.indexOf(l), true); 
-                if(window.innerWidth <= 768) document.body.classList.remove('sidebar-open'); 
-            });
+            l.on('click', (e) => { L.DomEvent.stopPropagation(e); handleMapClickSelection(roadLayersArray.indexOf(l), true); if(window.innerWidth <= 768) document.body.classList.remove('sidebar-open'); });
         }
     }).addTo(map);
     roadLayersArray = roadsLayer.getLayers();
@@ -1550,8 +1521,6 @@ function updateRepairPoints() {
         const iconHtml = `<div style="width:14px; height:14px; background:${color}; border:2px solid #fff; border-radius:50%; box-shadow:0 2px 4px rgba(0,0,0,0.2);"></div>`;
         const icon = L.divIcon({ html: iconHtml, className: 'custom-dot-marker', iconSize: [18, 18], iconAnchor: [9, 9] });
         const marker = L.marker(pt, { icon: icon });
-        // 這邊的透明圖層點擊也適用重疊判斷嗎? 雖然您指定是路線，但為了體驗一致性，這邊也建議加上
-        // 但為了嚴格遵守您的要求 "修正路線維修紀錄的藍點"，這裡暫時保持原樣，僅針對 renderTimeline 修改
         if(group.length === 1) {
             marker.bindPopup(createPopup({ fileName: firstItem.configLabel, props: firstItem.feature.properties, lat: pt.lat, lng: pt.lng, dist: dist }), { className: 'custom-popup', maxWidth:960 });
         } else {
@@ -1581,10 +1550,10 @@ toggleClusterControlBtn.addEventListener('click', function() { if (activeRepairL
 closeClusterControlBtn.addEventListener('click', function() { clusterControlPanel.style.display = 'none'; toggleClusterControlBtn.classList.remove('active'); });
 
 async function preloadAllDataForContractors() {
-    // ... (保持原樣) ...
     const cSel = document.getElementById('contractorSelect');
     const tSel = document.getElementById('timingSelect');
     const typeSel = document.getElementById('typeSelect');
+
     await Promise.all(REPAIR_CONFIG.map(async item => {
         if (!REPAIR_DATA_CACHE[item.value]) { 
             try { const res = await fetch(item.value + '.geojson'); if(res.ok) { const json = await res.json(); REPAIR_DATA_CACHE[item.value] = json; json.features?.forEach(f => { 
@@ -1605,6 +1574,7 @@ async function preloadAllDataForContractors() {
             performSearch(p=>p['施工廠商']?.trim()===this.value, `廠商：${this.value}`); updateContractorStats(this.value); 
         } else { clearSearchResults(); } 
     });
+
     // Populate Timing Select
     const sortedT = Array.from(ALL_TIMINGS).sort();
     tSel.innerHTML = '<option value="">-- 請選擇派工時機 --</option>' + sortedT.map(t => `<option value="${t}">${t}</option>`).join('');
@@ -1617,6 +1587,7 @@ async function preloadAllDataForContractors() {
             performSearch(p=>p['派工時機']?.trim()===this.value, `派工時機：${this.value}`);
         } else { clearSearchResults(); }
     });
+
     // Populate Type Select
     const sortedType = Array.from(ALL_TYPES).sort();
     typeSel.innerHTML = '<option value="">-- 請選擇維修類型 --</option>' + sortedType.map(tp => `<option value="${tp}">${tp}</option>`).join('');
@@ -1631,109 +1602,296 @@ async function preloadAllDataForContractors() {
     });
 }
 
-function updateContractorStats(contractorName) { /* ... (保持原樣) ... */ }
-function clearSearchResults() { /* ... (保持原樣) ... */ }
-
-// === V17 新增：重疊點位處理輔助函數 ===
-function getSmartCaseID(fileName, rawId) {
-    let formatted = rawId;
-    const parts = rawId.split('-');
-    if(parts.length >= 2) {
-        const num = parseInt(parts[parts.length-1], 10);
-        if(!isNaN(num)) formatted = `${fileName}第${num}案`;
-    }
-    return formatted;
+function updateContractorStats(contractorName) {
+    const statsResult = document.getElementById('contractorStatsResult'), genList = document.getElementById('contractorGenList'), emgList = document.getElementById('contractorEmgList');
+    genList.innerHTML = ''; emgList.innerHTML = '';
+    if (!contractorName) { statsResult.style.display = 'none'; return; }
+    let globalYearTotals = {}, globalProcessedCases = new Set();
+    REPAIR_CONFIG.forEach(conf => {
+        const data = REPAIR_DATA_CACHE[conf.value]; if (!data || !data.features) return;
+        const yearMatch = conf.label.match(/(\d{3})年/); const year = yearMatch ? yearMatch[1] : '其他'; const isEmergency = /搶修|災害|緊急/.test(conf.label);
+        if (!globalYearTotals[year]) globalYearTotals[year] = { gen: 0, emg: 0 };
+        data.features.forEach(f => {
+            const props = f.properties, caseNo = props['案件編號'], amount = formatMoney(props['決標金額']);
+            if (caseNo && caseNo.trim() !== "") { if (!globalProcessedCases.has(caseNo)) { globalProcessedCases.add(caseNo); if (isEmergency) globalYearTotals[year].emg += amount; else globalYearTotals[year].gen += amount; } } else { if (isEmergency) globalYearTotals[year].emg += amount; else globalYearTotals[year].gen += amount; }
+        });
+    });
+    let contractorYearStats = {}, contractorProcessedCases = new Set();
+    REPAIR_CONFIG.forEach(conf => {
+        const data = REPAIR_DATA_CACHE[conf.value]; if (!data || !data.features) return;
+        const yearMatch = conf.label.match(/(\d{3})年/); const year = yearMatch ? yearMatch[1] : '其他'; const isEmergency = /搶修|災害|緊急/.test(conf.label);
+        if (!contractorYearStats[year]) contractorYearStats[year] = { genCount: 0, genAmount: 0, emgCount: 0, emgAmount: 0 };
+        data.features.forEach(f => {
+            if (f.properties['施工廠商']?.trim() === contractorName) {
+                const props = f.properties, caseNo = props['案件編號'], amount = formatMoney(props['決標金額']);
+                let shouldAdd = false; if (caseNo && caseNo.trim() !== "") { if (!contractorProcessedCases.has(caseNo)) { contractorProcessedCases.add(caseNo); shouldAdd = true; } } else { shouldAdd = true; }
+                if (shouldAdd) { if (isEmergency) { contractorYearStats[year].emgCount++; contractorYearStats[year].emgAmount += amount; } else { contractorYearStats[year].genCount++; contractorYearStats[year].genAmount += amount; } }
+            }
+        });
+    });
+    const sortedYears = Object.keys(contractorYearStats).sort().reverse();
+    sortedYears.forEach(y => {
+        const stats = contractorYearStats[y], globalTotals = globalYearTotals[y] || { gen: 1, emg: 1 };
+        if (stats.genCount > 0) { const pct = globalTotals.gen > 0 ? (stats.genAmount / globalTotals.gen * 100).toFixed(0) : 0; genList.innerHTML += `<div class="stat-year-row"><div class="stat-year-title"><span>${y}年度</span><span class="stat-percent-text">市佔 ${pct}%</span></div><div class="stat-data-row">${stats.genCount} 件 / $ ${stats.genAmount.toLocaleString()}</div><div class="stat-bar-bg"><div class="stat-bar-fill" style="width:${pct}%"></div></div></div>`; }
+        if (stats.emgCount > 0) { const pct = globalTotals.emg > 0 ? (stats.emgAmount / globalTotals.emg * 100).toFixed(0) : 0; emgList.innerHTML += `<div class="stat-year-row"><div class="stat-year-title"><span>${y}年度</span><span class="stat-percent-text">市佔 ${pct}%</span></div><div class="stat-data-row">${stats.emgCount} 件 / $ ${stats.emgAmount.toLocaleString()}</div><div class="stat-bar-bg"><div class="stat-bar-fill" style="width:${pct}%"></div></div></div>`; }
+    });
+    if (genList.innerHTML === '') genList.innerHTML = '<div style="color:#999;font-size:12px;text-align:center;padding:10px;">無資料</div>';
+    if (emgList.innerHTML === '') emgList.innerHTML = '<div style="color:#999;font-size:12px;text-align:center;padding:10px;">無資料</div>';
+    statsResult.style.display = 'block';
 }
+document.getElementById('clearContractorStatsBtn').addEventListener('click', clearSearchResults);
 
-// 核心重疊處理邏輯
-function handleOverlappingMarkers(e, layerGroup, clickedMarker) {
-    L.DomEvent.stopPropagation(e); // 阻止地圖點擊事件
-    
-    // 1. 找出點擊位置附近的 Marker (像素距離 30px 內)
-    const clickPoint = map.latLngToLayerPoint(e.latlng);
-    const nearbyMarkers = [];
-    
-    layerGroup.eachLayer(layer => {
-        if (layer instanceof L.CircleMarker) {
-            const layerPoint = map.latLngToLayerPoint(layer.getLatLng());
-            // 計算像素距離
-            const dist = clickPoint.distanceTo(layerPoint);
-            if (dist < 30) {
-                nearbyMarkers.push(layer);
+async function performSearch(predicate, label) {
+    const status = document.getElementById('searchStatus'), btn = document.getElementById('searchBtn');
+    btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; status.innerText = '搜尋中...'; searchResultLayer.clearLayers();
+    let count = 0;
+    REPAIR_CONFIG.forEach(conf => {
+        const data = REPAIR_DATA_CACHE[conf.value]; if(!data || !data.features) return;
+        data.features.forEach(f => {
+            try {
+                if(f.geometry.type !== 'Point') return;
+                if(predicate(f.properties)) {
+                    const [lng, lat] = f.geometry.coordinates; const ll = L.latLng(lat, lng);
+                    L.circleMarker(ll, { radius: 18, fillColor: '#ffd700', color: '#ff8c00', weight: 2, fillOpacity: 0.6 }).addTo(searchResultLayer);
+                    const marker = L.circleMarker(ll, { radius: 6, fillColor: '#d32f2f', color: '#fff', weight: 1, fillOpacity: 1 }).addTo(searchResultLayer);
+                    marker.feature = f; marker.bindPopup(createPopup({ fileName: conf.label, props: f.properties, lat, lng, dist: distToRoad(ll, roadsLayer) }), { className: 'custom-popup', maxWidth:960 }); count++;
+                }
+            } catch(e){}
+        });
+    });
+    if(count > 0) { map.fitBounds(searchResultLayer.getBounds()); if(window.innerWidth <= 768) document.body.classList.remove('sidebar-open'); status.innerHTML = `找到 <b style="color:#d32f2f">${count}</b> 筆`; document.getElementById('clearSearchBtn').style.display = 'block'; } 
+    else status.innerHTML = '<span style="color:red">查無資料</span>';
+    btn.disabled = false; btn.innerHTML = '<i class="fas fa-search"></i> 開始搜尋';
+    if(clusterToggle.checked) setTimeout(calculateClusters, 100);
+}
+document.getElementById('searchBtn').addEventListener('click', () => {
+    const kw = document.getElementById('keywordInput').value.trim().toLowerCase();
+    if(!kw) return alert('請輸入關鍵字');
+    document.getElementById('contractorSelect').value = ''; document.getElementById('villageSelect').value = ''; 
+    document.getElementById('timingSelect').value = ''; document.getElementById('typeSelect').value = '';
+    document.getElementById('contractorStatsResult').style.display = 'none';
+    performSearch(p => Object.values(p).join(' ').toLowerCase().includes(kw), kw);
+});
+document.getElementById('clearSearchBtn').addEventListener('click', clearSearchResults);
+function clearSearchResults() { 
+    searchResultLayer.clearLayers(); 
+    document.getElementById('keywordInput').value = ''; 
+    document.getElementById('contractorSelect').value = ''; 
+    document.getElementById('villageSelect').value = ''; 
+    document.getElementById('timingSelect').value = ''; 
+    document.getElementById('typeSelect').value = ''; 
+    document.getElementById('searchStatus').innerText = ''; 
+    document.getElementById('clearSearchBtn').style.display = 'none'; 
+    document.getElementById('contractorStatsResult').style.display = 'none'; 
+}
+document.getElementById('roadSelect').addEventListener('change', (e) => handleMapClickSelection(e.target.value, false));
+function handleMapClickSelection(idx, isInteractive) {
+    if(idx==="" || idx===null) return; if(roadsLayer) roadsLayer.eachLayer(l => l.setStyle({color: DEEP_BLUE, weight:3}));
+    const target = roadLayersArray[idx];
+    if(target) {
+        target.setStyle({ color: 'red', weight: 6 }); map.fitBounds(target.getBounds()); target.openPopup();
+        if (isInteractive) { document.getElementById('panelTitle').innerHTML = `<i class="fas fa-history"></i> ${target.feature.properties.name}`; bottomPanel.classList.remove('minimized'); panelIcon.classList.replace('fa-chevron-down', 'fa-chevron-up'); bottomPanel.classList.add('open'); showTimeline(target); } 
+        else { bottomPanel.classList.remove('open'); routeMatchLayer.clearLayers(); }
+    }
+}
+map.on('click', (e) => {
+    if(isMeasuring) { if(measureStartLatLng) finishMeasure(e.latlng); } 
+    else { 
+        document.getElementById('contextMenu').style.display='none'; 
+        document.getElementById('roadSelect').value = ""; 
+        if(roadsLayer) roadsLayer.eachLayer(l => l.setStyle({ color: DEEP_BLUE, weight: 3 })); 
+        map.closePopup(); 
+        bottomPanel.classList.remove('open'); 
+        routeMatchLayer.clearLayers(); 
+        selectedTimelineMarker = null; // 0111V7 新增：點擊地圖時重置鎖定狀態
+    }
+});
+const ctxMenu = document.getElementById('contextMenu'); let clickedLatLng = null;
+map.on('contextmenu', (e) => {
+    ctxMenu.style.display = 'none'; pointLayer.clearLayers(); measureLayer.clearLayers(); isMeasuring = false; document.body.classList.remove('measuring'); measureStartLatLng = null;
+    const latlng = e.latlng; const twd = twd97FromWgs84(latlng.lat, latlng.lng); const villageName = getVillageName(latlng.lat, latlng.lng);
+    const popupContent = `<div style="font-weight:bold; color:#004080; margin-bottom:5px;">位置資訊</div><div style="font-size:13px;">TWD97: ${twd.x}, ${twd.y}</div><div style="font-size:13px;">WGS84: ${latlng.lat.toFixed(6)}, ${latlng.lng.toFixed(6)}</div><div style="font-size:13px;">行政區: ${villageName}</div><div style="font-size:12px; color:#666; margin-top:5px;">(再點右鍵開啟功能選單;手機介面長按可開啟)</div>`;
+    const marker = L.marker(latlng, { draggable: true }).addTo(pointLayer); marker.bindPopup(popupContent).openPopup();
+    marker.on('contextmenu', (ev) => { L.DomEvent.stopPropagation(ev); clickedLatLng = ev.latlng; openCtxMenu(ev.originalEvent); });
+});
+function openCtxMenu(nativeEvent) { ctxMenu.style.display = 'block'; ctxMenu.style.left = nativeEvent.clientX + 'px'; ctxMenu.style.top = nativeEvent.clientY + 'px'; }
+document.getElementById('ctxStreetView').onclick = () => { if(clickedLatLng) window.open(`https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${clickedLatLng.lat},${clickedLatLng.lng}`, '_blank'); ctxMenu.style.display='none'; }
+document.getElementById('ctxGoogleNav').onclick = () => { if(clickedLatLng) window.open(`https://www.google.com/maps/dir/?api=1&destination=${clickedLatLng.lat},${clickedLatLng.lng}`, '_blank'); ctxMenu.style.display='none'; }
+document.getElementById('ctxCadastral').onclick = () => { if(clickedLatLng) window.open(`https://maps.nlsc.gov.tw/go/${clickedLatLng.lng}/${clickedLatLng.lat}`, '_blank'); ctxMenu.style.display='none'; }
+document.getElementById('ctxClearMarker').onclick = () => { pointLayer.clearLayers(); measureLayer.clearLayers(); isMeasuring = false; document.body.classList.remove('measuring'); measureStartLatLng = null; ctxMenu.style.display='none'; }
+document.getElementById('ctxMeasure').onclick = () => { ctxMenu.style.display = 'none'; startMeasure(clickedLatLng); };
+function startMeasure(latlng) { isMeasuring = true; measureStartLatLng = latlng; document.body.classList.add('measuring'); L.circleMarker(latlng, {color: 'green', radius: 5, fillOpacity: 1}).addTo(measureLayer); }
+function finishMeasure(endLatLng) {
+    if(!isMeasuring || !measureStartLatLng) return; const dist = measureStartLatLng.distanceTo(endLatLng).toFixed(1); if(dist == 0) return;
+    const line = L.polyline([measureStartLatLng, endLatLng], {color: 'red', weight: 3}).addTo(measureLayer);
+    const centerLat = (measureStartLatLng.lat + endLatLng.lat) / 2; const centerLng = (measureStartLatLng.lng + endLatLng.lng) / 2;
+    const icon = L.divIcon({ className: 'measure-label', html: `${dist} m <span class="measure-close-btn" onclick="clearMeasure()">X</span>`, iconSize: [100, 20], iconAnchor: [50, 10] });
+    L.marker([centerLat, centerLng], {icon: icon}).addTo(measureLayer); isMeasuring = false; document.body.classList.remove('measuring');
+    if(measureLine) map.removeLayer(measureLine); if(measureTooltip) map.removeLayer(measureTooltip); measureLine = null; measureTooltip = null; measureStartLatLng = null;
+}
+window.clearMeasure = function() { measureLayer.clearLayers(); isMeasuring = false; document.body.classList.remove('measuring'); }
+map.on('mousemove', e => {
+    if(window.innerWidth > 768) { const t = twd97FromWgs84(e.latlng.lat, e.latlng.lng); const el = document.getElementById('floatingCoords'); el.style.display = 'block'; el.innerHTML = `TWD97: ${t.x}, ${t.y}`; }
+    if(isMeasuring && measureStartLatLng) {
+        if(measureLine) measureLine.setLatLngs([measureStartLatLng, e.latlng]); else measureLine = L.polyline([measureStartLatLng, e.latlng], {color: 'red', dashArray: '5, 10'}).addTo(map);
+        const dist = measureStartLatLng.distanceTo(e.latlng).toFixed(1);
+        if(measureTooltip) measureTooltip.setLatLng(e.latlng).setContent(`${dist} m`); else measureTooltip = L.tooltip({permanent:true, direction:'right'}).setLatLng(e.latlng).setContent(`${dist} m`).addTo(map);
+    }
+});
+document.getElementById('toggleMapBtn').onclick = function() { if(isSat) { map.removeLayer(sat); osm.addTo(map); this.classList.remove('active'); } else { map.removeLayer(osm); sat.addTo(map); this.classList.add('active'); } isSat = !isSat; };
+document.getElementById('toggleCadastralBtn').onclick = function() { if(isCadastralVisible) { map.removeLayer(cadastralLayer); this.classList.remove('active'); } else { cadastralLayer.addTo(map); this.classList.add('active'); } isCadastralVisible = !isCadastralVisible; };
+document.getElementById('plotBtn').onclick = () => {
+    pointLayer.clearLayers(); const input = document.getElementById('coordsInput').value.trim(); if (!input) return;
+    const lines = input.split(/\r?\n/).filter(line => line.trim() !== ''); const bounds = L.latLngBounds(); let markerCount = 0;
+    lines.forEach(line => {
+        const parts = line.trim().split(/[, \t]+/).filter(p => p !== '');
+        if (parts.length >= 2) {
+            const x = parseFloat(parts[0]), y = parseFloat(parts[1]);
+            if (!isNaN(x) && !isNaN(y)) {
+                try {
+                    const w = proj4('EPSG:3826', 'EPSG:4326', [x, y]); const latlng = L.latLng(w[1], w[0]); const villageName = getVillageName(w[1], w[0]);
+                    L.marker(latlng).addTo(pointLayer).bindPopup(`X:${x}, Y:${y}<br>行政區: ${villageName}`); markerCount++; bounds.extend(latlng);
+                } catch (e) { console.error("Coordinate conversion error:", e); }
             }
         }
     });
-
-    // 2. 判斷數量
-    if (nearbyMarkers.length <= 1) {
-        // 只有一個點，直接打開該點的 Popup (並設定選中狀態)
-        if(selectedTimelineMarker && selectedTimelineMarker !== clickedMarker) {
-             selectedTimelineMarker.setStyle({ radius: 14, color: '#fff', fillColor: DEEP_BLUE, weight:1, fillOpacity:0.9 });
-             selectedTimelineMarker.closePopup();
+    if (markerCount > 0) { if (markerCount === 1) { map.setView(bounds.getCenter(), 16); pointLayer.getLayers()[0].openPopup(); } else { map.fitBounds(bounds, { padding: [50, 50] }); } } else { alert('請輸入有效的 TWD97 座標，格式為 X,Y (每行一組)'); }
+};
+document.getElementById('plotDengueBtn').onclick = () => {
+    dengueLayer.clearLayers(); const val = document.getElementById('dengueCoordsInput').value.trim(); if(!val) return;
+    const lines = val.split(/\r?\n/);
+    lines.forEach(line => {
+        const parts = line.split(/[, \t]+/);
+        if(parts.length>=2) {
+            const x = parseFloat(parts[0]), y = parseFloat(parts[1]);
+            if(!isNaN(x)&&!isNaN(y)) {
+                const w = proj4('EPSG:3826','EPSG:4326',[x,y]);
+                const icon = L.divIcon({ className: 'custom-div-icon', html: "<div class='gray-dot-marker'></div>", iconSize: [14, 14], iconAnchor: [7, 7] });
+                L.marker([w[1],w[0]], {icon: icon}).addTo(dengueLayer).bindPopup(`確診戶座標: ${x}, ${y}`); map.setView([w[1],w[0]], 16);
+            }
         }
-        selectedTimelineMarker = clickedMarker;
-        clickedMarker.setStyle({ radius: 20, color:'#ffd700', weight:4, fillColor:'#d32f2f' });
-        clickedMarker.bringToFront();
-        clickedMarker.openPopup();
-        map.flyTo(clickedMarker.getLatLng(), 18);
-    } else {
-        // 3. 有重疊，顯示列表選單
-        const listContent = document.createElement('div');
-        listContent.className = 'overlap-list';
-        
-        // 標題
-        const titleDiv = document.createElement('div');
-        titleDiv.className = 'overlap-title';
-        titleDiv.innerHTML = `<i class="fas fa-list-ul"></i> 請選擇案件 (共${nearbyMarkers.length}筆)`;
-        listContent.appendChild(titleDiv);
-
-        nearbyMarkers.forEach((m, idx) => {
-            // 從 marker 綁定的 _smartData 取得資料 (需在 renderTimeline 中綁定)
-            if(!m._smartData) return; 
-
-            const itemDiv = document.createElement('div');
-            itemDiv.className = 'overlap-item';
-            
-            // 產生 SmartID 文字
-            const smartId = getSmartCaseID(m._smartData.label, m._smartData.caseId || '無編號');
-            
-            itemDiv.innerHTML = `<span class="overlap-index">${idx + 1}.</span> ${smartId}`;
-            
-            itemDiv.onclick = function() {
-                // 關閉列表 Popup
-                map.closePopup();
-                
-                // 觸發該 Marker 的選取邏輯
-                if(selectedTimelineMarker && selectedTimelineMarker !== m) {
-                     selectedTimelineMarker.setStyle({ radius: 14, color: '#fff', fillColor: DEEP_BLUE, weight:1, fillOpacity:0.9 });
-                     selectedTimelineMarker.closePopup();
-                }
-                selectedTimelineMarker = m;
-                m.setStyle({ radius: 20, color:'#ffd700', weight:4, fillColor:'#d32f2f' });
-                m.bringToFront();
-                m.openPopup();
-                map.flyTo(m.getLatLng(), 18);
-            };
-            
-            listContent.appendChild(itemDiv);
-        });
-
-        // 在點擊位置打開列表 Popup
-        L.popup({ 
-            className: 'custom-popup-list', // 可額外自訂 CSS
-            maxWidth: 300,
-            offset: [0, -10]
-        })
-        .setLatLng(e.latlng)
-        .setContent(listContent)
-        .openOn(map);
-    }
+    });
+};
+document.getElementById('clearDengueBtn').onclick = () => { dengueLayer.clearLayers(); dengueRadiusLayer.clearLayers(); document.getElementById('dengueCoordsInput').value=''; document.querySelectorAll('input[name="dengueRadius"]').forEach(r => r.checked = false); };
+document.getElementById('clearBtn').onclick = () => { pointLayer.clearLayers(); document.getElementById('coordsInput').value=''; };
+document.getElementById('clearRepairBtn').addEventListener('click', () => {
+    if(markersClusterGroup) { markersClusterGroup.clearLayers(); map.removeLayer(markersClusterGroup); markersClusterGroup = null; }
+    activeRepairLayers = []; document.getElementById('clusterControlPanel').style.display = 'none'; document.getElementById('toggleClusterControlBtn').classList.remove('active');
+    document.querySelectorAll('.repair-cb').forEach(cb => cb.checked = false); document.querySelectorAll('.year-select-all input').forEach(cb => cb.checked = false);
+    searchResultLayer.clearLayers(); document.getElementById('keywordInput').value = ''; document.getElementById('contractorSelect').value = ''; document.getElementById('villageSelect').value = ''; document.getElementById('searchStatus').innerText = ''; document.getElementById('clearSearchBtn').style.display = 'none';
+    pointLayer.clearLayers(); measureLayer.clearLayers(); document.getElementById('coordsInput').value = '';
+    if(roadsLayer) roadsLayer.eachLayer(l => l.setStyle({color: DEEP_BLUE, weight:3})); document.getElementById('roadSelect').value = "";
+    clusterLayer.clearLayers(); if(clusterToggle.checked) clusterToggle.checked = false;
+    dengueLayer.clearLayers(); dengueRadiusLayer.clearLayers(); document.getElementById('dengueCoordsInput').value = ''; document.querySelectorAll('input[name="dengueRadius"]').forEach(r => r.checked = false);
+    bottomPanel.classList.remove('open'); map.closePopup();
+});
+const clusterToggle = document.getElementById('clusterToggle'), clusterSlider = document.getElementById('clusterSlider'), clusterValue = document.getElementById('clusterValue');
+clusterToggle.addEventListener('change', () => { if(clusterToggle.checked) calculateClusters(); else clusterLayer.clearLayers(); });
+clusterSlider.addEventListener('input', () => { clusterValue.innerText = `${clusterSlider.value}m`; if(clusterToggle.checked) { clearTimeout(window.clusterTimer); window.clusterTimer = setTimeout(calculateClusters, 100); } });
+function calculateClusters() {
+    clusterLayer.clearLayers(); if(!clusterToggle.checked) return; const radius = parseInt(clusterSlider.value); if(radius === 0) return; document.body.style.cursor = 'wait';
+    setTimeout(() => {
+        try {
+            const points = [];
+            activeRepairLayers.forEach(marker => { if(marker.feature && marker.feature.geometry.type === 'Point') points.push(marker.feature); });
+            searchResultLayer.eachLayer(layer => { if(layer.feature && layer.feature.geometry.type === 'Point') points.push(layer.feature); });
+            if(points.length === 0) { alert("⚠️ 尚未載入任何案件資料！\n\n請先至「透明」分頁勾選年度，\n或至「搜尋」分頁查詢案件後，\n再來執行空間分析。"); clusterToggle.checked = false; document.body.style.cursor = 'default'; return; }
+            const fc = turf.featureCollection(points); const buffered = turf.buffer(fc, radius / 1000, {units: 'kilometers', steps: 10});
+            let resultGeoJSON = null; try { if (buffered.features.length > 0) { let merged = buffered.features[0]; for (let i = 1; i < buffered.features.length; i++) merged = turf.union(merged, buffered.features[i]); resultGeoJSON = merged; } } catch (unionError) { resultGeoJSON = buffered; }
+            if (resultGeoJSON) { const layer = L.geoJSON(resultGeoJSON, { style: { color: 'none', weight: 0, fillColor: '#d32f2f', fillOpacity: 0.3 }, interactive: false }).addTo(clusterLayer); layer.bringToBack(); }
+        } catch (e) { console.error(e); } finally { document.body.style.cursor = 'default'; }
+    }, 50);
+}
+document.getElementById('repairCheckboxes').addEventListener('change', () => { if(clusterToggle.checked) { clearTimeout(window.clusterTimer); window.clusterTimer = setTimeout(calculateClusters, 200); } });
+function formatMoney(val) { if (!val) return 0; return parseInt(val.toString().replace(/,/g, '')) || 0; }
+function getDateDiffDays(dateStr1, dateStr2) {
+    if (!dateStr1 || dateStr1.length < 7 || !dateStr2 || dateStr2.length < 7) return 9999;
+    const s1 = String(dateStr1), s2 = String(dateStr2); // 強制轉型，避免數字格式崩潰
+    const d1 = new Date(parseInt(s1.substring(0,3))+1911, parseInt(s1.substring(3,5))-1, parseInt(s1.substring(5,7)));
+    const d2 = new Date(parseInt(s2.substring(0,3))+1911, parseInt(s2.substring(3,5))-1, parseInt(s2.substring(5,7)));
+    return Math.ceil(Math.abs(d1 - d2) / (1000 * 60 * 60 * 24)); 
 }
 
-// ... (其他既有函式) ...
-
 /* 核心修改：0111V2 多重篩選邏輯 */
-function showTimeline(routeLayer) { /* ... (保持原樣) ... */ }
+function showTimeline(routeLayer) {
+    const cont = document.getElementById('timelineContainer'), filterBar = document.getElementById('timelineFilterBar');
+    cont.innerHTML = '<div style="padding:20px;">讀取中...</div>'; routeMatchLayer.clearLayers();
+    
+    // 1. 抓取案件資料
+    const routeLine = routeLayer.toGeoJSON().geometry; 
+    currentRouteAllMatches = [];
+    REPAIR_CONFIG.forEach(conf => {
+        const data = REPAIR_DATA_CACHE[conf.value]; if(!data) return;
+        data.features.forEach(f => {
+            if(f.geometry.type !== 'Point') return;
+            const pt = turf.point(f.geometry.coordinates); 
+            const dist = turf.pointToLineDistance(pt, routeLine, {units:'meters'});
+            
+            // 0111V8 修改：最短距離排他性檢核 (Nearest Neighbor Check)
+            if(dist <= 50) {
+                 const pLatLng = L.latLng(f.geometry.coordinates[1], f.geometry.coordinates[0]);
+                 const globalMinDist = distToRoad(pLatLng, roadsLayer);
+                 if ((dist - globalMinDist) <= 1.0) {
+                     currentRouteAllMatches.push({ label: conf.label, props: f.properties, lat: f.geometry.coordinates[1], lng: f.geometry.coordinates[0], dist });
+                 }
+            }
+        });
+    });
+
+    filterBar.innerHTML = '<span class="filter-label"><i class="fas fa-filter"></i> 篩選：</span>';
+
+    const getUniqueValues = (data, key) => {
+        const set = new Set();
+        data.forEach(item => {
+            let val = key === 'label' ? item.label : item.props[key];
+            if(val) set.add(val.toString().trim());
+        });
+        return Array.from(set).sort().reverse();
+    };
+
+    const years = getUniqueValues(currentRouteAllMatches, 'label');
+    const timings = getUniqueValues(currentRouteAllMatches, '派工時機');
+    const types = getUniqueValues(currentRouteAllMatches, '搶修類型');
+
+    const createSelect = (options, placeholder, onChange) => {
+        const sel = document.createElement('select');
+        sel.className = 'timeline-select-pill';
+        const def = document.createElement('option');
+        def.value = 'all'; def.textContent = placeholder;
+        sel.appendChild(def);
+        options.forEach(opt => {
+            const o = document.createElement('option');
+            o.value = opt; o.textContent = opt;
+            sel.appendChild(o);
+        });
+        sel.addEventListener('change', onChange);
+        return sel;
+    };
+
+    const selYear = createSelect(years, '年度/案件來源 (全選)', filterData);
+    const selTiming = createSelect(timings, '派工時機 (全選)', filterData);
+    const selType = createSelect(types, '搶修類型 (全選)', filterData);
+
+    filterBar.appendChild(selYear);
+    filterBar.appendChild(selTiming);
+    filterBar.appendChild(selType);
+
+    function filterData() {
+        const vYear = selYear.value;
+        const vTiming = selTiming.value;
+        const vType = selType.value;
+
+        const filtered = currentRouteAllMatches.filter(m => {
+            const matchYear = (vYear === 'all') || (m.label === vYear);
+            const matchTiming = (vTiming === 'all') || (m.props['派工時機'] === vTiming);
+            const matchType = (vType === 'all') || (m.props['搶修類型'] === vType);
+            return matchYear && matchTiming && matchType;
+        });
+        renderTimeline(filtered);
+    }
+
+    renderTimeline(currentRouteAllMatches);
+}
 
 function renderTimeline(matches) {
     const cont = document.getElementById('timelineContainer'), statsDiv = document.getElementById('timelineStats');
@@ -1750,7 +1908,7 @@ function renderTimeline(matches) {
     
     try {
         matches.forEach(m => {
-             const caseNo = m.props['案件編號'], money = formatMoney(m.props['決標金額']), labelName = String(m.label || ""), isEmergency = /搶修|災害|緊急/.test(labelName);
+            const caseNo = m.props['案件編號'], money = formatMoney(m.props['決標金額']), labelName = String(m.label || ""), isEmergency = /搶修|災害|緊急/.test(labelName);
             if(isEmergency) emgCount++; else genCount++;
             let shouldAdd = false; if (caseNo && !processedCases.has(caseNo)) { processedCases.add(caseNo); shouldAdd = true; } else if (!caseNo) { shouldAdd = true; }
             if (shouldAdd) { totalCost += money; if(isEmergency) emgCost += money; else genCost += money; }
@@ -1765,13 +1923,6 @@ function renderTimeline(matches) {
 
         matches.forEach((m, i) => {
             const marker = L.circleMarker([m.lat, m.lng], normalStyle).addTo(routeMatchLayer);
-            
-            // V17: 綁定資料供重疊列表使用
-            marker._smartData = {
-                label: m.label,
-                caseId: m.props['案件編號']
-            };
-
             marker.bindPopup(createPopup({ fileName: m.label, props: m.props, lat: m.lat, lng: m.lng, dist: m.dist }), {className:'custom-popup', maxWidth:960});
             
             const labelName = String(m.label || ""); 
@@ -1790,7 +1941,6 @@ function renderTimeline(matches) {
             const item = document.createElement('div'); item.className = `h-item ${alertClass}`;
             item.innerHTML = `<div class="h-date">${m.props['完工日期']||'未知'}</div><div class="h-line-container"><div class="h-dot ${sizeClass}"></div></div><div class="h-badge ${labelName.includes('搶修')||labelName.includes('災害')||labelName.includes('緊急') ? 'badge-urgent' : 'badge-normal'}">${labelName.includes('搶修')||labelName.includes('災害')||labelName.includes('緊急') ? '搶修' : '一般'}</div>`;
             
-            // 時間軸 Mouse Events
             item.addEventListener('mouseenter', () => { 
                 if (selectedTimelineMarker === marker) return;
                 marker.setStyle(highlightStyle); marker.bringToFront(); marker.openPopup(); 
@@ -1812,11 +1962,6 @@ function renderTimeline(matches) {
                 map.flyTo([m.lat, m.lng], 18);
             });
             
-            // V17: 地圖 Marker 點擊事件 (使用 handleOverlappingMarkers)
-            marker.on('click', (e) => {
-                handleOverlappingMarkers(e, routeMatchLayer, marker);
-            });
-            
             cont.appendChild(item);
         });
     } catch(err) {
@@ -1824,12 +1969,17 @@ function renderTimeline(matches) {
         cont.innerHTML = '<div style="padding:20px; color:red;">顯示失敗：資料格式有誤</div>';
     }
 }
-function updateDengueRadius() { /* ... */ }
+function updateDengueRadius() {
+    dengueRadiusLayer.clearLayers(); const radios = document.getElementsByName('dengueRadius'); let r = 0;
+    for(let i=0; i<radios.length; i++){ if(radios[i].checked) r = parseInt(radios[i].value); }
+    if(r === 0) return; dengueLayer.eachLayer(marker => { L.circle(marker.getLatLng(), { radius: r, color: 'none', fillColor: '#ff9800', fillOpacity: 0.3 }).addTo(dengueRadiusLayer); });
+}
 
-// === 0111V12 LINE 瀏覽器記憶功能 ===
+// === 0111V12 新增：解決 LINE 瀏覽器返回後不記憶泡泡窗的問題 ===
 map.on('popupopen', function(e) {
     var content = e.popup.getContent();
     var latlng = e.popup.getLatLng();
+    // 將當前開啟的泡泡窗狀態存入 SessionStorage
     sessionStorage.setItem('savedPopup', JSON.stringify({
         lat: latlng.lat,
         lng: latlng.lng,
@@ -1837,7 +1987,13 @@ map.on('popupopen', function(e) {
         zoom: map.getZoom()
     }));
 });
-map.on('popupclose', function(e) { sessionStorage.removeItem('savedPopup'); });
+
+map.on('popupclose', function(e) {
+    // 關閉時清除記憶
+    sessionStorage.removeItem('savedPopup');
+});
+
+// 當頁面載入完成 (包含 LINE 返回重新整理) 時，檢查是否有記憶的泡泡窗
 window.addEventListener('load', function() {
     setTimeout(function(){
         var saved = sessionStorage.getItem('savedPopup');
@@ -1845,10 +2001,15 @@ window.addEventListener('load', function() {
             try {
                 var data = JSON.parse(saved);
                 map.setView([data.lat, data.lng], data.zoom || 18);
-                L.popup({className:'custom-popup', maxWidth:960}).setLatLng([data.lat, data.lng]).setContent(data.content).openOn(map);
-            } catch(e) { console.error("Restore popup failed", e); }
+                L.popup({className:'custom-popup', maxWidth:960})
+                 .setLatLng([data.lat, data.lng])
+                 .setContent(data.content)
+                 .openOn(map);
+            } catch(e) {
+                console.error("Restore popup failed", e);
+            }
         }
-    }, 500);
+    }, 500); // 稍微延遲以確保地圖初始化完畢
 });
 </script>
 </body>

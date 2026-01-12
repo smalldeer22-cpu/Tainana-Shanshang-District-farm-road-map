@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.1150111-V15-FormatFix)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.1150112)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -465,7 +465,7 @@
 
         <div id="nearbyHistorySection" style="margin-bottom:15px; border:1px solid #ffd700; background:#fffbe6; border-radius:6px; padding:10px; display:none;">
             <div style="font-weight:bold; color:#d35400; margin-bottom:5px; font-size:14px; display:flex; justify-content:space-between; align-items:center;">
-                <span><i class="fas fa-history"></i> 定位點過往3年內周遭20公尺的維修案件</span>
+                <span><i class="fas fa-history"></i> 定位點過往3年內周遭50公尺的維修案件</span>
                 <span style="font-size:11px; color:#666; font-weight:normal;">(點擊查看詳情)</span>
             </div>
             <div id="nearbyHistoryList" style="max-height:150px; overflow-y:auto; font-size:13px; background:#fff; border:1px solid #eee; border-radius:4px;"></div>
@@ -1094,8 +1094,9 @@ function checkNearbyHistory(lat, lng) {
             if(f.geometry.type !== 'Point') return;
             const pt = L.latLng(f.geometry.coordinates[1], f.geometry.coordinates[0]);
             
+            // V16: 修正搜尋半徑為 50m
             const dist = centerLatLng.distanceTo(pt);
-            if(dist <= 20) {
+            if(dist <= 50) {
                 const dateStr = f.properties['完工日期']; 
                 if(dateStr && dateStr.length === 7) {
                     const y = parseInt(dateStr.substring(0,3)) + 1911;
@@ -1144,7 +1145,8 @@ function checkNearbyHistory(lat, lng) {
         });
     } else {
         historySection.style.display = 'block';
-        historyList.innerHTML = '<div style="padding:10px; color:#999; text-align:center;">此位置 20公尺內 最近 3年無維修紀錄。</div>';
+        // V16: 更新提示文字為 50公尺
+        historyList.innerHTML = '<div style="padding:10px; color:#999; text-align:center;">此位置 50公尺內 最近 3年無維修紀錄。</div>';
     }
 }
 

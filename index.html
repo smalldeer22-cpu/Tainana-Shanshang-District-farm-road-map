@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.1150112)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.1150112-Fix)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -414,6 +414,19 @@
   .dup-tag { font-size: 11px; padding: 1px 4px; border-radius: 3px; color: #fff; margin-left: 5px; }
   .tag-gen { background: var(--primary-color); }
   .tag-emg { background: #d32f2f; }
+
+  /* 0112V2 新增：多選清單列表樣式 (Multi-select) */
+  .multi-select-popup .info-header {
+      background: #004080; color: white; padding: 8px 12px; font-weight: bold; font-size: 14px;
+      display: flex; justify-content: space-between; align-items: center;
+  }
+  .multi-select-item {
+      padding: 10px; border-bottom: 1px solid #eee; cursor: pointer; transition: background 0.2s;
+  }
+  .multi-select-item:hover { background: #f0f7ff; }
+  .multi-select-item:last-child { border-bottom: none; }
+  .multi-select-title { font-size: 13px; font-weight: bold; color: #004080; margin-bottom: 3px; }
+  .multi-select-meta { font-size: 11px; color: #666; display: flex; gap: 8px; align-items: center; }
 
   #floatingCoords { position:absolute; pointer-events:none; background:rgba(255,255,255,0.9); border:1px solid #ccc; border-radius:4px; padding:4px 8px; font-size:11px; display:none; z-index:1300; bottom: 10px; right: 10px; }
 
@@ -1389,7 +1402,11 @@ document.getElementById('villageSelect').addEventListener('change', function() {
                     const [lng, lat] = f.geometry.coordinates; const ll = L.latLng(lat, lng);
                     L.circleMarker(ll, { radius: 18, fillColor: '#ffd700', color: '#ff8c00', weight: 2, fillOpacity: 0.6 }).addTo(searchResultLayer);
                     const marker = L.circleMarker(ll, { radius: 6, fillColor: '#d32f2f', color: '#fff', weight: 1, fillOpacity: 1 }).addTo(searchResultLayer);
-                    marker.feature = f; marker.bindPopup(createPopup({ fileName: conf.label, props: f.properties, lat, lng, dist: distToRoad(ll, roadsLayer) }), { className: 'custom-popup', maxWidth:960 }); count++;
+                    
+                    // V17 Mod: 使用智慧點擊處理，不直接 bindPopup
+                    marker.customData = { configLabel: conf.label, props: f.properties };
+                    marker.on('click', (e) => handleNearbyMarkerClick(e, searchResultLayer.getLayers()));
+                    count++;
                 }
             } catch (e) {}
         });
@@ -1429,7 +1446,11 @@ document.getElementById('statsVillageSelect').addEventListener('change', functio
                     const [lng, lat] = f.geometry.coordinates; const ll = L.latLng(lat, lng);
                     L.circleMarker(ll, { radius: 18, fillColor: '#ffd700', color: '#ff8c00', weight: 2, fillOpacity: 0.6 }).addTo(searchResultLayer);
                     const marker = L.circleMarker(ll, { radius: 6, fillColor: '#d32f2f', color: '#fff', weight: 1, fillOpacity: 1 }).addTo(searchResultLayer);
-                    marker.feature = f; marker.bindPopup(createPopup({ fileName: conf.label, props: f.properties, lat, lng, dist: distToRoad(ll, roadsLayer) }), { className: 'custom-popup', maxWidth:960 });
+                    
+                    // V17 Mod: 使用智慧點擊處理
+                    marker.customData = { configLabel: conf.label, props: f.properties };
+                    marker.on('click', (e) => handleNearbyMarkerClick(e, searchResultLayer.getLayers()));
+
                     const props = f.properties, caseNo = props['案件編號'], amount = formatMoney(props['決標金額']);
                     let shouldAdd = false; if (caseNo && caseNo.trim() !== "") { if (!villageProcessedCases.has(caseNo)) { villageProcessedCases.add(caseNo); shouldAdd = true; } } else { shouldAdd = true; }
                     if (shouldAdd) { if (isEmergency) { villageYearStats[year].emgCount++; villageYearStats[year].emgAmount += amount; } else { villageYearStats[year].genCount++; villageYearStats[year].genAmount += amount; } }
@@ -1521,21 +1542,152 @@ function updateRepairPoints() {
         const iconHtml = `<div style="width:14px; height:14px; background:${color}; border:2px solid #fff; border-radius:50%; box-shadow:0 2px 4px rgba(0,0,0,0.2);"></div>`;
         const icon = L.divIcon({ html: iconHtml, className: 'custom-dot-marker', iconSize: [18, 18], iconAnchor: [9, 9] });
         const marker = L.marker(pt, { icon: icon });
-        if(group.length === 1) {
-            marker.bindPopup(createPopup({ fileName: firstItem.configLabel, props: firstItem.feature.properties, lat: pt.lat, lng: pt.lng, dist: dist }), { className: 'custom-popup', maxWidth:960 });
-        } else {
-            let listHtml = `<div class="info-header" style="padding:10px;background:#004080;color:white;font-weight:bold;">重複座標點位資訊 (${group.length}筆)</div><div class="info-body" style="padding:10px;max-height:250px; overflow-y:auto;"><div style="font-size:12px; color:#666; margin-bottom:5px;">點擊案件名稱可查看詳細資料</div>`;
-            group.forEach((item, index) => {
-                listHtml += `<div style="border-bottom:1px dashed #ccc; padding:8px 0; cursor:pointer;" onclick="showMapDetailPopup('${key}', ${index})"><b style="color:#004080; text-decoration:underline;">${index+1}. ${item.configLabel}</b><br><span style="color:#333; font-size:12px;">案件編號: ${item.feature.properties['案件編號']||'無'}<br>完工日期: ${item.feature.properties['完工日期']||'無'}</span></div>`;
-            });
-            listHtml += `</div>`;
-            marker.bindPopup(listHtml, { className: 'custom-popup', maxWidth: 300 });
-        }
+        
+        // V17 Mod: 使用智慧點擊偵測，不直接 bindPopup
+        // 儲存資料到 marker 物件上
+        marker.customData = {
+            group: group,
+            configLabel: firstItem.configLabel,
+            props: firstItem.feature.properties
+        };
+        marker.on('click', (e) => handleNearbyMarkerClick(e, activeRepairLayers));
+
         marker.feature = firstItem.feature; activeRepairLayers.push(marker);
     });
     if (activeRepairLayers.length === 0) { panel.style.display = 'none'; toggleBtn.classList.remove('active'); }
     renderClusterGroup(); calculateClusters(); 
 }
+
+/* === 0112V2 新增：智慧點擊處理邏輯 (Disambiguation) === */
+window.handleNearbyMarkerClick = function(e, sourceLayers) {
+    L.DomEvent.stopPropagation(e);
+    
+    // 取得點擊位置的螢幕像素座標
+    const clickPoint = map.latLngToContainerPoint(e.latlng);
+    const candidates = [];
+    const BUFFER_PX = 30; // 偵測半徑 (px)
+
+    // 在該圖層群組中尋找所有靠近的標記
+    sourceLayers.forEach(layer => {
+        if (!map.getBounds().contains(layer.getLatLng())) return;
+        const layerPos = map.latLngToContainerPoint(layer.getLatLng());
+        if (layerPos.distanceTo(clickPoint) <= BUFFER_PX) {
+            candidates.push(layer);
+        }
+    });
+
+    if (candidates.length > 1) {
+        // 如果有多個標記，顯示選單
+        showMultiSelectPopup(e.latlng, candidates);
+    } else {
+        // 只有一個標記，直接顯示原有的詳情
+        const targetMarker = candidates.length > 0 ? candidates[0] : e.target;
+        openDetailPopupFromMarker(targetMarker);
+    }
+};
+
+window.showMultiSelectPopup = function(latlng, markers) {
+    let html = `<div class="multi-select-popup">
+        <div class="info-header">請選擇案件 (${markers.length})</div>
+        <div style="max-height:250px; overflow-y:auto;">`;
+    
+    markers.forEach((m, idx) => {
+        // 從 marker 的 customData 取得資料
+        const data = m.customData || {};
+        const isGroup = data.group && data.group.length > 1;
+        const title = data.configLabel || "案件";
+        const props = data.props || {};
+        const caseNo = props['案件編號'] || '無編號';
+        const date = props['完工日期'] || '';
+        
+        // 將標記暫存在全域變數中以便點擊觸發 (簡單實作)
+        window[`_temp_marker_${idx}`] = m;
+        
+        html += `
+        <div class="multi-select-item" onclick="window.triggerMarkerPopup(${idx})">
+            <div class="multi-select-title">
+                ${idx+1}. ${title} ${isGroup ? `<span style='font-size:10px;background:#d32f2f;color:fff;padding:1px 4px;border-radius:3px;'>重疊${data.group.length}筆</span>` : ''}
+            </div>
+            <div class="multi-select-meta">
+                <span><i class="fas fa-barcode"></i> ${caseNo}</span>
+                <span><i class="fas fa-calendar-alt"></i> ${date}</span>
+            </div>
+        </div>`;
+    });
+    
+    html += `</div></div>`;
+    
+    L.popup({ className: 'custom-popup', maxWidth: 300 })
+     .setLatLng(latlng)
+     .setContent(html)
+     .openOn(map);
+};
+
+window.triggerMarkerPopup = function(idx) {
+    const m = window[`_temp_marker_${idx}`];
+    if(m) {
+        map.closePopup();
+        openDetailPopupFromMarker(m);
+    }
+};
+
+window.openDetailPopupFromMarker = function(marker) {
+    const data = marker.customData;
+    if(!data) return;
+
+    // 判斷是一般單點還是重複座標群組
+    if (data.group && data.group.length > 1) {
+        // 重複座標群組：顯示原本的列表式 Popup
+        let listHtml = `<div class="info-header" style="padding:10px;background:#004080;color:white;font-weight:bold;">重複座標點位資訊 (${data.group.length}筆)</div><div class="info-body" style="padding:10px;max-height:250px; overflow-y:auto;"><div style="font-size:12px; color:#666; margin-bottom:5px;">點擊案件名稱可查看詳細資料</div>`;
+        const key = marker.getLatLng().lat + ',' + marker.getLatLng().lng; // 只是為了 key
+        data.group.forEach((item, index) => {
+             // 這裡需要能夠呼叫到 showMapDetailPopup，但我們需要稍微調整 showMapDetailPopup 的邏輯或直接在此生成
+             // 為了相容原本的 showMapDetailPopup，我們確保 CURRENT_MAP_GROUPS 有值
+             // 其實 updateRepairPoints 已經填好 CURRENT_MAP_GROUPS 了，所以只要用座標當 key 就可以
+             // 注意：key 必須跟 updateRepairPoints 產生的 key 一致
+             // updateRepairPoints 使用: f.geometry.coordinates.join(',') -> lng,lat
+             // 這裡我們直接用原本的 item 生成 onclick
+             // 但為了簡化，我們直接在這裡實作打開全螢幕詳情的邏輯
+             
+             // 把 item 暫存
+             window[`_temp_group_item_${index}`] = item;
+             
+             listHtml += `<div style="border-bottom:1px dashed #ccc; padding:8px 0; cursor:pointer;" onclick="openSingleGroupItem(${index})"><b style="color:#004080; text-decoration:underline;">${index+1}. ${item.configLabel}</b><br><span style="color:#333; font-size:12px;">案件編號: ${item.feature.properties['案件編號']||'無'}<br>完工日期: ${item.feature.properties['完工日期']||'無'}</span></div>`;
+        });
+        listHtml += `</div>`;
+        L.popup({ className: 'custom-popup', maxWidth: 300 }).setLatLng(marker.getLatLng()).setContent(listHtml).openOn(map);
+    } else {
+        // 單點：顯示 3欄式 Popup
+        const dist = distToRoad(marker.getLatLng(), roadsLayer);
+        const content = createPopup({
+            fileName: data.configLabel,
+            props: data.props,
+            lat: marker.getLatLng().lat,
+            lng: marker.getLatLng().lng,
+            dist: dist
+        });
+        
+        // 記錄最後開啟狀態 (Line Fix)
+        const latlng = marker.getLatLng();
+        sessionStorage.setItem('savedPopup', JSON.stringify({
+             lat: latlng.lat, lng: latlng.lng, content: content, zoom: map.getZoom()
+        }));
+        
+        L.popup({className:'custom-popup', maxWidth:960})
+         .setLatLng(marker.getLatLng())
+         .setContent(content)
+         .openOn(map);
+    }
+};
+
+window.openSingleGroupItem = function(index) {
+    const item = window[`_temp_group_item_${index}`];
+    if(item) {
+        const dist = distToRoad(item.latlng, roadsLayer);
+        const content = createPopup({ fileName: item.configLabel, props: item.feature.properties, lat: item.latlng.lat, lng: item.latlng.lng, dist: dist });
+        L.popup({className:'custom-popup', maxWidth:960}).setLatLng(item.latlng).setContent(content).openOn(map);
+    }
+};
 
 function renderClusterGroup() {
     const sliderVal = parseInt(document.getElementById('clusterRadiusSlider').value);
@@ -1654,7 +1806,13 @@ async function performSearch(predicate, label) {
                     const [lng, lat] = f.geometry.coordinates; const ll = L.latLng(lat, lng);
                     L.circleMarker(ll, { radius: 18, fillColor: '#ffd700', color: '#ff8c00', weight: 2, fillOpacity: 0.6 }).addTo(searchResultLayer);
                     const marker = L.circleMarker(ll, { radius: 6, fillColor: '#d32f2f', color: '#fff', weight: 1, fillOpacity: 1 }).addTo(searchResultLayer);
-                    marker.feature = f; marker.bindPopup(createPopup({ fileName: conf.label, props: f.properties, lat, lng, dist: distToRoad(ll, roadsLayer) }), { className: 'custom-popup', maxWidth:960 }); count++;
+                    
+                    // V17 Mod: 使用智慧點擊處理
+                    marker.customData = { configLabel: conf.label, props: f.properties };
+                    marker.on('click', (e) => handleNearbyMarkerClick(e, searchResultLayer.getLayers()));
+                    
+                    marker.feature = f; 
+                    count++;
                 }
             } catch(e){}
         });
@@ -1923,8 +2081,11 @@ function renderTimeline(matches) {
 
         matches.forEach((m, i) => {
             const marker = L.circleMarker([m.lat, m.lng], normalStyle).addTo(routeMatchLayer);
-            marker.bindPopup(createPopup({ fileName: m.label, props: m.props, lat: m.lat, lng: m.lng, dist: m.dist }), {className:'custom-popup', maxWidth:960});
             
+            // V17 Mod: 使用智慧點擊處理
+            marker.customData = { configLabel: m.label, props: m.props };
+            marker.on('click', (e) => handleNearbyMarkerClick(e, routeMatchLayer.getLayers()));
+
             const labelName = String(m.label || ""); 
             const amount = formatMoney(m.props['決標金額']); 
             let sizeClass = 'dot-sm'; if (amount > 5000000) sizeClass = 'dot-lg'; else if (amount > 1000000) sizeClass = 'dot-md'; 
@@ -1958,7 +2119,10 @@ function renderTimeline(matches) {
                 selectedTimelineMarker = marker;
                 marker.setStyle(highlightStyle);
                 marker.bringToFront();
-                marker.openPopup();
+                
+                // V17: Timeline 點擊也要支援智慧偵測
+                // 模擬點擊 marker 來觸發 handleNearbyMarkerClick
+                marker.fire('click');
                 map.flyTo([m.lat, m.lng], 18);
             });
             

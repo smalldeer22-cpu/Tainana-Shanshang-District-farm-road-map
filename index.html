@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.1150113-V3)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.1150113-Preload)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -813,6 +813,24 @@ const searchResultLayer = L.featureGroup().addTo(map);
 const clusterLayer = L.featureGroup().addTo(map);
 const measureLayer = L.layerGroup().addTo(map).setZIndex(1001);
 
+/* === V19 Added: 圖片預載 helper function === */
+function preloadImages(urls) {
+    if (!urls || !Array.isArray(urls)) return;
+    urls.forEach(url => {
+        if (url && url.trim() !== "") {
+            const img = new Image();
+            img.src = url.trim();
+        }
+    });
+}
+
+function getPhotosFromProps(props) {
+    if(!props) return [];
+    const arr1 = props['施工前照片'] ? props['施工前照片'].split(/[;\n\r]+/) : [];
+    const arr2 = props['施工後照片'] ? props['施工後照片'].split(/[;\n\r]+/) : [];
+    return [...arr1, ...arr2];
+}
+
 /* === 核心功能：新版泡泡窗生成函式 (3-Column + Sync + Wan + Mobile Opt V13) === */
 
 // 手機版切換照片 Tab 的函數
@@ -1599,6 +1617,16 @@ window.handleNearbyMarkerClick = function(e, sourceLayers) {
 };
 
 window.showMultiSelectPopup = function(latlng, markers) {
+    // V19 Added: 圖片預載 (Mobile Multi-select)
+    // 當選單跳出時，立刻下載所有候選人的圖片
+    markers.forEach(m => {
+        const p = m.customData && m.customData.props;
+        if(p) {
+            const photoUrls = getPhotosFromProps(p);
+            preloadImages(photoUrls);
+        }
+    });
+
     let html = `<div class="multi-select-popup">
         <div class="info-header">請選擇案件 (${markers.length})</div>
         <div style="max-height:250px; overflow-y:auto;">`;
@@ -2114,8 +2142,12 @@ function renderTimeline(matches) {
             const item = document.createElement('div'); item.className = `h-item ${alertClass}`;
             item.innerHTML = `<div class="h-date">${m.props['完工日期']||'未知'}</div><div class="h-line-container"><div class="h-dot ${sizeClass}"></div></div><div class="h-badge ${labelName.includes('搶修')||labelName.includes('災害')||labelName.includes('緊急') ? 'badge-urgent' : 'badge-normal'}">${labelName.includes('搶修')||labelName.includes('災害')||labelName.includes('緊急') ? '搶修' : '一般'}</div>`;
             
-            // 1. Hover 預覽 (手動創建臨時 Popup)
+            // 1. Hover 預覽 (手動創建臨時 Popup) + V19 Added: Preload
             item.addEventListener('mouseenter', () => { 
+                // V19: Hover時預先下載照片
+                const photoUrls = getPhotosFromProps(m.props);
+                preloadImages(photoUrls);
+
                 if (selectedTimelineMarker === marker) return; // 已經鎖定，無需動作
                 
                 marker.setStyle(highlightStyle); 

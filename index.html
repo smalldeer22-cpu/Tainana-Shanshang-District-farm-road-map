@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.1150113-TimelineFix)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.1150113-V2)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -1403,7 +1403,7 @@ document.getElementById('villageSelect').addEventListener('change', function() {
                     L.circleMarker(ll, { radius: 18, fillColor: '#ffd700', color: '#ff8c00', weight: 2, fillOpacity: 0.6 }).addTo(searchResultLayer);
                     const marker = L.circleMarker(ll, { radius: 6, fillColor: '#d32f2f', color: '#fff', weight: 1, fillOpacity: 1 }).addTo(searchResultLayer);
                     
-                    // V17 Mod: 使用智慧點擊處理，不直接 bindPopup
+                    // V17 Mod: 使用智慧點擊處理
                     marker.customData = { configLabel: conf.label, props: f.properties };
                     marker.on('click', (e) => handleNearbyMarkerClick(e, searchResultLayer.getLayers()));
                     count++;
@@ -1579,10 +1579,20 @@ window.handleNearbyMarkerClick = function(e, sourceLayers) {
     if (candidates.length > 1) {
         // 如果有多個標記，顯示選單
         showMultiSelectPopup(e.latlng, candidates);
+        // 如果有鎖定的時間軸標記，取消鎖定以免干擾
+        if(selectedTimelineMarker) {
+             selectedTimelineMarker.setStyle({ radius: 14, color: '#fff', fillColor: DEEP_BLUE, weight:1, fillOpacity:0.9 });
+             selectedTimelineMarker = null;
+        }
     } else {
         // 只有一個標記，直接顯示原有的詳情
         const targetMarker = candidates.length > 0 ? candidates[0] : e.target;
-        openDetailPopupFromMarker(targetMarker);
+        // 如果有鎖定的時間軸標記，取消鎖定以免干擾
+        if(selectedTimelineMarker && selectedTimelineMarker !== targetMarker) {
+             selectedTimelineMarker.setStyle({ radius: 14, color: '#fff', fillColor: DEEP_BLUE, weight:1, fillOpacity:0.9 });
+             selectedTimelineMarker = null;
+        }
+        targetMarker.openPopup();
     }
 };
 
@@ -1627,46 +1637,7 @@ window.triggerMarkerPopup = function(idx) {
     const m = window[`_temp_marker_${idx}`];
     if(m) {
         map.closePopup();
-        openDetailPopupFromMarker(m);
-    }
-};
-
-window.openDetailPopupFromMarker = function(marker) {
-    const data = marker.customData;
-    if(!data) return;
-
-    // 判斷是一般單點還是重複座標群組
-    if (data.group && data.group.length > 1) {
-        // 重複座標群組：顯示原本的列表式 Popup
-        let listHtml = `<div class="info-header" style="padding:10px;background:#004080;color:white;font-weight:bold;">重複座標點位資訊 (${data.group.length}筆)</div><div class="info-body" style="padding:10px;max-height:250px; overflow-y:auto;"><div style="font-size:12px; color:#666; margin-bottom:5px;">點擊案件名稱可查看詳細資料</div>`;
-        const key = marker.getLatLng().lat + ',' + marker.getLatLng().lng; // 只是為了 key
-        data.group.forEach((item, index) => {
-             window[`_temp_group_item_${index}`] = item;
-             listHtml += `<div style="border-bottom:1px dashed #ccc; padding:8px 0; cursor:pointer;" onclick="openSingleGroupItem(${index})"><b style="color:#004080; text-decoration:underline;">${index+1}. ${item.configLabel}</b><br><span style="color:#333; font-size:12px;">案件編號: ${item.feature.properties['案件編號']||'無'}<br>完工日期: ${item.feature.properties['完工日期']||'無'}</span></div>`;
-        });
-        listHtml += `</div>`;
-        L.popup({ className: 'custom-popup', maxWidth: 300 }).setLatLng(marker.getLatLng()).setContent(listHtml).openOn(map);
-    } else {
-        // 單點：顯示 3欄式 Popup
-        const dist = distToRoad(marker.getLatLng(), roadsLayer);
-        const content = createPopup({
-            fileName: data.configLabel,
-            props: data.props,
-            lat: marker.getLatLng().lat,
-            lng: marker.getLatLng().lng,
-            dist: dist
-        });
-        
-        // 記錄最後開啟狀態 (Line Fix)
-        const latlng = marker.getLatLng();
-        sessionStorage.setItem('savedPopup', JSON.stringify({
-             lat: latlng.lat, lng: latlng.lng, content: content, zoom: map.getZoom()
-        }));
-        
-        L.popup({className:'custom-popup', maxWidth:960})
-         .setLatLng(marker.getLatLng())
-         .setContent(content)
-         .openOn(map);
+        m.openPopup();
     }
 };
 
@@ -2075,6 +2046,16 @@ function renderTimeline(matches) {
             // V17 Mod: 使用智慧點擊處理
             marker.customData = { configLabel: m.label, props: m.props };
             marker.on('click', (e) => handleNearbyMarkerClick(e, routeMatchLayer.getLayers()));
+            
+            // V17 Mod 2: 重要！綁定 Popup 讓 Hover 能作用，但透過點擊事件控制開啟方式
+            const popupContent = createPopup({
+                fileName: m.label,
+                props: m.props,
+                lat: m.lat,
+                lng: m.lng,
+                dist: m.dist
+            });
+            marker.bindPopup(popupContent, {className:'custom-popup', maxWidth:960});
 
             const labelName = String(m.label || ""); 
             const amount = formatMoney(m.props['決標金額']); 
@@ -2092,11 +2073,9 @@ function renderTimeline(matches) {
             const item = document.createElement('div'); item.className = `h-item ${alertClass}`;
             item.innerHTML = `<div class="h-date">${m.props['完工日期']||'未知'}</div><div class="h-line-container"><div class="h-dot ${sizeClass}"></div></div><div class="h-badge ${labelName.includes('搶修')||labelName.includes('災害')||labelName.includes('緊急') ? 'badge-urgent' : 'badge-normal'}">${labelName.includes('搶修')||labelName.includes('災害')||labelName.includes('緊急') ? '搶修' : '一般'}</div>`;
             
-            /* === 修正：時間軸互動邏輯 (Hover預覽, Click鎖定, Leave不關閉鎖定) === */
-            
-            // 1. Hover 預覽
+            // 1. Hover 預覽 (直接調用 bindPopup 的內容)
             item.addEventListener('mouseenter', () => { 
-                if (selectedTimelineMarker === marker) return; // 已經鎖定並開啟，無需動作
+                if (selectedTimelineMarker === marker) return; // 已經鎖定，無需動作
                 
                 marker.setStyle(highlightStyle); 
                 marker.bringToFront(); 
@@ -2111,16 +2090,17 @@ function renderTimeline(matches) {
                 marker.setStyle(normalStyle); 
                 marker.closePopup(); 
                 
-                // 如果有其他已鎖定的點，恢復它的泡泡窗
+                // 如果有其他已鎖定的點，恢復它的泡泡窗 (防呆機制)
                 if(selectedTimelineMarker) {
                     selectedTimelineMarker.openPopup();
                 }
             });
 
-            // 3. Click 鎖定
+            // 3. Click 鎖定 (強制開啟，無視多選清單邏輯)
             item.addEventListener('click', (e) => {
                 e.stopPropagation(); 
-                // 如果之前有鎖定別的，先還原
+                
+                // 如果之前有鎖定別的，先還原樣式
                 if (selectedTimelineMarker && selectedTimelineMarker !== marker) {
                      selectedTimelineMarker.setStyle(normalStyle);
                 }
@@ -2130,7 +2110,7 @@ function renderTimeline(matches) {
                 marker.setStyle(highlightStyle);
                 marker.bringToFront();
                 
-                // 強制開啟這個特定標記的泡泡窗 (不使用多選清單，因為時間軸本身就是精確選擇)
+                // 強制開啟這個特定標記的泡泡窗
                 marker.openPopup(); 
                 
                 map.flyTo([m.lat, m.lng], 18);

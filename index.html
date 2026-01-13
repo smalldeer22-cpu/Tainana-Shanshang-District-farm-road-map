@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.1150112-Fix)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.1150113-TimelineFix)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -1641,17 +1641,7 @@ window.openDetailPopupFromMarker = function(marker) {
         let listHtml = `<div class="info-header" style="padding:10px;background:#004080;color:white;font-weight:bold;">重複座標點位資訊 (${data.group.length}筆)</div><div class="info-body" style="padding:10px;max-height:250px; overflow-y:auto;"><div style="font-size:12px; color:#666; margin-bottom:5px;">點擊案件名稱可查看詳細資料</div>`;
         const key = marker.getLatLng().lat + ',' + marker.getLatLng().lng; // 只是為了 key
         data.group.forEach((item, index) => {
-             // 這裡需要能夠呼叫到 showMapDetailPopup，但我們需要稍微調整 showMapDetailPopup 的邏輯或直接在此生成
-             // 為了相容原本的 showMapDetailPopup，我們確保 CURRENT_MAP_GROUPS 有值
-             // 其實 updateRepairPoints 已經填好 CURRENT_MAP_GROUPS 了，所以只要用座標當 key 就可以
-             // 注意：key 必須跟 updateRepairPoints 產生的 key 一致
-             // updateRepairPoints 使用: f.geometry.coordinates.join(',') -> lng,lat
-             // 這裡我們直接用原本的 item 生成 onclick
-             // 但為了簡化，我們直接在這裡實作打開全螢幕詳情的邏輯
-             
-             // 把 item 暫存
              window[`_temp_group_item_${index}`] = item;
-             
              listHtml += `<div style="border-bottom:1px dashed #ccc; padding:8px 0; cursor:pointer;" onclick="openSingleGroupItem(${index})"><b style="color:#004080; text-decoration:underline;">${index+1}. ${item.configLabel}</b><br><span style="color:#333; font-size:12px;">案件編號: ${item.feature.properties['案件編號']||'無'}<br>完工日期: ${item.feature.properties['完工日期']||'無'}</span></div>`;
         });
         listHtml += `</div>`;
@@ -2102,27 +2092,47 @@ function renderTimeline(matches) {
             const item = document.createElement('div'); item.className = `h-item ${alertClass}`;
             item.innerHTML = `<div class="h-date">${m.props['完工日期']||'未知'}</div><div class="h-line-container"><div class="h-dot ${sizeClass}"></div></div><div class="h-badge ${labelName.includes('搶修')||labelName.includes('災害')||labelName.includes('緊急') ? 'badge-urgent' : 'badge-normal'}">${labelName.includes('搶修')||labelName.includes('災害')||labelName.includes('緊急') ? '搶修' : '一般'}</div>`;
             
+            /* === 修正：時間軸互動邏輯 (Hover預覽, Click鎖定, Leave不關閉鎖定) === */
+            
+            // 1. Hover 預覽
             item.addEventListener('mouseenter', () => { 
-                if (selectedTimelineMarker === marker) return;
-                marker.setStyle(highlightStyle); marker.bringToFront(); marker.openPopup(); 
+                if (selectedTimelineMarker === marker) return; // 已經鎖定並開啟，無需動作
+                
+                marker.setStyle(highlightStyle); 
+                marker.bringToFront(); 
+                marker.openPopup(); 
             });
+            
+            // 2. Leave 恢復
             item.addEventListener('mouseleave', () => { 
-                if (selectedTimelineMarker === marker) return;
-                marker.setStyle(normalStyle); marker.closePopup(); 
+                if (selectedTimelineMarker === marker) return; // 如果是鎖定的，不要關閉
+                
+                // 關閉目前的預覽
+                marker.setStyle(normalStyle); 
+                marker.closePopup(); 
+                
+                // 如果有其他已鎖定的點，恢復它的泡泡窗
+                if(selectedTimelineMarker) {
+                    selectedTimelineMarker.openPopup();
+                }
             });
+
+            // 3. Click 鎖定
             item.addEventListener('click', (e) => {
                 e.stopPropagation(); 
+                // 如果之前有鎖定別的，先還原
                 if (selectedTimelineMarker && selectedTimelineMarker !== marker) {
                      selectedTimelineMarker.setStyle(normalStyle);
-                     selectedTimelineMarker.closePopup();
                 }
-                selectedTimelineMarker = marker;
+                
+                selectedTimelineMarker = marker; // 設定新的鎖定
+                
                 marker.setStyle(highlightStyle);
                 marker.bringToFront();
                 
-                // V17: Timeline 點擊也要支援智慧偵測
-                // 模擬點擊 marker 來觸發 handleNearbyMarkerClick
-                marker.fire('click');
+                // 強制開啟這個特定標記的泡泡窗 (不使用多選清單，因為時間軸本身就是精確選擇)
+                marker.openPopup(); 
+                
                 map.flyTo([m.lat, m.lng], 18);
             });
             

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.1150113-Preload)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.1150113-V5-Protected)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -253,7 +253,13 @@
   .photo-section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
   .photo-title { font-size: 11px; font-weight: 900; color: var(--popup-text-main); display: flex; align-items: center; gap: 5px; }
   .photo-viewer { flex: 1; position: relative; border-radius: 8px; border: 1px solid var(--popup-border); background: #f1f5f9; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-  .photo-viewer img { width: 100%; height: 100%; object-fit: cover; display: none; }
+  .photo-viewer img { 
+      width: 100%; height: 100%; object-fit: cover; display: none;
+      /* V13V5 Added: 照片防下載保護 */
+      -webkit-user-drag: none;
+      user-select: none;
+      -webkit-touch-callout: none;
+  }
   .photo-viewer img.active { display: block; }
   .photo-viewer .no-photo { color: #666; font-size: 24px; display: flex; flex-direction: column; align-items: center; gap:5px; background: #f0fdf4; width:100%; height:100%; justify-content:center; }
   .photo-viewer .no-photo span { font-size: 10px; font-weight: bold; }
@@ -958,7 +964,11 @@ function createPopup(data) {
         let dotsHtml = '';
 
         if(urls.length > 0) {
-            urls.forEach((url, i) => { const activeClass = i === 0 ? 'active' : ''; imgsHtml += `<img src="${url.trim()}" class="${activeClass}">`; });
+            // V13V5 Updated: 加入 oncontextmenu 與 draggable 屬性
+            urls.forEach((url, i) => { 
+                const activeClass = i === 0 ? 'active' : ''; 
+                imgsHtml += `<img src="${url.trim()}" class="${activeClass}" oncontextmenu="return false;" draggable="false">`; 
+            });
             if(urls.length > 1) {
                 dotsHtml = `<div class="carousel-dots">`;
                 urls.forEach((_, i) => { const activeClass = i === 0 ? 'active' : ''; dotsHtml += `<div class="dot ${activeClass}" onclick="switchPhotoSet(this, ${i})">${i+1}</div>`; });

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.1150113-V5-Protected)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.1150116-V2-DotNav)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -248,6 +248,23 @@
   .popup-btn-new { background: white; color: var(--popup-text-main); border: 1px solid var(--popup-border); padding: 8px 0; border-radius: 8px; font-size: 10px; font-weight: 900; display: flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none; transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
   .popup-btn-new:hover { background: var(--popup-text-main); color: white; border-color: var(--popup-text-main); }
   .btn-full { grid-column: span 2; background: #ecfdf5; }
+
+  /* 0116V2 Added: Sibling Dot Navigation Style */
+  .sibling-nav-container { display: flex; gap: 5px; margin-bottom: 5px; flex-wrap: wrap; align-items: center; }
+  .sibling-nav-container.mobile { justify-content: center; margin-bottom: 5px; margin-top: -2px; }
+  .sibling-dot {
+      width: 20px; height: 20px; border-radius: 50%;
+      background: #fff; border: 1px solid #6f42c1;
+      color: #6f42c1; font-size: 10px; font-weight: bold;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: all 0.2s; user-select: none;
+  }
+  .sibling-dot:hover { background: #f3e5f5; transform: scale(1.1); }
+  .sibling-dot.active {
+      background: #6f42c1; color: white;
+      box-shadow: 0 0 0 2px rgba(111, 66, 193, 0.3);
+      cursor: default; transform: scale(1.05);
+  }
 
   /* 照片輪播 */
   .photo-section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
@@ -901,7 +918,8 @@ function createPopup(data) {
     const twd = twd97FromWgs84(lat, lng);
     const distText = isNaN(dist) ? 'N/A' : dist.toFixed(0) + 'm';
     
-    const caseId = props['案件編號'] || '無編號';
+    const caseIdRaw = props['案件編號'];
+    const caseId = caseIdRaw || '無編號';
     const status = props['案件狀態'] || '已完工';
     const timing = props['派工時機'] || '一般';
     const type = props['搶修類型'] || '一般工程';
@@ -949,6 +967,57 @@ function createPopup(data) {
     
     // V15: 手機版標題簡化 (直接顯示文字，不加前綴)
     const mobileCaseIdDisplay = formattedCaseId;
+
+    // === 0116V2 Added: Sibling Dot Navigation Logic ===
+    let siblingNavHtml = '';
+    let mobileSiblingNavHtml = '';
+    
+    // 檢查是否有其他兄弟節點 (同編號但不同座標)
+    let siblings = [];
+    if (caseIdRaw) {
+        // 合併搜尋來源
+        const candidates = [...activeRepairLayers, ...searchResultLayer.getLayers()];
+        // 過濾同案號
+        const rawSiblings = candidates.filter(m => m.customData?.props['案件編號'] === caseIdRaw);
+        
+        // 智慧去重 (透過 lat,lng key) 並保持標記參考
+        const uniqueMap = new Map();
+        rawSiblings.forEach(m => {
+            const ll = m.getLatLng();
+            const key = ll.lat.toFixed(6) + ',' + ll.lng.toFixed(6);
+            if(!uniqueMap.has(key)) uniqueMap.set(key, m);
+        });
+        siblings = Array.from(uniqueMap.values());
+
+        // 固定排序 (由北至南，由東至西)，確保數字順序永遠一致
+        siblings.sort((a, b) => {
+            const la = a.getLatLng();
+            const lb = b.getLatLng();
+            // 先比緯度 (大到小)
+            if(Math.abs(la.lat - lb.lat) > 0.00001) return lb.lat - la.lat;
+            // 再比經度 (大到小)
+            return lb.lng - la.lng;
+        });
+    }
+
+    if (siblings.length > 1) {
+        let dots = '';
+        siblings.forEach((sib, idx) => {
+            const sLat = sib.getLatLng().lat;
+            const sLng = sib.getLatLng().lng;
+            // 判斷是否為當前座標
+            const isCurrent = (Math.abs(sLat - lat) < 0.000001 && Math.abs(sLng - lng) < 0.000001);
+            const activeClass = isCurrent ? 'active' : '';
+            const clickEvent = isCurrent ? '' : `onclick="jumpToSpecificSibling('${caseIdRaw}', ${sLat}, ${sLng})"`;
+            const titleText = isCurrent ? '目前位置' : `前往關聯點位 ${idx+1}`;
+            
+            dots += `<div class="sibling-dot ${activeClass}" ${clickEvent} title="${titleText}">${idx+1}</div>`;
+        });
+        
+        siblingNavHtml = `<div class="sibling-nav-container">${dots}</div>`;
+        mobileSiblingNavHtml = `<div class="sibling-nav-container mobile">${dots}</div>`;
+    }
+    // ============================================
 
     const getPhotoArray = (str) => {
         if(!str) return [];
@@ -1001,8 +1070,12 @@ function createPopup(data) {
                 <div class="m-row-1">
                     <div class="status-pill ${pillClass}">${status}</div>
                     <!-- V15 手機版顯示 (簡化標題) -->
-                    <div class="case-id mobile-id-text">${mobileCaseIdDisplay}</div>
+                    <div class="case-id mobile-id-text" style="display:flex; align-items:center; justify-content:center;">
+                        ${mobileCaseIdDisplay}
+                    </div>
                 </div>
+                <!-- V0116V2 Sibling Nav for Mobile -->
+                ${mobileSiblingNavHtml}
                 <div class="m-row-2">
                     <div class="price-val">${price}</div>
                     <div class="m-tags-line">
@@ -1016,7 +1089,12 @@ function createPopup(data) {
             <div class="desktop-only">
                 <div class="status-pill ${pillClass}">進度：${status}</div>
                 <!-- V13 電腦版顯示 -->
-                <div class="case-id">${formattedCaseId}</div>
+                <div class="case-id" style="display:flex; align-items:center; flex-wrap:wrap;">
+                    ${formattedCaseId}
+                </div>
+                <!-- V0116V2 Sibling Nav for Desktop -->
+                ${siblingNavHtml}
+
                 <div class="case-meta">
                     <span class="file-tag">${fileName}</span>
                     <span class="type-tag">${type}</span>
@@ -2264,6 +2342,31 @@ window.addEventListener('load', function() {
         }
     }, 500); // 稍微延遲以確保地圖初始化完畢
 });
+
+/* === 0116V2 Added: Function to navigate to specific sibling marker === */
+window.jumpToSpecificSibling = function(caseId, targetLat, targetLng) {
+    // 1. 搜尋所有圖層中的匹配項目 (Active + Search)
+    const allLayers = [...activeRepairLayers, ...searchResultLayer.getLayers()];
+    
+    // 找到目標標記 (需同時符合 CaseId 與 座標)
+    const target = allLayers.find(m => {
+        const p = m.getLatLng();
+        return Math.abs(p.lat - targetLat) < 0.000001 && 
+               Math.abs(p.lng - targetLng) < 0.000001 && 
+               m.customData && m.customData.props &&
+               m.customData.props['案件編號'] === caseId;
+    });
+    
+    if(target) {
+        // 2. 執行飛行動畫並開啟泡泡窗
+        map.flyTo(target.getLatLng(), 18, { duration: 1.5 });
+        
+        // 使用 once('moveend') 確保移動結束後才開啟 Popup
+        map.once('moveend', function() {
+            openDetailPopupFromMarker(target);
+        });
+    }
+};
 </script>
 </body>
 </html>

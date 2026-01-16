@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.1150116-V2-DotNav)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.1150116-V3-GhostFix)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -1506,7 +1506,8 @@ document.getElementById('villageSelect').addEventListener('change', function() {
                 if (f.geometry.type !== 'Point') return;
                 if (turf.booleanPointInPolygon(turf.point(f.geometry.coordinates), villageFeature)) {
                     const [lng, lat] = f.geometry.coordinates; const ll = L.latLng(lat, lng);
-                    L.circleMarker(ll, { radius: 18, fillColor: '#ffd700', color: '#ff8c00', weight: 2, fillOpacity: 0.6 }).addTo(searchResultLayer);
+                    // 修正 V0116V3: 裝飾物 (黃色光暈) 設為不可點擊
+                    L.circleMarker(ll, { radius: 18, fillColor: '#ffd700', color: '#ff8c00', weight: 2, fillOpacity: 0.6, interactive: false }).addTo(searchResultLayer);
                     const marker = L.circleMarker(ll, { radius: 6, fillColor: '#d32f2f', color: '#fff', weight: 1, fillOpacity: 1 }).addTo(searchResultLayer);
                     
                     // V17 Mod: 使用智慧點擊處理，不直接 bindPopup
@@ -1550,7 +1551,8 @@ document.getElementById('statsVillageSelect').addEventListener('change', functio
                 if (f.geometry.type !== 'Point') return;
                 if (turf.booleanPointInPolygon(turf.point(f.geometry.coordinates), villageFeature)) {
                     const [lng, lat] = f.geometry.coordinates; const ll = L.latLng(lat, lng);
-                    L.circleMarker(ll, { radius: 18, fillColor: '#ffd700', color: '#ff8c00', weight: 2, fillOpacity: 0.6 }).addTo(searchResultLayer);
+                    // 修正 V0116V3: 裝飾物 (黃色光暈) 設為不可點擊
+                    L.circleMarker(ll, { radius: 18, fillColor: '#ffd700', color: '#ff8c00', weight: 2, fillOpacity: 0.6, interactive: false }).addTo(searchResultLayer);
                     const marker = L.circleMarker(ll, { radius: 6, fillColor: '#d32f2f', color: '#fff', weight: 1, fillOpacity: 1 }).addTo(searchResultLayer);
                     
                     // V17 Mod: 使用智慧點擊處理
@@ -1678,7 +1680,10 @@ window.handleNearbyMarkerClick = function(e, sourceLayers) {
         if (!map.getBounds().contains(layer.getLatLng())) return;
         const layerPos = map.latLngToContainerPoint(layer.getLatLng());
         if (layerPos.distanceTo(clickPoint) <= BUFFER_PX) {
-            candidates.push(layer);
+            // 修正 V0116V3: 只選取真正有資料的點，過濾掉裝飾圖層
+            if(layer.customData) {
+                candidates.push(layer);
+            }
         }
     });
 
@@ -1922,7 +1927,8 @@ async function performSearch(predicate, label) {
                 if(f.geometry.type !== 'Point') return;
                 if(predicate(f.properties)) {
                     const [lng, lat] = f.geometry.coordinates; const ll = L.latLng(lat, lng);
-                    L.circleMarker(ll, { radius: 18, fillColor: '#ffd700', color: '#ff8c00', weight: 2, fillOpacity: 0.6 }).addTo(searchResultLayer);
+                    // 修正 V0116V3: 裝飾物 (黃色光暈) 設為不可點擊
+                    L.circleMarker(ll, { radius: 18, fillColor: '#ffd700', color: '#ff8c00', weight: 2, fillOpacity: 0.6, interactive: false }).addTo(searchResultLayer);
                     const marker = L.circleMarker(ll, { radius: 6, fillColor: '#d32f2f', color: '#fff', weight: 1, fillOpacity: 1 }).addTo(searchResultLayer);
                     
                     // V17 Mod: 使用智慧點擊處理

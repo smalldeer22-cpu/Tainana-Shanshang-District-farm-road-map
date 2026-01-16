@@ -1,9 +1,29 @@
+這份程式碼是基於 **0116V4** 版本進行微調的 **v.0116V5**。
+
+### 🔧 修改重點說明 (v.0116V5-ListSimple)
+
+1.  **案件列表 (Multi-Select Popup) 簡化**：
+    *   在 `showMultiSelectPopup` 函式中，移除了 WGS84 座標的顯示程式碼。
+    *   現在列表項目只會顯示：案件名稱、案件編號、完工日期、**TWD97 座標**。
+    *   讓列表版面更簡潔，避免資訊過載。
+
+2.  **保留事項**：
+    *   **詳細泡泡窗 (Detail Popup)**：點進去後的詳細畫面，依然保留了 WGS84 座標顯示（在監造廠商右側），符合 V4 的需求。
+    *   **其他功能**：數字導航、裝飾物不可點擊修正等皆完整保留。
+
+---
+
+### 📂 完整程式碼 (index.html)
+
+您可以直接複製以下內容使用：
+
+```html
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.1150116-V3-GhostFix)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.1150116-V5-ListSimple)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -1122,10 +1142,18 @@ function createPopup(data) {
                         <span class="compact-label">施工廠商</span>
                         <div class="compact-val">${contractor}</div>
                     </div>
-                    <div class="compact-item">
-                        <span class="compact-label">監造廠商</span>
-                        <div class="compact-val">${supervisor}</div>
+                    <!-- V0116V4 Updated: Row for Supervisor and WGS84 -->
+                    <div class="compact-row">
+                        <div class="compact-item" style="flex:1">
+                            <span class="compact-label">監造廠商</span>
+                            <div class="compact-val">${supervisor}</div>
+                        </div>
+                        <div class="compact-item" style="flex:1">
+                            <span class="compact-label">WGS84</span>
+                            <div class="compact-val">${lat.toFixed(6)}, ${lng.toFixed(6)}</div>
+                        </div>
                     </div>
+                    <!-- End V0116V4 -->
                     <div class="compact-row">
                         <div class="compact-item" style="flex:1">
                             <span class="compact-label">完工日期</span>
@@ -1551,8 +1579,7 @@ document.getElementById('statsVillageSelect').addEventListener('change', functio
                 if (f.geometry.type !== 'Point') return;
                 if (turf.booleanPointInPolygon(turf.point(f.geometry.coordinates), villageFeature)) {
                     const [lng, lat] = f.geometry.coordinates; const ll = L.latLng(lat, lng);
-                    // 修正 V0116V3: 裝飾物 (黃色光暈) 設為不可點擊
-                    L.circleMarker(ll, { radius: 18, fillColor: '#ffd700', color: '#ff8c00', weight: 2, fillOpacity: 0.6, interactive: false }).addTo(searchResultLayer);
+                    L.circleMarker(ll, { radius: 18, fillColor: '#ffd700', color: '#ff8c00', weight: 2, fillOpacity: 0.6 }).addTo(searchResultLayer);
                     const marker = L.circleMarker(ll, { radius: 6, fillColor: '#d32f2f', color: '#fff', weight: 1, fillOpacity: 1 }).addTo(searchResultLayer);
                     
                     // V17 Mod: 使用智慧點擊處理
@@ -1733,6 +1760,12 @@ window.showMultiSelectPopup = function(latlng, markers) {
         const caseNo = props['案件編號'] || '無編號';
         const date = props['完工日期'] || '';
         
+        // V0116V4 Added: Coords
+        const ll = m.getLatLng();
+        // V0116V5 Mod: Remove WGS84 display
+        const twd = twd97FromWgs84(ll.lat, ll.lng);
+        const twdStr = `${twd.x}, ${twd.y}`;
+
         // 將標記暫存在全域變數中以便點擊觸發 (簡單實作)
         window[`_temp_marker_${idx}`] = m;
         
@@ -1744,6 +1777,10 @@ window.showMultiSelectPopup = function(latlng, markers) {
             <div class="multi-select-meta">
                 <span><i class="fas fa-barcode"></i> ${caseNo}</span>
                 <span><i class="fas fa-calendar-alt"></i> ${date}</span>
+            </div>
+            <!-- V0116V5 Mod: Only show TWD97 -->
+            <div class="multi-select-meta" style="margin-top:2px; color:#555; font-size:10px;">
+                <span><i class="fas fa-map-marker-alt"></i> TWD97: ${twdStr}</span>
             </div>
         </div>`;
     });

@@ -3,12 +3,11 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.1150116-V5-ListSimple)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.1150129-V3-MultiSelect)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
-<!-- 定位套件 CSS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol/dist/L.Control.Locate.min.css" />
 
 <style>
@@ -85,6 +84,21 @@
   .year-select-all { font-size: 12px; color: var(--primary-color); cursor: pointer; }
   .checkbox-item { margin-bottom: 6px; display: flex; align-items: center; gap: 6px; font-size: 13px; }
   .checkbox-item input { margin: 0; accent-color: var(--primary-color); }
+
+  /* V3 Added: 多選摺疊樣式 */
+  .multiselect-group { border: 1px solid #ddd; border-radius: 6px; margin-bottom: 10px; background: #fff; }
+  .multiselect-header { 
+      padding: 10px; cursor: pointer; background: #fff; color: #555; font-size: 14px; 
+      display: flex; justify-content: space-between; align-items: center; border-radius: 6px;
+      transition: background 0.2s;
+  }
+  .multiselect-header:hover { background: #f5f5f5; }
+  .multiselect-header i { transition: transform 0.2s; font-size: 12px; color: #999; }
+  .multiselect-group.open .multiselect-header { background: #f0f7ff; border-radius: 6px 6px 0 0; color: var(--primary-color); font-weight: bold; border-bottom: 1px solid #e0e0e0; }
+  .multiselect-group.open .multiselect-header i { transform: rotate(180deg); color: var(--primary-color); }
+  .multiselect-content { display: none; padding: 10px; max-height: 250px; overflow-y: auto; background: #fafafa; border-radius: 0 0 6px 6px; }
+  .multiselect-group.open .multiselect-content { display: block; }
+  .select-all-row { border-bottom: 1px dashed #ddd; padding-bottom: 5px; margin-bottom: 5px; font-weight: bold; color: #004080; }
 
   select, textarea, input[type="text"] { width: 100%; padding: 10px; margin-top: 5px; font-size: 14px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
   
@@ -228,7 +242,13 @@
   .case-id { font-size: 24px; font-weight: 900; color: #1e293b; line-height: 1.1; letter-spacing: -0.5px; margin-bottom: 4px; }
   .case-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; color: #3d5a80; margin-bottom: 10px; }
   .file-tag { background: #ecfdf5; padding: 2px 6px; border-radius: 4px; font-family: monospace; letter-spacing: -0.5px; opacity: 0.8; }
-  .type-tag { background: rgba(16, 185, 129, 0.1); color: var(--popup-text-sub); padding: 2px 6px; border-radius: 4px; }
+  
+  /* V0129 新增：多類型標籤樣式 */
+  .type-tag-group { display: inline-flex; gap: 4px; align-items: center; flex-wrap: wrap; }
+  .type-pill { background: rgba(16, 185, 129, 0.1); color: var(--popup-text-sub); padding: 2px 6px; border-radius: 4px; font-size: 11px; white-space: nowrap; }
+  .type-pill-more { background: #e0f2fe; color: #0284c7; cursor: pointer; font-weight: bold; border-radius: 4px; padding: 2px 6px; font-size: 11px; transition: all 0.2s; }
+  .type-pill-more:hover { background: #bae6fd; transform: scale(1.05); }
+
   .price-block { margin: 10px 0; border-bottom: 1px dashed #ccc; padding-bottom: 10px; }
   .price-label { font-size: 9px; color: var(--popup-text-sub); font-weight: 900; letter-spacing: 1px; text-transform: uppercase; }
   .price-val { font-size: 22px; font-weight: 900; color: #064e3b; font-style: italic; letter-spacing: -0.5px; line-height: 1.2; }
@@ -341,11 +361,7 @@
           flex: 1; display: flex; gap: 5px; overflow: hidden; white-space: nowrap; 
           font-size: 11px; color: #555; align-items: center; min-width: 0;
       }
-      .m-tags-line span { 
-          background: #f1f5f9; padding: 1px 4px; border-radius: 4px; 
-          overflow: hidden; text-overflow: ellipsis; 
-      }
-
+      
       /* Row 3: 照片 Tabs + Photo */
       .mobile-photo-tabs { order: 2; display: flex; background: #f8fafc; padding: 2px; gap: 2px; justify-content: center; border-bottom: 1px solid #f1f5f9; }
       .m-tab { flex: 1; padding: 6px; text-align: center; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer; color: #94a3b8; transition:all 0.2s; }
@@ -477,7 +493,6 @@
     <button class="float-btn" id="openReportBtn" data-title="案件通報" style="color:#d32f2f;"><i class="fas fa-camera"></i></button>
 </div>
 
-<!-- 案件通報全螢幕視窗 -->
 <div id="reportOverlay">
     <div class="report-header">
         <div style="font-size:18px; font-weight:bold;"><i class="fas fa-camera"></i> 案件通報</div>
@@ -539,8 +554,7 @@
         <div class="custom-popup">
             <div class="leaflet-popup-content-wrapper">
                 <div class="leaflet-popup-content" id="reportDetailContent">
-                    <!-- 內容將由 JS 動態生成 -->
-                </div>
+                    </div>
             </div>
         </div>
     </div>
@@ -579,8 +593,7 @@
     </div>
     <div id="timelineFilterBar">
         <span class="filter-label"><i class="fas fa-filter"></i> 篩選：</span>
-        <!-- 動態生成的選單將會放在這裡 -->
-    </div>
+        </div>
     <div id="timelineContainer"><div style="padding:20px; color:#777;">請點選地圖上的藍色路線以檢視紀錄。</div></div>
 </div>
 
@@ -655,16 +668,25 @@
           </div>
           <div style="text-align:center; font-size:12px; color:#999; margin:5px 0;">- 或 -</div>
           
-          <!-- V14 新增：進階篩選 (派工時機、搶修類型) -->
           <div class="search-block-label"><i class="fas fa-clock"></i> 依派工時機快篩</div>
           <select id="timingSelect" style="margin-bottom:10px;">
               <option value="">(讀取系統資料中...)</option>
           </select>
           
-          <div class="search-block-label"><i class="fas fa-tools"></i> 依維修類型快篩</div>
-          <select id="typeSelect" style="margin-bottom:10px;">
-              <option value="">(讀取系統資料中...)</option>
-          </select>
+          <div class="search-block-label"><i class="fas fa-tools"></i> 依維修類型快篩 (多選)</div>
+          <div class="multiselect-group" id="typeFilterContainer">
+              <div class="multiselect-header" onclick="toggleTypeFilter()">
+                  <span id="typeFilterLabel">請選擇維修類型 (未選)</span>
+                  <i class="fas fa-chevron-down"></i>
+              </div>
+              <div class="multiselect-content" id="typeFilterContent">
+                  <div class="checkbox-item select-all-row">
+                      <label><input type="checkbox" id="typeSelectAll" onchange="toggleAllTypes(this)"> 全選/取消</label>
+                  </div>
+                  <div id="typeCheckboxList"></div>
+              </div>
+          </div>
+
           <div style="text-align:center; font-size:12px; color:#999; margin:5px 0;">- 或 -</div>
           
           <div class="search-block-label"><i class="fas fa-keyboard"></i> 關鍵字搜尋</div>
@@ -913,6 +935,42 @@ window.switchPhotoSet = function(el, index) {
     });
 };
 
+// 輔助函式：產生搶修類型標籤 HTML (修復按鈕失效問題)
+function renderTypeTags(rawType, isMobile) {
+    if (!rawType) return isMobile ? '' : '<span class="type-pill">一般工程</span>';
+    
+    // 支援半形逗號與全形逗號切割，並過濾空字串
+    const types = rawType.split(/[,，]/).map(s => s.trim()).filter(s => s.length > 0);
+    if (types.length === 0) return isMobile ? '' : '<span class="type-pill">一般工程</span>';
+
+    // 如果數量 <= 2，直接顯示全部
+    if (types.length <= 2) {
+        return `<div class="type-tag-group">
+            ${types.map(t => `<span class="type-pill">${t}</span>`).join('')}
+        </div>`;
+    }
+
+    // 如果數量 > 2，顯示前兩個 + "更多"按鈕 (使用預先隱藏法)
+    const visible = types.slice(0, 2);
+    const hidden = types.slice(2);
+    const uid = Math.random().toString(36).substr(2, 9);
+    const hiddenId = `hidden-${uid}`;
+    const btnId = `btn-${uid}`;
+    
+    // 安全的 DOM 操作腳本，避免字串引號衝突
+    const expandScript = `document.getElementById('${hiddenId}').style.display='contents';document.getElementById('${btnId}').style.display='none';`;
+
+    return `<div class="type-tag-group">
+        ${visible.map(t => `<span class="type-pill">${t}</span>`).join('')}
+        <span id="${hiddenId}" style="display:none;">
+            ${hidden.map(t => `<span class="type-pill">${t}</span>`).join('')}
+        </span>
+        <span id="${btnId}" class="type-pill-more" onclick="${expandScript}" title="點擊展開: ${hidden.join(', ')}">
+            +${hidden.length} 更多
+        </span>
+    </div>`;
+}
+
 function createPopup(data) {
     const { fileName, props, lat, lng, dist } = data;
     const twd = twd97FromWgs84(lat, lng);
@@ -922,7 +980,7 @@ function createPopup(data) {
     const caseId = caseIdRaw || '無編號';
     const status = props['案件狀態'] || '已完工';
     const timing = props['派工時機'] || '一般';
-    const type = props['搶修類型'] || '一般工程';
+    const typeRaw = props['搶修類型'] || '一般工程'; // 取得原始資料
     const contractor = props['施工廠商'] || '-';
     const supervisor = props['監造廠商'] || '-';
     const date = props['完工日期'] || '-';
@@ -954,14 +1012,19 @@ function createPopup(data) {
     if(status.includes('施工') || status.includes('派工')) pillClass = 'pill-working';
     else if(status.includes('緊急') || status.includes('搶修')) pillClass = 'pill-urgent';
 
-    // V13: 智慧型案件編號顯示
+    // V13 & V0129-V2: 智慧型案件編號顯示 (修正長名稱被截斷問題)
     let formattedCaseId = caseId; 
     const idParts = caseId.split('-');
+    
+    // 邏輯修正：只有當後綴是純數字且短於5位數時，才進行「第X案」的格式化
     if (idParts.length >= 2) {
-        const numStr = idParts[idParts.length - 1]; 
-        const num = parseInt(numStr, 10);
-        if (!isNaN(num)) {
-            formattedCaseId = `${fileName}第${num}案`;
+        const suffix = idParts[idParts.length - 1]; 
+        // 檢查後綴是否為純數字且長度在 1~4 之間 (例如 001, 155)
+        if (/^\d{1,4}$/.test(suffix)) {
+            const num = parseInt(suffix, 10);
+            if (!isNaN(num)) {
+                formattedCaseId = `${fileName}第${num}案`;
+            }
         }
     }
     
@@ -1065,39 +1128,33 @@ function createPopup(data) {
         <div class="popup-deco-strip"></div>
         <div class="popup-col-info">
             
-            <!-- 手機版極致緊湊 Header (Row 1 & 2) -->
             <div class="mobile-compact-header">
                 <div class="m-row-1">
                     <div class="status-pill ${pillClass}">${status}</div>
-                    <!-- V15 手機版顯示 (簡化標題) -->
                     <div class="case-id mobile-id-text" style="display:flex; align-items:center; justify-content:center;">
                         ${mobileCaseIdDisplay}
                     </div>
                 </div>
-                <!-- V0116V2 Sibling Nav for Mobile -->
                 ${mobileSiblingNavHtml}
                 <div class="m-row-2">
                     <div class="price-val">${price}</div>
                     <div class="m-tags-line">
                         <span>${fileName}</span>
-                        <span>${type}</span>
+                        ${renderTypeTags(typeRaw, true)}
                     </div>
                 </div>
             </div>
 
-            <!-- 電腦版 Header (手機隱藏) -->
             <div class="desktop-only">
                 <div class="status-pill ${pillClass}">進度：${status}</div>
-                <!-- V13 電腦版顯示 -->
                 <div class="case-id" style="display:flex; align-items:center; flex-wrap:wrap;">
                     ${formattedCaseId}
                 </div>
-                <!-- V0116V2 Sibling Nav for Desktop -->
                 ${siblingNavHtml}
 
                 <div class="case-meta">
                     <span class="file-tag">${fileName}</span>
-                    <span class="type-tag">${type}</span>
+                    ${renderTypeTags(typeRaw, false)}
                 </div>
                 <div class="popup-tags">
                     <div class="tag-pill tag-dark"><i class="fas fa-clock"></i> ${timing}</div>
@@ -1109,20 +1166,17 @@ function createPopup(data) {
                 </div>
             </div>
 
-            <!-- 手機版 Tabs (Row 3 part 1) -->
             <div class="mobile-photo-tabs">
                 <div class="m-tab" onclick="switchMobilePhotoTab(this, 'before')">施工前</div>
                 <div class="m-tab active" onclick="switchMobilePhotoTab(this, 'after')">● 施工後</div>
             </div>
 
-            <!-- 詳細資訊區塊 (手機版折疊 / 電腦版常駐) -->
             <div class="info-details-block">
                 <div class="compact-list">
                     <div class="compact-item">
                         <span class="compact-label">施工廠商</span>
                         <div class="compact-val">${contractor}</div>
                     </div>
-                    <!-- V0116V4 Updated: Row for Supervisor and WGS84 -->
                     <div class="compact-row">
                         <div class="compact-item" style="flex:1">
                             <span class="compact-label">監造廠商</span>
@@ -1133,7 +1187,6 @@ function createPopup(data) {
                             <div class="compact-val">${lat.toFixed(6)}, ${lng.toFixed(6)}</div>
                         </div>
                     </div>
-                    <!-- End V0116V4 -->
                     <div class="compact-row">
                         <div class="compact-item" style="flex:1">
                             <span class="compact-label">完工日期</span>
@@ -1147,7 +1200,6 @@ function createPopup(data) {
                 </div>
             </div>
             
-            <!-- 功能按鈕 (Row 4) -->
             <div class="popup-btns">
                 ${tenderBtn}
                 <a href="https://maps.nlsc.gov.tw/go/${lng}/${lat}" target="_blank" class="popup-btn-new"><i class="fas fa-map"></i><span>地籍</span></a>
@@ -1155,12 +1207,10 @@ function createPopup(data) {
                 <a href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}" target="_blank" class="popup-btn-new"><i class="fas fa-location-arrow"></i><span>導航</span></a>
             </div>
 
-            <!-- 手機版折疊開關 (Row 5) -->
             <div class="mobile-details-toggle" onclick="toggleMobileDetails(this)">▼ 查看詳細資訊 (廠商、座標、日期)</div>
 
         </div>
 
-        <!-- 照片區塊 (Row 3 part 2) -->
         <div class="popup-col-photo photo-col-before">
             ${generatePhotoSection('施工前', arrBefore, 'before')}
         </div>
@@ -1502,7 +1552,8 @@ function getVillageName(lat, lng) {
 document.getElementById('villageSelect').addEventListener('change', function() {
     const selectedVillage = this.value; const status = document.getElementById('searchStatus'), clearBtn = document.getElementById('clearSearchBtn');
     document.getElementById('keywordInput').value = ''; document.getElementById('contractorSelect').value = ''; 
-    document.getElementById('timingSelect').value = ''; document.getElementById('typeSelect').value = '';
+    document.getElementById('timingSelect').value = ''; 
+    // typeFilter logic handled separately now
     searchResultLayer.clearLayers();
     if (!selectedVillage) { status.innerText = ''; clearBtn.style.display = 'none'; return; }
     const villageFeature = villageGeoJSON.features.find(f => (f.properties.VILLAGE || f.properties.VILLNAME) === selectedVillage); if (!villageFeature) return;
@@ -1635,7 +1686,7 @@ function distToRoad(latlng, roadLayer) {
 }
 
 function updateRepairPoints() {
-    if(markersClusterGroup) { markersClusterGroup.clearLayers(); map.removeLayer(markersClusterGroup); }
+    if(markersClusterGroup) { markersClusterGroup.clearLayers(); map.removeLayer(markersClusterGroup); markersClusterGroup = null; }
     activeRepairLayers = []; CURRENT_MAP_GROUPS = {}; 
     const panel = document.getElementById('clusterControlPanel'), toggleBtn = document.getElementById('toggleClusterControlBtn'), checked = document.querySelectorAll('.repair-cb:checked');
     checked.forEach(cb => {
@@ -1758,7 +1809,6 @@ window.showMultiSelectPopup = function(latlng, markers) {
                 <span><i class="fas fa-barcode"></i> ${caseNo}</span>
                 <span><i class="fas fa-calendar-alt"></i> ${date}</span>
             </div>
-            <!-- V0116V5 Mod: Only show TWD97 -->
             <div class="multi-select-meta" style="margin-top:2px; color:#555; font-size:10px;">
                 <span><i class="fas fa-map-marker-alt"></i> TWD97: ${twdStr}</span>
             </div>
@@ -1841,17 +1891,93 @@ const toggleClusterControlBtn = document.getElementById('toggleClusterControlBtn
 toggleClusterControlBtn.addEventListener('click', function() { if (activeRepairLayers.length === 0) { alert("請先至「透明」分頁勾選欲顯示的案件資料。"); return; } const isVisible = clusterControlPanel.style.display === 'block'; clusterControlPanel.style.display = isVisible ? 'none' : 'block'; this.classList.toggle('active'); });
 closeClusterControlBtn.addEventListener('click', function() { clusterControlPanel.style.display = 'none'; toggleClusterControlBtn.classList.remove('active'); });
 
+/* === V3 Update: Logic for Multiselect Checkboxes (Default Unchecked Fix) === */
+function renderTypeCheckboxes() {
+    const container = document.getElementById('typeCheckboxList');
+    if(!container) return;
+    container.innerHTML = '';
+    
+    // Sort array for consistency
+    const sortedType = Array.from(ALL_TYPES).sort();
+    
+    sortedType.forEach(type => {
+        // Generate Checkbox HTML (Default UNCHECKED)
+        const div = document.createElement('div');
+        div.className = 'checkbox-item';
+        div.innerHTML = `<label><input type="checkbox" value="${type}" class="type-filter-cb" onchange="updateTypeSelection()"> ${type}</label>`;
+        container.appendChild(div);
+    });
+    
+    // Initial update of label (Will show "None selected" and clear map)
+    updateTypeSelection();
+}
+
+function toggleTypeFilter() {
+    const container = document.getElementById('typeFilterContainer');
+    container.classList.toggle('open');
+}
+
+function toggleAllTypes(source) {
+    const checkboxes = document.querySelectorAll('.type-filter-cb');
+    checkboxes.forEach(cb => cb.checked = source.checked);
+    updateTypeSelection();
+}
+
+function updateTypeSelection() {
+    const checkedBoxes = document.querySelectorAll('.type-filter-cb:checked');
+    const label = document.getElementById('typeFilterLabel');
+    const total = document.querySelectorAll('.type-filter-cb').length;
+    
+    if(checkedBoxes.length === total) {
+        label.innerText = `請選擇維修類型 (全選)`;
+    } else if (checkedBoxes.length === 0) {
+        label.innerText = `請選擇維修類型 (未選)`;
+    } else {
+        label.innerText = `維修類型 (已選 ${checkedBoxes.length} 項)`;
+    }
+    
+    // Trigger Search immediately (Fast Filter)
+    const selectedSet = new Set();
+    checkedBoxes.forEach(cb => selectedSet.add(cb.value));
+    
+    // Clear other inputs to avoid confusion
+    document.getElementById('keywordInput').value=''; 
+    document.getElementById('villageSelect').value=''; 
+    document.getElementById('contractorSelect').value=''; 
+    document.getElementById('timingSelect').value=''; 
+    
+    performSearch(p => {
+        // Logic: Does the case have ANY of the selected types?
+        const typeStr = p['搶修類型'] || '';
+        // Split by comma (full or half width)
+        const types = typeStr.split(/[,，]/).map(s => s.trim());
+        
+        // If no types selected (default), return false => Show nothing on map
+        if (selectedSet.size === 0) return false;
+
+        // Check intersection
+        return types.some(t => selectedSet.has(t));
+    }, `維修類型篩選`);
+}
+
 async function preloadAllDataForContractors() {
     const cSel = document.getElementById('contractorSelect');
     const tSel = document.getElementById('timingSelect');
-    const typeSel = document.getElementById('typeSelect');
+    // Removed typeSelect element reference
 
     await Promise.all(REPAIR_CONFIG.map(async item => {
         if (!REPAIR_DATA_CACHE[item.value]) { 
             try { const res = await fetch(item.value + '.geojson'); if(res.ok) { const json = await res.json(); REPAIR_DATA_CACHE[item.value] = json; json.features?.forEach(f => { 
                 const c = f.properties['施工廠商']?.trim(); if(c) ALL_CONTRACTORS.add(c);
                 const t = f.properties['派工時機']?.trim(); if(t) ALL_TIMINGS.add(t);
-                const tp = f.properties['搶修類型']?.trim(); if(tp) ALL_TYPES.add(tp);
+                
+                // V3: Parsing types properly for the list
+                const typeRaw = f.properties['搶修類型']?.trim(); 
+                if(typeRaw) {
+                    // Split mult-values to build the master list
+                    const parts = typeRaw.split(/[,，]/).map(s => s.trim());
+                    parts.forEach(p => { if(p) ALL_TYPES.add(p); });
+                }
             }); } } catch(e){}
         }
     }));
@@ -1862,7 +1988,9 @@ async function preloadAllDataForContractors() {
             document.getElementById('keywordInput').value=''; 
             document.getElementById('villageSelect').value=''; 
             document.getElementById('timingSelect').value=''; 
-            document.getElementById('typeSelect').value=''; 
+            // Reset checkbox UI to Unchecked (Default state)
+            resetTypeCheckboxesToNone();
+            
             performSearch(p=>p['施工廠商']?.trim()===this.value, `廠商：${this.value}`); updateContractorStats(this.value); 
         } else { clearSearchResults(); } 
     });
@@ -1875,23 +2003,24 @@ async function preloadAllDataForContractors() {
             document.getElementById('keywordInput').value=''; 
             document.getElementById('villageSelect').value=''; 
             document.getElementById('contractorSelect').value=''; 
-            document.getElementById('typeSelect').value=''; 
+            resetTypeCheckboxesToNone();
             performSearch(p=>p['派工時機']?.trim()===this.value, `派工時機：${this.value}`);
         } else { clearSearchResults(); }
     });
 
-    // Populate Type Select
-    const sortedType = Array.from(ALL_TYPES).sort();
-    typeSel.innerHTML = '<option value="">-- 請選擇維修類型 --</option>' + sortedType.map(tp => `<option value="${tp}">${tp}</option>`).join('');
-    typeSel.addEventListener('change', function() {
-        if(this.value) {
-            document.getElementById('keywordInput').value=''; 
-            document.getElementById('villageSelect').value=''; 
-            document.getElementById('contractorSelect').value=''; 
-            document.getElementById('timingSelect').value=''; 
-            performSearch(p=>p['搶修類型']?.trim()===this.value, `維修類型：${this.value}`);
-        } else { clearSearchResults(); }
-    });
+    // V3: Render Checkboxes
+    renderTypeCheckboxes();
+}
+
+function resetTypeCheckboxesToNone() {
+    const allCb = document.getElementById('typeSelectAll');
+    if(allCb) {
+        allCb.checked = false;
+        const checkboxes = document.querySelectorAll('.type-filter-cb');
+        checkboxes.forEach(cb => cb.checked = false);
+        const label = document.getElementById('typeFilterLabel');
+        if(label) label.innerText = `請選擇維修類型 (未選)`;
+    }
 }
 
 function updateContractorStats(contractorName) {
@@ -1967,7 +2096,10 @@ document.getElementById('searchBtn').addEventListener('click', () => {
     const kw = document.getElementById('keywordInput').value.trim().toLowerCase();
     if(!kw) return alert('請輸入關鍵字');
     document.getElementById('contractorSelect').value = ''; document.getElementById('villageSelect').value = ''; 
-    document.getElementById('timingSelect').value = ''; document.getElementById('typeSelect').value = '';
+    document.getElementById('timingSelect').value = ''; 
+    // reset checkboxes
+    resetTypeCheckboxesToNone();
+    
     document.getElementById('contractorStatsResult').style.display = 'none';
     performSearch(p => Object.values(p).join(' ').toLowerCase().includes(kw), kw);
 });
@@ -1978,7 +2110,9 @@ function clearSearchResults() {
     document.getElementById('contractorSelect').value = ''; 
     document.getElementById('villageSelect').value = ''; 
     document.getElementById('timingSelect').value = ''; 
-    document.getElementById('typeSelect').value = ''; 
+    // V3: Reset Checkboxes
+    resetTypeCheckboxesToNone();
+    
     document.getElementById('searchStatus').innerText = ''; 
     document.getElementById('clearSearchBtn').style.display = 'none'; 
     document.getElementById('contractorStatsResult').style.display = 'none'; 

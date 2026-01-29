@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.1150129-V3-MultiSelect)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.1150129-V4-MobileLayout)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -327,32 +327,34 @@
           position: relative;
       }
       
-      /* V12: 修改排版邏輯為絕對置中 */
+      /* V12: 修改排版邏輯為絕對置中 -> V0129V4: 改為垂直堆疊 (方案一) */
       .m-row-1 { 
           display: flex; 
-          align-items: center; 
-          justify-content: center; /* 讓內容居中 */
-          margin-bottom: 4px;
+          flex-direction: column; /* 垂直排列 */
+          align-items: flex-start; /* 靠左對齊 */
+          justify-content: center;
+          margin-bottom: 6px;
           position: relative;
-          min-height: 24px;
+          min-height: auto;
+          gap: 4px; /* 行距 */
       }
       .m-row-1 .status-pill { 
-          position: absolute; /* 絕對定位在左側 */
-          left: 0;
-          top: 50%;
-          transform: translateY(-50%);
+          position: static; /* 取消絕對定位 */
+          transform: none;
           margin: 0; 
           font-size: 10px; 
           padding: 2px 8px; 
-          z-index: 2;
+          align-self: flex-start;
       }
       .m-row-1 .case-id { 
-          font-size: 14px; 
+          font-size: 15px; /* 稍微加大字體提升辨識度 */
           font-weight: bold;
           color: #333;
           margin: 0; 
-          text-align: center; /* 文字居中 */
-          z-index: 1;
+          text-align: left; /* 改為靠左 */
+          line-height: 1.4; /* 增加行高 */
+          width: 100%;
+          word-break: break-all; /* 確保長字串換行 */
       }
       
       .m-row-2 { display: flex; align-items: baseline; gap: 8px; }
@@ -1131,7 +1133,7 @@ function createPopup(data) {
             <div class="mobile-compact-header">
                 <div class="m-row-1">
                     <div class="status-pill ${pillClass}">${status}</div>
-                    <div class="case-id mobile-id-text" style="display:flex; align-items:center; justify-content:center;">
+                    <div class="case-id mobile-id-text">
                         ${mobileCaseIdDisplay}
                     </div>
                 </div>

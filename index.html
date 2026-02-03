@@ -80,9 +80,9 @@
       border-top: 1px solid #e2e8f0;
       font-size: 11px;
       color: #64748b;
-      line-height: 1.6; /* V3: 稍微增加行高讓兩行文字呼吸空間更好 */
+      line-height: 1.6; 
       text-align: center;
-      white-space: normal; /* 確保文字可換行 */
+      white-space: normal; 
   }
 
   /* 卡片區塊樣式 */
@@ -545,7 +545,7 @@
                 <div class="photo-box-upload" id="photoBox1" onclick="triggerCamera(1)">
                     <div class="add-photo-btn">+</div>
                     <img id="imgPreview1">
-                    <input type="file" id="fileInput1" accept="image/*" capture="camera" style="display:none;" onchange="previewImage(this, 1)">
+                    <input type="file" id="fileInput1" accept="image/*" style="display:none;" onchange="previewImage(this, 1)">
                 </div>
                 <button class="delete-photo-btn" id="delBtn1" onclick="deletePhoto(1)">刪除</button>
             </div>
@@ -553,7 +553,7 @@
                 <div class="photo-box-upload" id="photoBox2" onclick="triggerCamera(2)">
                     <div class="add-photo-btn">+</div>
                     <img id="imgPreview2">
-                    <input type="file" id="fileInput2" accept="image/*" capture="camera" style="display:none;" onchange="previewImage(this, 2)">
+                    <input type="file" id="fileInput2" accept="image/*" style="display:none;" onchange="previewImage(this, 2)">
                 </div>
                 <button class="delete-photo-btn" id="delBtn2" onclick="deletePhoto(2)">刪除</button>
             </div>

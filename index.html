@@ -64,10 +64,26 @@
   .tab-btn { flex: 1; padding: 10px 5px; border: none; background: transparent; cursor: pointer; font-size: 13px; font-weight: bold; color: #666; border-radius: 8px 8px 0 0; transition: all 0.2s; white-space: nowrap; }
   .tab-btn.active { background: #fff; color: var(--primary-color); box-shadow: 0 -2px 5px rgba(0,0,0,0.05); position: relative; top: 1px; }
   
+  /* 0203V1 Update: 調整 flex 讓內容可滾動，並保留空間給底部聲明 */
   .tab-content-container { flex: 1; overflow-y: auto; padding: 15px; background: #fff; position: relative; }
   .tab-pane { display: none; animation: fadeIn 0.3s; }
   .tab-pane.active { display: block; }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* 0203V3 Update: 側邊欄底部版權聲明區塊 (簡化版 + 手機安全區優化) */
+  .sidebar-footer {
+      flex-shrink: 0; 
+      padding: 10px 15px;
+      /* V3: 增加手機底部安全區，避免被 Home Bar 擋住 */
+      padding-bottom: calc(10px + env(safe-area-inset-bottom));
+      background: #f8fafc;
+      border-top: 1px solid #e2e8f0;
+      font-size: 11px;
+      color: #64748b;
+      line-height: 1.6; /* V3: 稍微增加行高讓兩行文字呼吸空間更好 */
+      text-align: center;
+      white-space: normal; /* 確保文字可換行 */
+  }
 
   /* 卡片區塊樣式 */
   .card-section { background: #fff; border-radius: 12px; padding: 12px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: 1px solid #f0f0f0; }
@@ -742,7 +758,6 @@
           </div>
           <div id="dupCheckResult" style="margin-top:10px; font-size:13px; color:#333;"></div>
       </div>
-      <div style="text-align:center; color:#999; font-size:12px; margin-top:20px;">臺南市山上區公所</div>
   </div>
   
   <div id="tab-dengue" class="tab-content-container tab-pane">
@@ -769,7 +784,11 @@
               <label class="dengue-option"><input type="radio" name="dengueRadius" value="200" onchange="updateDengueRadius()"> 200 公尺</label>
           </div>
       </div>
-      <div style="text-align:center; color:#999; font-size:12px; margin-top:20px;">臺南市山上區公所</div>
+  </div>
+
+  <div class="sidebar-footer">
+      <div>本網頁圖資僅供參考，實際狀況應以權管機關現場鑑界為準。</div>
+      <div style="margin-top:2px;">資料來源：Google Maps, OSM, 國土測繪中心, 臺南市山上區公所</div>
   </div>
 </div>
 
@@ -1391,6 +1410,18 @@ function deletePhoto(id) {
     box.classList.remove('has-image'); input.value = ""; delBtn.style.display = 'none';
 }
 function resetReportForm() { deletePhoto(1); deletePhoto(2); document.getElementById('reportDesc').value = ""; document.getElementById('reportWgs84').innerText = "定位中..."; document.getElementById('reportTwd97').innerText = "定位中..."; }
+
+// === 資安優化：產生或讀取使用者唯一識別碼 ===
+function getUserID() {
+    let uid = localStorage.getItem('site_user_uid');
+    if (!uid) {
+        // 簡單產生一個隨機 ID
+        uid = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem('site_user_uid', uid);
+    }
+    return uid;
+}
+
 async function submitReport() {
     if (GOOGLE_SCRIPT_URL.includes("您的SCRIPT_ID")) { alert("請先設定 Google Apps Script URL！"); return; }
     const desc = document.getElementById('reportDesc').value;
@@ -1399,7 +1430,19 @@ async function submitReport() {
     const btn = document.getElementById('btnSubmitReport'); const originalText = btn.innerText; btn.disabled = true; btn.innerText = "資料上傳中...";
     try {
         const img1 = document.getElementById('imgPreview1'), img2 = document.getElementById('imgPreview2');
-        const payload = { time: document.getElementById('reportTime').innerText, wgs84: document.getElementById('reportWgs84').innerText, twd97: document.getElementById('reportTwd97').innerText, description: desc, photo1: (img1.src && img1.src.startsWith('data:')) ? img1.src : "", photo2: (img2.src && img2.src.startsWith('data:')) ? img2.src : "" };
+        const payload = { 
+            time: document.getElementById('reportTime').innerText, 
+            wgs84: document.getElementById('reportWgs84').innerText, 
+            twd97: document.getElementById('reportTwd97').innerText, 
+            description: desc, 
+            photo1: (img1.src && img1.src.startsWith('data:')) ? img1.src : "", 
+            photo2: (img2.src && img2.src.startsWith('data:')) ? img2.src : "",
+            
+            // === 新增資安驗證欄位 ===
+            appKey: "TainanMap2026_SecureKey_v1", // 必須與 GAS 後端設定一致
+            siteUrl: window.location.href,        // 來源網址檢查
+            uid: getUserID()                      // 使用者識別碼 (頻率限制用)
+        };
         const response = await fetch(GOOGLE_SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) });
         const result = await response.json();
         if (result.result === "success") { alert(`✅ 案件通報成功！\n\n案件編號：${result.caseId}\n資料已寫入雲端試算表。`); closeReport(); } else { alert("❌ 上傳失敗: " + (result.error || "未知錯誤")); }

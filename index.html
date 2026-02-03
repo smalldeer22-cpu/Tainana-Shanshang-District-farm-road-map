@@ -1386,12 +1386,11 @@ function closeReportDetailModal() {
     document.getElementById('reportDetailModal').style.display = 'none';
 }
 
-// === 0203V5 Update: 觸發相機的邏輯改為開啟選擇對話框 ===
+// === 0203V6 Update: 觸發相機的邏輯改為開啟選擇對話框 (含 300ms 緩衝) ===
 var currentPhotoTargetId = 1;
 
 function triggerCamera(id) {
     currentPhotoTargetId = id;
-    // 檢查目前是否有照片，若有則不動作（需先刪除）
     if (!document.getElementById(`imgPreview${id}`).src) {
         document.getElementById('sourceSelectModal').style.display = 'flex';
     }
@@ -1404,20 +1403,20 @@ function closeSourceModal() {
 function selectSource(type) {
     var input = document.getElementById(`fileInput${currentPhotoTargetId}`);
     
+    // 1. 設定屬性
     if (type === 'camera') {
-        // 設定強制使用相機
         input.setAttribute('capture', 'environment');
     } else {
-        // 移除 capture 屬性，讓手機開啟相簿/檔案總管
         input.removeAttribute('capture');
     }
     
+    // 2. 先強制關閉選單，並強制重繪
     closeSourceModal();
     
-    // 延遲一點點觸發點擊，避免 UI 還沒消失造成的干擾
+    // 3. 視覺緩衝：給瀏覽器 300ms 的時間把選單「收起來」並渲染畫面
     setTimeout(function() {
         input.click();
-    }, 100);
+    }, 300); 
 }
 
 function previewImage(input, id) {

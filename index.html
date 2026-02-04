@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0205V3-RenderingFix)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0205V3-StabilityFix)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -1176,7 +1176,12 @@ function createPopup(data) {
 const reportOverlay = document.getElementById('reportOverlay');
 const openReportBtn = document.getElementById('openReportBtn');
 openReportBtn.addEventListener('click', function() { reportOverlay.style.display = 'flex'; initReportData(); });
-function closeReport() { reportOverlay.style.display = 'none'; resetReportForm(); }
+function closeReport() { 
+    reportOverlay.style.display = 'none'; 
+    // Double Insurance: 關閉選單
+    document.getElementById('photoSourceModal').style.display = 'none';
+    resetReportForm(); 
+}
 
 function initReportData() {
     document.getElementById('reportCaseId').innerText = "(待系統取號)";
@@ -1307,10 +1312,11 @@ function triggerCamera(id) {
     }
 }
 
-// 0205V3 Modified: 修復 Rendering Block 問題 (延遲開啟相機)
+// 0205V3 Modified: 強效版修復 - 雙重保險 + 強制重繪 + 延長延遲
 function selectSource(type) {
     if(!activePhotoId) return;
     const input = document.getElementById(`fileInput${activePhotoId}`);
+    const modal = document.getElementById('photoSourceModal');
     
     // 如果選拍照，加上 capture="environment" (後鏡頭)
     if(type === 'camera') {
@@ -1320,13 +1326,18 @@ function selectSource(type) {
         input.removeAttribute('capture');
     }
     
-    // 1. 先關閉選單，讓 UI 重繪
-    closeSourceModal();
+    // 1. 關閉選單 (DOM 操作)
+    modal.style.display = 'none';
     
-    // 2. 稍微延遲後再觸發 input 點擊，避免瀏覽器阻塞 UI 更新
+    // 2. 強制重繪 (Force Reflow) - 關鍵！
+    // 讀取 offsetHeight 會強迫瀏覽器立刻計算佈局，確保 display:none 被套用
+    modal.offsetHeight;
+
+    // 3. 延遲觸發 (Extended Buffer)
+    // 延長到 300ms，確保 UI 已經完全消失後才叫起系統相機
     setTimeout(() => {
         input.click();
-    }, 50);
+    }, 300);
 }
 
 function closeSourceModal() {
@@ -1334,6 +1345,9 @@ function closeSourceModal() {
 }
 
 function previewImage(input, id) {
+    // Double Insurance: 確保選單真的關閉了 (防止相機返回後選單還在)
+    document.getElementById('photoSourceModal').style.display = 'none';
+
     if (input.files && input.files[0]) {
         compressImage(input.files[0], 800, 0.7, function(compressedDataUrl) {
             const img = document.getElementById(`imgPreview${id}`);

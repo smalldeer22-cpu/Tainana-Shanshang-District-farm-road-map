@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0205V1-PhotoFix)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0205V3-RenderingFix)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -1307,7 +1307,7 @@ function triggerCamera(id) {
     }
 }
 
-// 0205V1 Added: 處理選單邏輯 (拍照 vs 相簿)
+// 0205V3 Modified: 修復 Rendering Block 問題 (延遲開啟相機)
 function selectSource(type) {
     if(!activePhotoId) return;
     const input = document.getElementById(`fileInput${activePhotoId}`);
@@ -1320,9 +1320,13 @@ function selectSource(type) {
         input.removeAttribute('capture');
     }
     
-    // 關閉選單並觸發原生點擊
+    // 1. 先關閉選單，讓 UI 重繪
     closeSourceModal();
-    input.click();
+    
+    // 2. 稍微延遲後再觸發 input 點擊，避免瀏覽器阻塞 UI 更新
+    setTimeout(() => {
+        input.click();
+    }, 50);
 }
 
 function closeSourceModal() {

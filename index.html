@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.1150129-V4-MobileLayout)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0205V1-PhotoFix)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -74,15 +74,14 @@
   .sidebar-footer {
       flex-shrink: 0; 
       padding: 10px 15px;
-      /* V3: 增加手機底部安全區，避免被 Home Bar 擋住 */
       padding-bottom: calc(10px + env(safe-area-inset-bottom));
       background: #f8fafc;
       border-top: 1px solid #e2e8f0;
       font-size: 11px;
       color: #64748b;
-      line-height: 1.6; /* V3: 稍微增加行高讓兩行文字呼吸空間更好 */
+      line-height: 1.6; 
       text-align: center;
-      white-space: normal; /* 確保文字可換行 */
+      white-space: normal; 
   }
 
   /* 卡片區塊樣式 */
@@ -487,6 +486,12 @@
 
   #floatingCoords { position:absolute; pointer-events:none; background:rgba(255,255,255,0.9); border:1px solid #ccc; border-radius:4px; padding:4px 8px; font-size:11px; display:none; z-index:1300; bottom: 10px; right: 10px; }
 
+  /* 0205V1 Photo Source Modal Animation */
+  @keyframes popIn {
+      0% { transform: scale(0.9); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+  }
+
   @media (max-width: 768px) {
     #sidebar { position: absolute; bottom: 0; left: 0; width: 100%; height: 60%; top: auto; border-radius: 20px 20px 0 0; border-right: none; transform: translateY(100%); margin-left: 0; }
     body.sidebar-open #sidebar { transform: translateY(0); }
@@ -545,7 +550,7 @@
                 <div class="photo-box-upload" id="photoBox1" onclick="triggerCamera(1)">
                     <div class="add-photo-btn">+</div>
                     <img id="imgPreview1">
-                    <input type="file" id="fileInput1" accept="image/*" capture="camera" style="display:none;" onchange="previewImage(this, 1)">
+                    <input type="file" id="fileInput1" accept="image/*" style="display:none;" onchange="previewImage(this, 1)">
                 </div>
                 <button class="delete-photo-btn" id="delBtn1" onclick="deletePhoto(1)">刪除</button>
             </div>
@@ -553,12 +558,12 @@
                 <div class="photo-box-upload" id="photoBox2" onclick="triggerCamera(2)">
                     <div class="add-photo-btn">+</div>
                     <img id="imgPreview2">
-                    <input type="file" id="fileInput2" accept="image/*" capture="camera" style="display:none;" onchange="previewImage(this, 2)">
+                    <input type="file" id="fileInput2" accept="image/*" style="display:none;" onchange="previewImage(this, 2)">
                 </div>
                 <button class="delete-photo-btn" id="delBtn2" onclick="deletePhoto(2)">刪除</button>
             </div>
         </div>
-        <div style="margin-top:10px; font-size:12px; color:#666; text-align:center;">請點擊「+」拍攝兩張不同角度的照片</div>
+        <div style="margin-top:10px; font-size:12px; color:#666; text-align:center;">請點擊「+」拍攝或選擇兩張不同角度的照片</div>
     </div>
     <div class="report-footer">
         <button class="btn-cancel" onclick="closeReport()">取消</button>
@@ -795,6 +800,17 @@
 <div id="map"></div>
 <div id="floatingCoords"></div>
 
+<div id="photoSourceModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:12000; align-items:center; justify-content:center;">
+    <div style="background:#fff; width:280px; border-radius:12px; overflow:hidden; box-shadow:0 4px 15px rgba(0,0,0,0.2); animation: popIn 0.2s;">
+        <div style="background:var(--primary-color); color:#fff; padding:12px; text-align:center; font-weight:bold;">請選擇照片來源</div>
+        <div style="display:flex; flex-direction:column;">
+            <button onclick="selectSource('camera')" style="padding:15px; border:none; background:#fff; border-bottom:1px solid #eee; font-size:16px; cursor:pointer; color:#004080;"><i class="fas fa-camera"></i> 拍攝照片</button>
+            <button onclick="selectSource('gallery')" style="padding:15px; border:none; background:#fff; border-bottom:1px solid #eee; font-size:16px; cursor:pointer; color:#e65100;"><i class="fas fa-images"></i> 從相簿挑選</button>
+            <button onclick="closeSourceModal()" style="padding:15px; border:none; background:#f8fafc; color:#666; font-size:14px; cursor:pointer;">取消</button>
+        </div>
+    </div>
+</div>
+
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.9.0/proj4.js"></script>
 <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
@@ -836,7 +852,6 @@ let roadsLayer = null;
 let roadLayersArray = [];
 let REPAIR_DATA_CACHE = {}; 
 let ALL_CONTRACTORS = new Set(); 
-// V14 新增：全域 Set 儲存唯一值
 let ALL_TIMINGS = new Set();
 let ALL_TYPES = new Set();
 
@@ -855,6 +870,9 @@ let measureTooltip = null;
 let markersClusterGroup = null; 
 let activeRepairLayers = []; 
 let selectedTimelineMarker = null;
+
+// 0205V1 Added: 目前正在操作的照片框ID
+let activePhotoId = 0;
 
 const DEEP_BLUE = '#004080'; 
 const LIGHT_BLUE = '#0066cc'; 
@@ -897,9 +915,8 @@ function getPhotosFromProps(props) {
     return [...arr1, ...arr2];
 }
 
-/* === 核心功能：新版泡泡窗生成函式 (3-Column + Sync + Wan + Mobile Opt V13) === */
+/* === 核心功能：新版泡泡窗生成函式 === */
 
-// 手機版切換照片 Tab 的函數
 window.switchMobilePhotoTab = function(el, type) {
     const card = el.closest('.popup-card');
     const tabs = card.querySelectorAll('.m-tab');
@@ -918,7 +935,6 @@ window.switchMobilePhotoTab = function(el, type) {
     }
 };
 
-// 手機版切換詳細資訊折疊的函數
 window.toggleMobileDetails = function(el) {
     const card = el.closest('.popup-card');
     const details = card.querySelector('.info-details-block');
@@ -932,11 +948,9 @@ window.toggleMobileDetails = function(el) {
     }
 };
 
-// 全域函數：切換照片
 window.switchPhotoSet = function(el, index) {
     const card = el.closest('.popup-card');
     if(!card) return;
-
     const viewers = card.querySelectorAll('.photo-viewer');
     viewers.forEach(viewer => {
         const imgs = viewer.querySelectorAll('img');
@@ -945,7 +959,6 @@ window.switchPhotoSet = function(el, index) {
             imgs[index].classList.add('active');
         }
     });
-
     const allDotContainers = card.querySelectorAll('.carousel-dots');
     allDotContainers.forEach(container => {
         const dots = container.querySelectorAll('.dot');
@@ -956,39 +969,24 @@ window.switchPhotoSet = function(el, index) {
     });
 };
 
-// 輔助函式：產生搶修類型標籤 HTML (修復按鈕失效問題)
 function renderTypeTags(rawType, isMobile) {
     if (!rawType) return isMobile ? '' : '<span class="type-pill">一般工程</span>';
-    
-    // 支援半形逗號與全形逗號切割，並過濾空字串
     const types = rawType.split(/[,，]/).map(s => s.trim()).filter(s => s.length > 0);
     if (types.length === 0) return isMobile ? '' : '<span class="type-pill">一般工程</span>';
-
-    // 如果數量 <= 2，直接顯示全部
     if (types.length <= 2) {
-        return `<div class="type-tag-group">
-            ${types.map(t => `<span class="type-pill">${t}</span>`).join('')}
-        </div>`;
+        return `<div class="type-tag-group">${types.map(t => `<span class="type-pill">${t}</span>`).join('')}</div>`;
     }
-
-    // 如果數量 > 2，顯示前兩個 + "更多"按鈕 (使用預先隱藏法)
     const visible = types.slice(0, 2);
     const hidden = types.slice(2);
     const uid = Math.random().toString(36).substr(2, 9);
     const hiddenId = `hidden-${uid}`;
     const btnId = `btn-${uid}`;
-    
-    // 安全的 DOM 操作腳本，避免字串引號衝突
     const expandScript = `document.getElementById('${hiddenId}').style.display='contents';document.getElementById('${btnId}').style.display='none';`;
 
     return `<div class="type-tag-group">
         ${visible.map(t => `<span class="type-pill">${t}</span>`).join('')}
-        <span id="${hiddenId}" style="display:none;">
-            ${hidden.map(t => `<span class="type-pill">${t}</span>`).join('')}
-        </span>
-        <span id="${btnId}" class="type-pill-more" onclick="${expandScript}" title="點擊展開: ${hidden.join(', ')}">
-            +${hidden.length} 更多
-        </span>
+        <span id="${hiddenId}" style="display:none;">${hidden.map(t => `<span class="type-pill">${t}</span>`).join('')}</span>
+        <span id="${btnId}" class="type-pill-more" onclick="${expandScript}" title="點擊展開: ${hidden.join(', ')}">+${hidden.length} 更多</span>
     </div>`;
 }
 
@@ -996,30 +994,26 @@ function createPopup(data) {
     const { fileName, props, lat, lng, dist } = data;
     const twd = twd97FromWgs84(lat, lng);
     const distText = isNaN(dist) ? 'N/A' : dist.toFixed(0) + 'm';
-    
     const caseIdRaw = props['案件編號'];
     const caseId = caseIdRaw || '無編號';
     const status = props['案件狀態'] || '已完工';
     const timing = props['派工時機'] || '一般';
-    const typeRaw = props['搶修類型'] || '一般工程'; // 取得原始資料
+    const typeRaw = props['搶修類型'] || '一般工程'; 
     const contractor = props['施工廠商'] || '-';
     const supervisor = props['監造廠商'] || '-';
     const date = props['完工日期'] || '-';
     const procurementUrl = props['採購網址'] ? props['採購網址'].trim() : '';
 
-    // V15: 金額格式優化
     let price = '0元';
     const rawPrice = props['決標金額'];
     if(rawPrice) {
         const num = parseInt(rawPrice.toString().replace(/,/g, ''));
         if(!isNaN(num)) {
-            // V15 Formatter: X萬0000元 with comma
             const formatPriceV15 = (n) => {
                 if(n < 10000) return n.toLocaleString() + '元';
                 const w = Math.floor(n / 10000);
                 const r = n % 10000;
                 let rStr = r.toString().padStart(4, '0');
-                // 若後4位大於等於1000，加上千分位逗號
                 if(r >= 1000) {
                     rStr = rStr.substring(0, 1) + ',' + rStr.substring(1);
                 }
@@ -1033,14 +1027,10 @@ function createPopup(data) {
     if(status.includes('施工') || status.includes('派工')) pillClass = 'pill-working';
     else if(status.includes('緊急') || status.includes('搶修')) pillClass = 'pill-urgent';
 
-    // V13 & V0129-V2: 智慧型案件編號顯示 (修正長名稱被截斷問題)
     let formattedCaseId = caseId; 
     const idParts = caseId.split('-');
-    
-    // 邏輯修正：只有當後綴是純數字且短於5位數時，才進行「第X案」的格式化
     if (idParts.length >= 2) {
         const suffix = idParts[idParts.length - 1]; 
-        // 檢查後綴是否為純數字且長度在 1~4 之間 (例如 001, 155)
         if (/^\d{1,4}$/.test(suffix)) {
             const num = parseInt(suffix, 10);
             if (!isNaN(num)) {
@@ -1049,22 +1039,13 @@ function createPopup(data) {
         }
     }
     
-    // V15: 手機版標題簡化 (直接顯示文字，不加前綴)
     const mobileCaseIdDisplay = formattedCaseId;
-
-    // === 0116V2 Added: Sibling Dot Navigation Logic ===
     let siblingNavHtml = '';
     let mobileSiblingNavHtml = '';
-    
-    // 檢查是否有其他兄弟節點 (同編號但不同座標)
     let siblings = [];
     if (caseIdRaw) {
-        // 合併搜尋來源
         const candidates = [...activeRepairLayers, ...searchResultLayer.getLayers()];
-        // 過濾同案號
         const rawSiblings = candidates.filter(m => m.customData?.props['案件編號'] === caseIdRaw);
-        
-        // 智慧去重 (透過 lat,lng key) 並保持標記參考
         const uniqueMap = new Map();
         rawSiblings.forEach(m => {
             const ll = m.getLatLng();
@@ -1072,14 +1053,10 @@ function createPopup(data) {
             if(!uniqueMap.has(key)) uniqueMap.set(key, m);
         });
         siblings = Array.from(uniqueMap.values());
-
-        // 固定排序 (由北至南，由東至西)，確保數字順序永遠一致
         siblings.sort((a, b) => {
             const la = a.getLatLng();
             const lb = b.getLatLng();
-            // 先比緯度 (大到小)
             if(Math.abs(la.lat - lb.lat) > 0.00001) return lb.lat - la.lat;
-            // 再比經度 (大到小)
             return lb.lng - la.lng;
         });
     }
@@ -1089,19 +1066,15 @@ function createPopup(data) {
         siblings.forEach((sib, idx) => {
             const sLat = sib.getLatLng().lat;
             const sLng = sib.getLatLng().lng;
-            // 判斷是否為當前座標
             const isCurrent = (Math.abs(sLat - lat) < 0.000001 && Math.abs(sLng - lng) < 0.000001);
             const activeClass = isCurrent ? 'active' : '';
             const clickEvent = isCurrent ? '' : `onclick="jumpToSpecificSibling('${caseIdRaw}', ${sLat}, ${sLng})"`;
             const titleText = isCurrent ? '目前位置' : `前往關聯點位 ${idx+1}`;
-            
             dots += `<div class="sibling-dot ${activeClass}" ${clickEvent} title="${titleText}">${idx+1}</div>`;
         });
-        
         siblingNavHtml = `<div class="sibling-nav-container">${dots}</div>`;
         mobileSiblingNavHtml = `<div class="sibling-nav-container mobile">${dots}</div>`;
     }
-    // ============================================
 
     const getPhotoArray = (str) => {
         if(!str) return [];
@@ -1117,7 +1090,6 @@ function createPopup(data) {
         let dotsHtml = '';
 
         if(urls.length > 0) {
-            // V13V5 Updated: 加入 oncontextmenu 與 draggable 屬性
             urls.forEach((url, i) => { 
                 const activeClass = i === 0 ? 'active' : ''; 
                 imgsHtml += `<img src="${url.trim()}" class="${activeClass}" oncontextmenu="return false;" draggable="false">`; 
@@ -1148,101 +1120,59 @@ function createPopup(data) {
     <div class="popup-card">
         <div class="popup-deco-strip"></div>
         <div class="popup-col-info">
-            
             <div class="mobile-compact-header">
                 <div class="m-row-1">
                     <div class="status-pill ${pillClass}">${status}</div>
-                    <div class="case-id mobile-id-text">
-                        ${mobileCaseIdDisplay}
-                    </div>
+                    <div class="case-id mobile-id-text">${mobileCaseIdDisplay}</div>
                 </div>
                 ${mobileSiblingNavHtml}
                 <div class="m-row-2">
                     <div class="price-val">${price}</div>
-                    <div class="m-tags-line">
-                        <span>${fileName}</span>
-                        ${renderTypeTags(typeRaw, true)}
-                    </div>
+                    <div class="m-tags-line"><span>${fileName}</span>${renderTypeTags(typeRaw, true)}</div>
                 </div>
             </div>
-
             <div class="desktop-only">
                 <div class="status-pill ${pillClass}">進度：${status}</div>
-                <div class="case-id" style="display:flex; align-items:center; flex-wrap:wrap;">
-                    ${formattedCaseId}
-                </div>
+                <div class="case-id" style="display:flex; align-items:center; flex-wrap:wrap;">${formattedCaseId}</div>
                 ${siblingNavHtml}
-
-                <div class="case-meta">
-                    <span class="file-tag">${fileName}</span>
-                    ${renderTypeTags(typeRaw, false)}
-                </div>
+                <div class="case-meta"><span class="file-tag">${fileName}</span>${renderTypeTags(typeRaw, false)}</div>
                 <div class="popup-tags">
                     <div class="tag-pill tag-dark"><i class="fas fa-clock"></i> ${timing}</div>
                     <div class="tag-pill tag-light"><i class="fas fa-map-marker-alt" style="color:#10b981;"></i> 距路線 ${distText}</div>
                 </div>
-                <div class="price-block">
-                    <div class="price-label">決標金額</div>
-                    <div class="price-val">${price}</div>
-                </div>
+                <div class="price-block"><div class="price-label">決標金額</div><div class="price-val">${price}</div></div>
             </div>
-
             <div class="mobile-photo-tabs">
                 <div class="m-tab" onclick="switchMobilePhotoTab(this, 'before')">施工前</div>
                 <div class="m-tab active" onclick="switchMobilePhotoTab(this, 'after')">● 施工後</div>
             </div>
-
             <div class="info-details-block">
                 <div class="compact-list">
-                    <div class="compact-item">
-                        <span class="compact-label">施工廠商</span>
-                        <div class="compact-val">${contractor}</div>
+                    <div class="compact-item"><span class="compact-label">施工廠商</span><div class="compact-val">${contractor}</div></div>
+                    <div class="compact-row">
+                        <div class="compact-item" style="flex:1"><span class="compact-label">監造廠商</span><div class="compact-val">${supervisor}</div></div>
+                        <div class="compact-item" style="flex:1"><span class="compact-label">WGS84</span><div class="compact-val">${lat.toFixed(6)}, ${lng.toFixed(6)}</div></div>
                     </div>
                     <div class="compact-row">
-                        <div class="compact-item" style="flex:1">
-                            <span class="compact-label">監造廠商</span>
-                            <div class="compact-val">${supervisor}</div>
-                        </div>
-                        <div class="compact-item" style="flex:1">
-                            <span class="compact-label">WGS84</span>
-                            <div class="compact-val">${lat.toFixed(6)}, ${lng.toFixed(6)}</div>
-                        </div>
-                    </div>
-                    <div class="compact-row">
-                        <div class="compact-item" style="flex:1">
-                            <span class="compact-label">完工日期</span>
-                            <div class="compact-val">${date}</div>
-                        </div>
-                        <div class="compact-item" style="flex:1">
-                            <span class="compact-label">TWD97</span>
-                            <div class="compact-val">${twd.x}, ${twd.y}</div>
-                        </div>
+                        <div class="compact-item" style="flex:1"><span class="compact-label">完工日期</span><div class="compact-val">${date}</div></div>
+                        <div class="compact-item" style="flex:1"><span class="compact-label">TWD97</span><div class="compact-val">${twd.x}, ${twd.y}</div></div>
                     </div>
                 </div>
             </div>
-            
             <div class="popup-btns">
                 ${tenderBtn}
                 <a href="https://maps.nlsc.gov.tw/go/${lng}/${lat}" target="_blank" class="popup-btn-new"><i class="fas fa-map"></i><span>地籍</span></a>
                 <a href="https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${lat},${lng}" target="_blank" class="popup-btn-new"><i class="fas fa-camera"></i><span>街景</span></a>
                 <a href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}" target="_blank" class="popup-btn-new"><i class="fas fa-location-arrow"></i><span>導航</span></a>
             </div>
-
             <div class="mobile-details-toggle" onclick="toggleMobileDetails(this)">▼ 查看詳細資訊 (廠商、座標、日期)</div>
-
         </div>
-
-        <div class="popup-col-photo photo-col-before">
-            ${generatePhotoSection('施工前', arrBefore, 'before')}
-        </div>
-        <div class="popup-col-photo photo-col-after active-view">
-            ${generatePhotoSection('施工後', arrAfter, 'after')}
-        </div>
+        <div class="popup-col-photo photo-col-before">${generatePhotoSection('施工前', arrBefore, 'before')}</div>
+        <div class="popup-col-photo photo-col-after active-view">${generatePhotoSection('施工後', arrAfter, 'after')}</div>
     </div>
     `;
 }
 
-/* === 其他 JS 邏輯保持 0109 版本原樣 === */
 const reportOverlay = document.getElementById('reportOverlay');
 const openReportBtn = document.getElementById('openReportBtn');
 openReportBtn.addEventListener('click', function() { reportOverlay.style.display = 'flex'; initReportData(); });
@@ -1292,10 +1222,8 @@ function checkNearbyHistory(lat, lng) {
             if(f.geometry.type !== 'Point') return;
             const pt = L.latLng(f.geometry.coordinates[1], f.geometry.coordinates[0]);
             
-            // V16: 修正搜尋半徑為 50m
             const dist = centerLatLng.distanceTo(pt);
             if(dist <= 50) {
-                // V16: 修正日期格式判斷 (加入 String() 轉型)
                 const rawDate = f.properties['完工日期'];
                 const dateStr = rawDate ? String(rawDate).trim() : "";
                 
@@ -1346,7 +1274,6 @@ function checkNearbyHistory(lat, lng) {
         });
     } else {
         historySection.style.display = 'block';
-        // V16: 更新提示文字為 50公尺
         historyList.innerHTML = '<div style="padding:10px; color:#999; text-align:center;">此位置 50公尺內 最近 3年無維修紀錄。</div>';
     }
 }
@@ -1370,10 +1297,38 @@ function closeReportDetailModal() {
     document.getElementById('reportDetailModal').style.display = 'none';
 }
 
+// 0205V1 Modified: 修改 triggerCamera 為開啟選單，而非直接拍照
 function triggerCamera(id) {
-    const fileInput = document.getElementById(`fileInput${id}`);
-    if (!document.getElementById(`imgPreview${id}`).src) fileInput.click();
+    const img = document.getElementById(`imgPreview${id}`);
+    // 只有當尚未有照片時，才觸發選擇選單
+    if (!img.src || img.style.display === 'none' || img.src === window.location.href) {
+        activePhotoId = id;
+        document.getElementById('photoSourceModal').style.display = 'flex';
+    }
 }
+
+// 0205V1 Added: 處理選單邏輯 (拍照 vs 相簿)
+function selectSource(type) {
+    if(!activePhotoId) return;
+    const input = document.getElementById(`fileInput${activePhotoId}`);
+    
+    // 如果選拍照，加上 capture="environment" (後鏡頭)
+    if(type === 'camera') {
+        input.setAttribute('capture', 'environment');
+    } else {
+        // 如果選相簿，移除 capture 屬性
+        input.removeAttribute('capture');
+    }
+    
+    // 關閉選單並觸發原生點擊
+    closeSourceModal();
+    input.click();
+}
+
+function closeSourceModal() {
+    document.getElementById('photoSourceModal').style.display = 'none';
+}
+
 function previewImage(input, id) {
     if (input.files && input.files[0]) {
         compressImage(input.files[0], 800, 0.7, function(compressedDataUrl) {
@@ -1411,15 +1366,13 @@ function deletePhoto(id) {
 }
 function resetReportForm() { deletePhoto(1); deletePhoto(2); document.getElementById('reportDesc').value = ""; document.getElementById('reportWgs84').innerText = "定位中..."; document.getElementById('reportTwd97').innerText = "定位中..."; }
 
-// === 資安優化：產生或讀取使用者唯一識別碼 ===
 function getUserID() {
     let uid = localStorage.getItem('site_user_uid');
     if (!uid) {
-        // 簡單產生一個隨機 ID
         uid = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
         localStorage.setItem('site_user_uid', uid);
     }
-    return uid;
+    return getUserID;
 }
 
 async function submitReport() {
@@ -1437,11 +1390,9 @@ async function submitReport() {
             description: desc, 
             photo1: (img1.src && img1.src.startsWith('data:')) ? img1.src : "", 
             photo2: (img2.src && img2.src.startsWith('data:')) ? img2.src : "",
-            
-            // === 新增資安驗證欄位 ===
-            appKey: "TainanMap2026_SecureKey_v1", // 必須與 GAS 後端設定一致
-            siteUrl: window.location.href,        // 來源網址檢查
-            uid: getUserID()                      // 使用者識別碼 (頻率限制用)
+            appKey: "TainanMap2026_SecureKey_v1", 
+            siteUrl: window.location.href,        
+            uid: getUserID()                      
         };
         const response = await fetch(GOOGLE_SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) });
         const result = await response.json();
@@ -1598,7 +1549,6 @@ document.getElementById('villageSelect').addEventListener('change', function() {
     const selectedVillage = this.value; const status = document.getElementById('searchStatus'), clearBtn = document.getElementById('clearSearchBtn');
     document.getElementById('keywordInput').value = ''; document.getElementById('contractorSelect').value = ''; 
     document.getElementById('timingSelect').value = ''; 
-    // typeFilter logic handled separately now
     searchResultLayer.clearLayers();
     if (!selectedVillage) { status.innerText = ''; clearBtn.style.display = 'none'; return; }
     const villageFeature = villageGeoJSON.features.find(f => (f.properties.VILLAGE || f.properties.VILLNAME) === selectedVillage); if (!villageFeature) return;
@@ -1610,11 +1560,8 @@ document.getElementById('villageSelect').addEventListener('change', function() {
                 if (f.geometry.type !== 'Point') return;
                 if (turf.booleanPointInPolygon(turf.point(f.geometry.coordinates), villageFeature)) {
                     const [lng, lat] = f.geometry.coordinates; const ll = L.latLng(lat, lng);
-                    // 修正 V0116V3: 裝飾物 (黃色光暈) 設為不可點擊
                     L.circleMarker(ll, { radius: 18, fillColor: '#ffd700', color: '#ff8c00', weight: 2, fillOpacity: 0.6, interactive: false }).addTo(searchResultLayer);
                     const marker = L.circleMarker(ll, { radius: 6, fillColor: '#d32f2f', color: '#fff', weight: 1, fillOpacity: 1 }).addTo(searchResultLayer);
-                    
-                    // V17 Mod: 使用智慧點擊處理，不直接 bindPopup
                     marker.customData = { configLabel: conf.label, props: f.properties };
                     marker.on('click', (e) => handleNearbyMarkerClick(e, searchResultLayer.getLayers()));
                     count++;
@@ -1657,11 +1604,8 @@ document.getElementById('statsVillageSelect').addEventListener('change', functio
                     const [lng, lat] = f.geometry.coordinates; const ll = L.latLng(lat, lng);
                     L.circleMarker(ll, { radius: 18, fillColor: '#ffd700', color: '#ff8c00', weight: 2, fillOpacity: 0.6 }).addTo(searchResultLayer);
                     const marker = L.circleMarker(ll, { radius: 6, fillColor: '#d32f2f', color: '#fff', weight: 1, fillOpacity: 1 }).addTo(searchResultLayer);
-                    
-                    // V17 Mod: 使用智慧點擊處理
                     marker.customData = { configLabel: conf.label, props: f.properties };
                     marker.on('click', (e) => handleNearbyMarkerClick(e, searchResultLayer.getLayers()));
-
                     const props = f.properties, caseNo = props['案件編號'], amount = formatMoney(props['決標金額']);
                     let shouldAdd = false; if (caseNo && caseNo.trim() !== "") { if (!villageProcessedCases.has(caseNo)) { villageProcessedCases.add(caseNo); shouldAdd = true; } } else { shouldAdd = true; }
                     if (shouldAdd) { if (isEmergency) { villageYearStats[year].emgCount++; villageYearStats[year].emgAmount += amount; } else { villageYearStats[year].genCount++; villageYearStats[year].genAmount += amount; } }
@@ -1753,37 +1697,24 @@ function updateRepairPoints() {
         const iconHtml = `<div style="width:14px; height:14px; background:${color}; border:2px solid #fff; border-radius:50%; box-shadow:0 2px 4px rgba(0,0,0,0.2);"></div>`;
         const icon = L.divIcon({ html: iconHtml, className: 'custom-dot-marker', iconSize: [18, 18], iconAnchor: [9, 9] });
         const marker = L.marker(pt, { icon: icon });
-        
-        // V17 Mod: 使用智慧點擊偵測，不直接 bindPopup
-        // 儲存資料到 marker 物件上
-        marker.customData = {
-            group: group,
-            configLabel: firstItem.configLabel,
-            props: firstItem.feature.properties
-        };
+        marker.customData = { group: group, configLabel: firstItem.configLabel, props: firstItem.feature.properties };
         marker.on('click', (e) => handleNearbyMarkerClick(e, activeRepairLayers));
-
         marker.feature = firstItem.feature; activeRepairLayers.push(marker);
     });
     if (activeRepairLayers.length === 0) { panel.style.display = 'none'; toggleBtn.classList.remove('active'); }
     renderClusterGroup(); calculateClusters(); 
 }
 
-/* === 0112V2 新增：智慧點擊處理邏輯 (Disambiguation) === */
 window.handleNearbyMarkerClick = function(e, sourceLayers) {
     L.DomEvent.stopPropagation(e);
-    
-    // 取得點擊位置的螢幕像素座標
     const clickPoint = map.latLngToContainerPoint(e.latlng);
     const candidates = [];
-    const BUFFER_PX = 30; // 偵測半徑 (px)
+    const BUFFER_PX = 30; 
 
-    // 在該圖層群組中尋找所有靠近的標記
     sourceLayers.forEach(layer => {
         if (!map.getBounds().contains(layer.getLatLng())) return;
         const layerPos = map.latLngToContainerPoint(layer.getLatLng());
         if (layerPos.distanceTo(clickPoint) <= BUFFER_PX) {
-            // 修正 V0116V3: 只選取真正有資料的點，過濾掉裝飾圖層
             if(layer.customData) {
                 candidates.push(layer);
             }
@@ -1791,30 +1722,22 @@ window.handleNearbyMarkerClick = function(e, sourceLayers) {
     });
 
     if (candidates.length > 1) {
-        // 如果有多個標記，顯示選單
         showMultiSelectPopup(e.latlng, candidates);
-        // 如果有鎖定的時間軸標記，取消鎖定以免干擾
         if(selectedTimelineMarker) {
              selectedTimelineMarker.setStyle({ radius: 14, color: '#fff', fillColor: DEEP_BLUE, weight:1, fillOpacity:0.9 });
              selectedTimelineMarker = null;
         }
     } else {
-        // 只有一個標記，直接顯示原有的詳情
         const targetMarker = candidates.length > 0 ? candidates[0] : e.target;
-        // 如果有鎖定的時間軸標記，取消鎖定以免干擾
         if(selectedTimelineMarker && selectedTimelineMarker !== targetMarker) {
              selectedTimelineMarker.setStyle({ radius: 14, color: '#fff', fillColor: DEEP_BLUE, weight:1, fillOpacity:0.9 });
              selectedTimelineMarker = null;
         }
-        
-        // V3 Fix: 如果 targetMarker 沒有 bindPopup，這裡要手動打開
         openDetailPopupFromMarker(targetMarker);
     }
 };
 
 window.showMultiSelectPopup = function(latlng, markers) {
-    // V19 Added: 圖片預載 (Mobile Multi-select)
-    // 當選單跳出時，立刻下載所有候選人的圖片
     markers.forEach(m => {
         const p = m.customData && m.customData.props;
         if(p) {
@@ -1828,23 +1751,17 @@ window.showMultiSelectPopup = function(latlng, markers) {
         <div style="max-height:250px; overflow-y:auto;">`;
     
     markers.forEach((m, idx) => {
-        // 從 marker 的 customData 取得資料
         const data = m.customData || {};
         const isGroup = data.group && data.group.length > 1;
         const title = data.configLabel || "案件";
         const props = data.props || {};
         const caseNo = props['案件編號'] || '無編號';
         const date = props['完工日期'] || '';
-        
-        // V0116V4 Added: Coords
         const ll = m.getLatLng();
-        // V0116V5 Mod: Remove WGS84 display
         const twd = twd97FromWgs84(ll.lat, ll.lng);
         const twdStr = `${twd.x}, ${twd.y}`;
 
-        // 將標記暫存在全域變數中以便點擊觸發 (簡單實作)
         window[`_temp_marker_${idx}`] = m;
-        
         html += `
         <div class="multi-select-item" onclick="window.triggerMarkerPopup(${idx})">
             <div class="multi-select-title">
@@ -1859,13 +1776,8 @@ window.showMultiSelectPopup = function(latlng, markers) {
             </div>
         </div>`;
     });
-    
     html += `</div></div>`;
-    
-    L.popup({ className: 'custom-popup', maxWidth: 300 })
-     .setLatLng(latlng)
-     .setContent(html)
-     .openOn(map);
+    L.popup({ className: 'custom-popup', maxWidth: 300 }).setLatLng(latlng).setContent(html).openOn(map);
 };
 
 window.triggerMarkerPopup = function(idx) {
@@ -1880,11 +1792,8 @@ window.openDetailPopupFromMarker = function(marker) {
     const data = marker.customData;
     if(!data) return;
 
-    // 判斷是一般單點還是重複座標群組
     if (data.group && data.group.length > 1) {
-        // 重複座標群組：顯示原本的列表式 Popup
         let listHtml = `<div class="info-header" style="padding:10px;background:#004080;color:white;font-weight:bold;">重複座標點位資訊 (${data.group.length}筆)</div><div class="info-body" style="padding:10px;max-height:250px; overflow-y:auto;"><div style="font-size:12px; color:#666; margin-bottom:5px;">點擊案件名稱可查看詳細資料</div>`;
-        const key = marker.getLatLng().lat + ',' + marker.getLatLng().lng; // 只是為了 key
         data.group.forEach((item, index) => {
              window[`_temp_group_item_${index}`] = item;
              listHtml += `<div style="border-bottom:1px dashed #ccc; padding:8px 0; cursor:pointer;" onclick="openSingleGroupItem(${index})"><b style="color:#004080; text-decoration:underline;">${index+1}. ${item.configLabel}</b><br><span style="color:#333; font-size:12px;">案件編號: ${item.feature.properties['案件編號']||'無'}<br>完工日期: ${item.feature.properties['完工日期']||'無'}</span></div>`;
@@ -1892,7 +1801,6 @@ window.openDetailPopupFromMarker = function(marker) {
         listHtml += `</div>`;
         L.popup({ className: 'custom-popup', maxWidth: 300 }).setLatLng(marker.getLatLng()).setContent(listHtml).openOn(map);
     } else {
-        // 單點：顯示 3欄式 Popup
         const dist = distToRoad(marker.getLatLng(), roadsLayer);
         const content = createPopup({
             fileName: data.configLabel,
@@ -1902,16 +1810,11 @@ window.openDetailPopupFromMarker = function(marker) {
             dist: dist
         });
         
-        // 記錄最後開啟狀態 (Line Fix)
         const latlng = marker.getLatLng();
         sessionStorage.setItem('savedPopup', JSON.stringify({
              lat: latlng.lat, lng: latlng.lng, content: content, zoom: map.getZoom()
         }));
-        
-        L.popup({className:'custom-popup', maxWidth:960})
-         .setLatLng(marker.getLatLng())
-         .setContent(content)
-         .openOn(map);
+        L.popup({className:'custom-popup', maxWidth:960}).setLatLng(marker.getLatLng()).setContent(content).openOn(map);
     }
 };
 
@@ -1936,24 +1839,17 @@ const toggleClusterControlBtn = document.getElementById('toggleClusterControlBtn
 toggleClusterControlBtn.addEventListener('click', function() { if (activeRepairLayers.length === 0) { alert("請先至「透明」分頁勾選欲顯示的案件資料。"); return; } const isVisible = clusterControlPanel.style.display === 'block'; clusterControlPanel.style.display = isVisible ? 'none' : 'block'; this.classList.toggle('active'); });
 closeClusterControlBtn.addEventListener('click', function() { clusterControlPanel.style.display = 'none'; toggleClusterControlBtn.classList.remove('active'); });
 
-/* === V3 Update: Logic for Multiselect Checkboxes (Default Unchecked Fix) === */
 function renderTypeCheckboxes() {
     const container = document.getElementById('typeCheckboxList');
     if(!container) return;
     container.innerHTML = '';
-    
-    // Sort array for consistency
     const sortedType = Array.from(ALL_TYPES).sort();
-    
     sortedType.forEach(type => {
-        // Generate Checkbox HTML (Default UNCHECKED)
         const div = document.createElement('div');
         div.className = 'checkbox-item';
         div.innerHTML = `<label><input type="checkbox" value="${type}" class="type-filter-cb" onchange="updateTypeSelection()"> ${type}</label>`;
         container.appendChild(div);
     });
-    
-    // Initial update of label (Will show "None selected" and clear map)
     updateTypeSelection();
 }
 
@@ -1981,26 +1877,17 @@ function updateTypeSelection() {
         label.innerText = `維修類型 (已選 ${checkedBoxes.length} 項)`;
     }
     
-    // Trigger Search immediately (Fast Filter)
     const selectedSet = new Set();
     checkedBoxes.forEach(cb => selectedSet.add(cb.value));
-    
-    // Clear other inputs to avoid confusion
     document.getElementById('keywordInput').value=''; 
     document.getElementById('villageSelect').value=''; 
     document.getElementById('contractorSelect').value=''; 
     document.getElementById('timingSelect').value=''; 
     
     performSearch(p => {
-        // Logic: Does the case have ANY of the selected types?
         const typeStr = p['搶修類型'] || '';
-        // Split by comma (full or half width)
         const types = typeStr.split(/[,，]/).map(s => s.trim());
-        
-        // If no types selected (default), return false => Show nothing on map
         if (selectedSet.size === 0) return false;
-
-        // Check intersection
         return types.some(t => selectedSet.has(t));
     }, `維修類型篩選`);
 }
@@ -2008,18 +1895,14 @@ function updateTypeSelection() {
 async function preloadAllDataForContractors() {
     const cSel = document.getElementById('contractorSelect');
     const tSel = document.getElementById('timingSelect');
-    // Removed typeSelect element reference
 
     await Promise.all(REPAIR_CONFIG.map(async item => {
         if (!REPAIR_DATA_CACHE[item.value]) { 
             try { const res = await fetch(item.value + '.geojson'); if(res.ok) { const json = await res.json(); REPAIR_DATA_CACHE[item.value] = json; json.features?.forEach(f => { 
                 const c = f.properties['施工廠商']?.trim(); if(c) ALL_CONTRACTORS.add(c);
                 const t = f.properties['派工時機']?.trim(); if(t) ALL_TIMINGS.add(t);
-                
-                // V3: Parsing types properly for the list
                 const typeRaw = f.properties['搶修類型']?.trim(); 
                 if(typeRaw) {
-                    // Split mult-values to build the master list
                     const parts = typeRaw.split(/[,，]/).map(s => s.trim());
                     parts.forEach(p => { if(p) ALL_TYPES.add(p); });
                 }
@@ -2033,14 +1916,11 @@ async function preloadAllDataForContractors() {
             document.getElementById('keywordInput').value=''; 
             document.getElementById('villageSelect').value=''; 
             document.getElementById('timingSelect').value=''; 
-            // Reset checkbox UI to Unchecked (Default state)
             resetTypeCheckboxesToNone();
-            
             performSearch(p=>p['施工廠商']?.trim()===this.value, `廠商：${this.value}`); updateContractorStats(this.value); 
         } else { clearSearchResults(); } 
     });
 
-    // Populate Timing Select
     const sortedT = Array.from(ALL_TIMINGS).sort();
     tSel.innerHTML = '<option value="">-- 請選擇派工時機 --</option>' + sortedT.map(t => `<option value="${t}">${t}</option>`).join('');
     tSel.addEventListener('change', function() {
@@ -2052,8 +1932,6 @@ async function preloadAllDataForContractors() {
             performSearch(p=>p['派工時機']?.trim()===this.value, `派工時機：${this.value}`);
         } else { clearSearchResults(); }
     });
-
-    // V3: Render Checkboxes
     renderTypeCheckboxes();
 }
 
@@ -2118,14 +1996,10 @@ async function performSearch(predicate, label) {
                 if(f.geometry.type !== 'Point') return;
                 if(predicate(f.properties)) {
                     const [lng, lat] = f.geometry.coordinates; const ll = L.latLng(lat, lng);
-                    // 修正 V0116V3: 裝飾物 (黃色光暈) 設為不可點擊
                     L.circleMarker(ll, { radius: 18, fillColor: '#ffd700', color: '#ff8c00', weight: 2, fillOpacity: 0.6, interactive: false }).addTo(searchResultLayer);
                     const marker = L.circleMarker(ll, { radius: 6, fillColor: '#d32f2f', color: '#fff', weight: 1, fillOpacity: 1 }).addTo(searchResultLayer);
-                    
-                    // V17 Mod: 使用智慧點擊處理
                     marker.customData = { configLabel: conf.label, props: f.properties };
                     marker.on('click', (e) => handleNearbyMarkerClick(e, searchResultLayer.getLayers()));
-                    
                     marker.feature = f; 
                     count++;
                 }
@@ -2142,9 +2016,7 @@ document.getElementById('searchBtn').addEventListener('click', () => {
     if(!kw) return alert('請輸入關鍵字');
     document.getElementById('contractorSelect').value = ''; document.getElementById('villageSelect').value = ''; 
     document.getElementById('timingSelect').value = ''; 
-    // reset checkboxes
     resetTypeCheckboxesToNone();
-    
     document.getElementById('contractorStatsResult').style.display = 'none';
     performSearch(p => Object.values(p).join(' ').toLowerCase().includes(kw), kw);
 });
@@ -2155,9 +2027,7 @@ function clearSearchResults() {
     document.getElementById('contractorSelect').value = ''; 
     document.getElementById('villageSelect').value = ''; 
     document.getElementById('timingSelect').value = ''; 
-    // V3: Reset Checkboxes
     resetTypeCheckboxesToNone();
-    
     document.getElementById('searchStatus').innerText = ''; 
     document.getElementById('clearSearchBtn').style.display = 'none'; 
     document.getElementById('contractorStatsResult').style.display = 'none'; 
@@ -2181,7 +2051,7 @@ map.on('click', (e) => {
         map.closePopup(); 
         bottomPanel.classList.remove('open'); 
         routeMatchLayer.clearLayers(); 
-        selectedTimelineMarker = null; // 0111V7 新增：點擊地圖時重置鎖定狀態
+        selectedTimelineMarker = null; 
     }
 });
 const ctxMenu = document.getElementById('contextMenu'); let clickedLatLng = null;
@@ -2290,12 +2160,10 @@ function getDateDiffDays(dateStr1, dateStr2) {
     return Math.ceil(Math.abs(d1 - d2) / (1000 * 60 * 60 * 24)); 
 }
 
-/* 核心修改：0111V2 多重篩選邏輯 */
 function showTimeline(routeLayer) {
     const cont = document.getElementById('timelineContainer'), filterBar = document.getElementById('timelineFilterBar');
     cont.innerHTML = '<div style="padding:20px;">讀取中...</div>'; routeMatchLayer.clearLayers();
     
-    // 1. 抓取案件資料
     const routeLine = routeLayer.toGeoJSON().geometry; 
     currentRouteAllMatches = [];
     REPAIR_CONFIG.forEach(conf => {
@@ -2304,8 +2172,6 @@ function showTimeline(routeLayer) {
             if(f.geometry.type !== 'Point') return;
             const pt = turf.point(f.geometry.coordinates); 
             const dist = turf.pointToLineDistance(pt, routeLine, {units:'meters'});
-            
-            // 0111V8 修改：最短距離排他性檢核 (Nearest Neighbor Check)
             if(dist <= 50) {
                  const pLatLng = L.latLng(f.geometry.coordinates[1], f.geometry.coordinates[0]);
                  const globalMinDist = distToRoad(pLatLng, roadsLayer);
@@ -2401,12 +2267,9 @@ function renderTimeline(matches) {
 
         matches.forEach((m, i) => {
             const marker = L.circleMarker([m.lat, m.lng], normalStyle).addTo(routeMatchLayer);
-            
-            // V17 Mod: 使用智慧點擊處理 (地圖點擊 -> 多選列表)
             marker.customData = { configLabel: m.label, props: m.props };
             marker.on('click', (e) => handleNearbyMarkerClick(e, routeMatchLayer.getLayers()));
             
-            // V18 Mod (Fix): 不使用 bindPopup，改用手動控制，避免覆蓋地圖點擊事件
             const popupContent = createPopup({
                 fileName: m.label,
                 props: m.props,
@@ -2414,7 +2277,6 @@ function renderTimeline(matches) {
                 lng: m.lng,
                 dist: m.dist
             });
-            // marker.bindPopup(...); // <-- 移除這行！
 
             const labelName = String(m.label || ""); 
             const amount = formatMoney(m.props['決標金額']); 
@@ -2432,18 +2294,14 @@ function renderTimeline(matches) {
             const item = document.createElement('div'); item.className = `h-item ${alertClass}`;
             item.innerHTML = `<div class="h-date">${m.props['完工日期']||'未知'}</div><div class="h-line-container"><div class="h-dot ${sizeClass}"></div></div><div class="h-badge ${labelName.includes('搶修')||labelName.includes('災害')||labelName.includes('緊急') ? 'badge-urgent' : 'badge-normal'}">${labelName.includes('搶修')||labelName.includes('災害')||labelName.includes('緊急') ? '搶修' : '一般'}</div>`;
             
-            // 1. Hover 預覽 (手動創建臨時 Popup) + V19 Added: Preload
             item.addEventListener('mouseenter', () => { 
-                // V19: Hover時預先下載照片
                 const photoUrls = getPhotosFromProps(m.props);
                 preloadImages(photoUrls);
 
-                if (selectedTimelineMarker === marker) return; // 已經鎖定，無需動作
-                
+                if (selectedTimelineMarker === marker) return; 
                 marker.setStyle(highlightStyle); 
                 marker.bringToFront(); 
                 
-                // 手動打開一個 Popup
                 if(!marker._tempPopup) {
                     marker._tempPopup = L.popup({ className: 'custom-popup', maxWidth: 960, offset: [0, -10], closeButton: false })
                         .setLatLng([m.lat, m.lng])
@@ -2452,49 +2310,36 @@ function renderTimeline(matches) {
                 marker._tempPopup.openOn(map);
             });
             
-            // 2. Leave 恢復
             item.addEventListener('mouseleave', () => { 
-                if (selectedTimelineMarker === marker) return; // 如果是鎖定的，不要關閉
-                
-                // 關閉目前的預覽
+                if (selectedTimelineMarker === marker) return; 
                 marker.setStyle(normalStyle); 
                 if(marker._tempPopup) {
                     map.closePopup(marker._tempPopup);
                     marker._tempPopup = null;
                 }
-                
-                // 如果有其他已鎖定的點，恢復它的泡泡窗 (防呆機制)
                 if(selectedTimelineMarker && selectedTimelineMarker._lockedPopup) {
                     selectedTimelineMarker._lockedPopup.openOn(map);
                 }
             });
 
-            // 3. Click 鎖定 (手動創建鎖定 Popup)
             item.addEventListener('click', (e) => {
                 e.stopPropagation(); 
-                
-                // 如果之前有鎖定別的，先還原樣式並關閉
                 if (selectedTimelineMarker && selectedTimelineMarker !== marker) {
                      selectedTimelineMarker.setStyle(normalStyle);
                      if(selectedTimelineMarker._lockedPopup) map.closePopup(selectedTimelineMarker._lockedPopup);
                 }
-                
-                selectedTimelineMarker = marker; // 設定新的鎖定
-                
+                selectedTimelineMarker = marker; 
                 marker.setStyle(highlightStyle);
                 marker.bringToFront();
                 
-                // 強制開啟這個特定標記的泡泡窗 (鎖定版)
                 if(!marker._lockedPopup) {
                     marker._lockedPopup = L.popup({ className: 'custom-popup', maxWidth: 960, offset: [0, -10] })
                         .setLatLng([m.lat, m.lng])
                         .setContent(popupContent);
                 }
                 marker._lockedPopup.openOn(map);
-                
                 map.flyTo([m.lat, m.lng], 18);
             });
-            
             cont.appendChild(item);
         });
     } catch(err) {
@@ -2508,11 +2353,9 @@ function updateDengueRadius() {
     if(r === 0) return; dengueLayer.eachLayer(marker => { L.circle(marker.getLatLng(), { radius: r, color: 'none', fillColor: '#ff9800', fillOpacity: 0.3 }).addTo(dengueRadiusLayer); });
 }
 
-// === 0111V12 新增：解決 LINE 瀏覽器返回後不記憶泡泡窗的問題 ===
 map.on('popupopen', function(e) {
     var content = e.popup.getContent();
     var latlng = e.popup.getLatLng();
-    // 將當前開啟的泡泡窗狀態存入 SessionStorage
     sessionStorage.setItem('savedPopup', JSON.stringify({
         lat: latlng.lat,
         lng: latlng.lng,
@@ -2522,11 +2365,9 @@ map.on('popupopen', function(e) {
 });
 
 map.on('popupclose', function(e) {
-    // 關閉時清除記憶
     sessionStorage.removeItem('savedPopup');
 });
 
-// 當頁面載入完成 (包含 LINE 返回重新整理) 時，檢查是否有記憶的泡泡窗
 window.addEventListener('load', function() {
     setTimeout(function(){
         var saved = sessionStorage.getItem('savedPopup');
@@ -2542,15 +2383,11 @@ window.addEventListener('load', function() {
                 console.error("Restore popup failed", e);
             }
         }
-    }, 500); // 稍微延遲以確保地圖初始化完畢
+    }, 500); 
 });
 
-/* === 0116V2 Added: Function to navigate to specific sibling marker === */
 window.jumpToSpecificSibling = function(caseId, targetLat, targetLng) {
-    // 1. 搜尋所有圖層中的匹配項目 (Active + Search)
     const allLayers = [...activeRepairLayers, ...searchResultLayer.getLayers()];
-    
-    // 找到目標標記 (需同時符合 CaseId 與 座標)
     const target = allLayers.find(m => {
         const p = m.getLatLng();
         return Math.abs(p.lat - targetLat) < 0.000001 && 
@@ -2560,10 +2397,7 @@ window.jumpToSpecificSibling = function(caseId, targetLat, targetLng) {
     });
     
     if(target) {
-        // 2. 執行飛行動畫並開啟泡泡窗
         map.flyTo(target.getLatLng(), 18, { duration: 1.5 });
-        
-        // 使用 once('moveend') 確保移動結束後才開啟 Popup
         map.once('moveend', function() {
             openDetailPopupFromMarker(target);
         });

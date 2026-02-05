@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0205V7-PhotoFix)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0205V8-FinalFix)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -1119,21 +1119,12 @@ function createPopup(data) {
         mobileSiblingNavHtml = `<div class="sibling-nav-container mobile">${dots}</div>`;
     }
 
-    // 使用更新後的 getPhotoArray 解析並轉換連結
-    const photoList = getPhotoArray(props); // 這裡傳入整個 props 讓函式自己去抓欄位
+    // 0205V8 FIX: 使用全域定義的正確函式名稱 getPhotosFromProps，解決 undefined 錯誤
+    const photoList = getPhotosFromProps(props); 
     
-    // 分割成前後兩組 (這裡簡單邏輯：如果有兩張，第一張是前，第二張是後。如果只有一張，預設放前)
-    // 註：這部分可以依照您的需求微調，例如根據檔名或欄位區分
-    // 目前邏輯：所有照片先放進陣列，然後分配給 "施工前"
-    // 如果您希望嚴格區分「施工前」跟「施工後」，請調整 getPhotosFromProps 的回傳邏輯
-    
-    // 根據 0205V7 的修正，getPhotosFromProps 已經處理了欄位合併
-    // 這裡我們把陣列分給兩個區塊
-    const arrBefore = photoList; // 暫時全部視為通報照片
-    const arrAfter = [];         // 完工照片若無特別指定則留空
-
-    // 備註：若後台有填寫「施工後照片」欄位，它也會被合併在 arrBefore 裡
-    // 若要精確區分，建議修改 getPhotosFromProps 分開回傳
+    // 陣列分割 (暫時全部放前面，若後續有明確區分再改)
+    const arrBefore = photoList; 
+    const arrAfter = [];         
 
     const generatePhotoSection = (title, urls, typeKey) => {
         const uid = Math.random().toString(36).substr(2, 9);

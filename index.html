@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0205V3-StabilityFix)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0205V4-Realtime)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -633,6 +633,18 @@
   </div>
 
   <div id="tab-layers" class="tab-content-container tab-pane active">
+      <div class="card-section" style="border-left: 5px solid #ff9800;">
+          <div class="card-title" style="color:#e65100;"><i class="fas fa-satellite-dish"></i> 民眾通報即時看板</div>
+          <label class="toggle-switch">
+              <input type="checkbox" id="realtimeToggle" onchange="toggleRealtimeLayer(this)"> 顯示即時通報案件
+          </label>
+          <div class="small" style="color:#666; margin-top:5px; display:flex; gap:10px;">
+              <span><span style="color:#ff9800;">●</span> 派工中</span>
+              <span><span style="color:#004080;">●</span> 已完工</span>
+              <span><span style="color:#7f8c8d;">●</span> 待處理</span>
+          </div>
+      </div>
+
       <div class="card-section">
           <div class="card-title"><i class="fas fa-road"></i> 施工/維修案件公告</div>
           <div class="small" style="margin-bottom:8px; color:#666;">勾選年份批次顯示位置 (<span style="color:#004080">●</span>近 / <span style="color:red">●</span>遠)</div>
@@ -874,6 +886,9 @@ let selectedTimelineMarker = null;
 // 0205V1 Added: 目前正在操作的照片框ID
 let activePhotoId = 0;
 
+// 0205V4 Added: 即時看板圖層
+const realtimeLayer = L.layerGroup().addTo(map);
+
 const DEEP_BLUE = '#004080'; 
 const LIGHT_BLUE = '#0066cc'; 
 
@@ -999,6 +1014,7 @@ function createPopup(data) {
     const status = props['案件狀態'] || '已完工';
     const timing = props['派工時機'] || '一般';
     const typeRaw = props['搶修類型'] || '一般工程'; 
+    const description = props['案情描述'] || '無描述'; // 0205V4 Added: 案情描述
     const contractor = props['施工廠商'] || '-';
     const supervisor = props['監造廠商'] || '-';
     const date = props['完工日期'] || '-';
@@ -1148,6 +1164,11 @@ function createPopup(data) {
             </div>
             <div class="info-details-block">
                 <div class="compact-list">
+                    <div class="compact-item" style="border-bottom:1px dashed #eee; padding-bottom:5px; margin-bottom:5px;">
+                        <span class="compact-label" style="color:#d35400;">案情描述</span>
+                        <div class="compact-val" style="font-weight:normal;">${description}</div>
+                    </div>
+                    
                     <div class="compact-item"><span class="compact-label">施工廠商</span><div class="compact-val">${contractor}</div></div>
                     <div class="compact-row">
                         <div class="compact-item" style="flex:1"><span class="compact-label">監造廠商</span><div class="compact-val">${supervisor}</div></div>
@@ -1171,6 +1192,58 @@ function createPopup(data) {
         <div class="popup-col-photo photo-col-after active-view">${generatePhotoSection('施工後', arrAfter, 'after')}</div>
     </div>
     `;
+}
+
+// 0205V4 Added: 即時看板切換與資料讀取
+async function toggleRealtimeLayer(checkbox) {
+    realtimeLayer.clearLayers();
+    if(!checkbox.checked) return;
+
+    document.body.style.cursor = 'wait';
+
+    try {
+        const res = await fetch(GOOGLE_SCRIPT_URL);
+        const data = await res.json();
+
+        if(data.features) {
+            data.features.forEach(f => {
+                const props = f.properties;
+                const status = props['案件狀態'] || '待處理';
+                let color = '#7f8c8d'; // 預設灰色
+                let radius = 8;
+
+                if(status === '派工中') { color = '#ff9800'; radius = 10; } // 橘色
+                else if(status === '已完工') { color = '#004080'; } // 深藍色
+
+                const lat = f.geometry.coordinates[1];
+                const lng = f.geometry.coordinates[0];
+                const latlng = L.latLng(lat, lng);
+
+                const marker = L.circleMarker(latlng, {
+                    radius: radius,
+                    fillColor: color,
+                    color: '#fff',
+                    weight: 2,
+                    fillOpacity: 0.9
+                });
+
+                marker.customData = {
+                    configLabel: "民眾通報-" + props['案件編號'], 
+                    props: props
+                };
+
+                // 綁定智慧點擊事件
+                marker.on('click', (e) => handleNearbyMarkerClick(e, [realtimeLayer, ...activeRepairLayers]));
+
+                marker.addTo(realtimeLayer);
+            });
+        }
+    } catch(e) {
+        console.error(e);
+        alert("讀取即時看板失敗，請檢查網路或稍後再試。");
+    } finally {
+        document.body.style.cursor = 'default';
+    }
 }
 
 const reportOverlay = document.getElementById('reportOverlay');

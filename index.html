@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0205V5-PopupFix)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0205V6-DebugMode)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -550,7 +550,7 @@
                 <div class="photo-box-upload" id="photoBox1" onclick="triggerCamera(1)">
                     <div class="add-photo-btn">+</div>
                     <img id="imgPreview1">
-                    <input type="file" id="fileInput1" accept="image/*" style="display:none;" onchange="previewImage(this, 1)">
+                    <input type="file" id="fileInput1" accept="image/*" capture="camera" style="display:none;" onchange="previewImage(this, 1)">
                 </div>
                 <button class="delete-photo-btn" id="delBtn1" onclick="deletePhoto(1)">刪除</button>
             </div>
@@ -558,12 +558,12 @@
                 <div class="photo-box-upload" id="photoBox2" onclick="triggerCamera(2)">
                     <div class="add-photo-btn">+</div>
                     <img id="imgPreview2">
-                    <input type="file" id="fileInput2" accept="image/*" style="display:none;" onchange="previewImage(this, 2)">
+                    <input type="file" id="fileInput2" accept="image/*" capture="camera" style="display:none;" onchange="previewImage(this, 2)">
                 </div>
                 <button class="delete-photo-btn" id="delBtn2" onclick="deletePhoto(2)">刪除</button>
             </div>
         </div>
-        <div style="margin-top:10px; font-size:12px; color:#666; text-align:center;">請點擊「+」拍攝或選擇兩張不同角度的照片</div>
+        <div style="margin-top:10px; font-size:12px; color:#666; text-align:center;">請點擊「+」拍攝兩張不同角度的照片</div>
     </div>
     <div class="report-footer">
         <button class="btn-cancel" onclick="closeReport()">取消</button>
@@ -1009,12 +1009,15 @@ function createPopup(data) {
     const { fileName, props, lat, lng, dist } = data;
     const twd = twd97FromWgs84(lat, lng);
     const distText = isNaN(dist) ? 'N/A' : dist.toFixed(0) + 'm';
-    const caseIdRaw = props['案件編號'];
-    const caseId = caseIdRaw || '無編號';
+    
+    // 0205V6 Fix: 強制將案件編號轉為 String，避免純數字造成 split 錯誤
+    const caseIdRaw = String(props['案件編號'] || '無編號');
+    const caseId = caseIdRaw;
+    
     const status = props['案件狀態'] || '已完工';
     const timing = props['派工時機'] || '一般';
     const typeRaw = props['搶修類型'] || '一般工程'; 
-    const description = props['案情描述'] || '無描述'; // 0205V4 Added: 案情描述
+    const description = props['案情描述'] || '無描述'; 
     const contractor = props['施工廠商'] || '-';
     const supervisor = props['監造廠商'] || '-';
     const date = props['完工日期'] || '-';
@@ -1044,13 +1047,17 @@ function createPopup(data) {
     else if(status.includes('緊急') || status.includes('搶修')) pillClass = 'pill-urgent';
 
     let formattedCaseId = caseId; 
-    const idParts = caseId.split('-');
-    if (idParts.length >= 2) {
-        const suffix = idParts[idParts.length - 1]; 
-        if (/^\d{1,4}$/.test(suffix)) {
-            const num = parseInt(suffix, 10);
-            if (!isNaN(num)) {
-                formattedCaseId = `${fileName}第${num}案`;
+    
+    // 0205V6 Fix: 使用安全的字串操作
+    if (caseId.indexOf('-') > -1) {
+        const idParts = caseId.split('-');
+        if (idParts.length >= 2) {
+            const suffix = idParts[idParts.length - 1]; 
+            if (/^\d{1,4}$/.test(suffix)) {
+                const num = parseInt(suffix, 10);
+                if (!isNaN(num)) {
+                    formattedCaseId = `${fileName}第${num}案`;
+                }
             }
         }
     }
@@ -1059,9 +1066,10 @@ function createPopup(data) {
     let siblingNavHtml = '';
     let mobileSiblingNavHtml = '';
     let siblings = [];
-    if (caseIdRaw) {
-        const candidates = [...activeRepairLayers, ...realtimeLayer.getLayers(), ...searchResultLayer.getLayers()]; // 0205V5 Fix: 加入 realtimeLayer
-        const rawSiblings = candidates.filter(m => m.customData?.props['案件編號'] === caseIdRaw);
+    if (caseIdRaw !== '無編號') {
+        const candidates = [...activeRepairLayers, ...realtimeLayer.getLayers(), ...searchResultLayer.getLayers()]; 
+        // V6 Fix: 確保比較時都轉為 String
+        const rawSiblings = candidates.filter(m => String(m.customData?.props['案件編號'] || '') === caseIdRaw);
         const uniqueMap = new Map();
         rawSiblings.forEach(m => {
             const ll = m.getLatLng();
@@ -1168,7 +1176,6 @@ function createPopup(data) {
                         <span class="compact-label" style="color:#d35400;">案情描述</span>
                         <div class="compact-val" style="font-weight:normal;">${description}</div>
                     </div>
-                    
                     <div class="compact-item"><span class="compact-label">施工廠商</span><div class="compact-val">${contractor}</div></div>
                     <div class="compact-row">
                         <div class="compact-item" style="flex:1"><span class="compact-label">監造廠商</span><div class="compact-val">${supervisor}</div></div>
@@ -1234,8 +1241,14 @@ async function toggleRealtimeLayer(checkbox) {
 
                 // 0205V5 Fix: 修正傳遞參數，確保傳入的是 Marker Array
                 marker.on('click', (e) => {
-                    const realTimeMarkers = realtimeLayer.getLayers();
-                    handleNearbyMarkerClick(e, [...realTimeMarkers, ...activeRepairLayers]);
+                    // 0205V6 Added: 點擊事件錯誤攔截
+                    try {
+                        const realTimeMarkers = realtimeLayer.getLayers();
+                        handleNearbyMarkerClick(e, [...realTimeMarkers, ...activeRepairLayers]);
+                    } catch (err) {
+                        alert("發生錯誤：無法開啟詳細資料。\n原因：" + err.message);
+                        console.error(err);
+                    }
                 });
 
                 marker.addTo(realtimeLayer);

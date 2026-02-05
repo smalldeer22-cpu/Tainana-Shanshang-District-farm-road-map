@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0205V4-Realtime)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0205V5-PopupFix)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -1060,7 +1060,7 @@ function createPopup(data) {
     let mobileSiblingNavHtml = '';
     let siblings = [];
     if (caseIdRaw) {
-        const candidates = [...activeRepairLayers, ...searchResultLayer.getLayers()];
+        const candidates = [...activeRepairLayers, ...realtimeLayer.getLayers(), ...searchResultLayer.getLayers()]; // 0205V5 Fix: 加入 realtimeLayer
         const rawSiblings = candidates.filter(m => m.customData?.props['案件編號'] === caseIdRaw);
         const uniqueMap = new Map();
         rawSiblings.forEach(m => {
@@ -1232,8 +1232,11 @@ async function toggleRealtimeLayer(checkbox) {
                     props: props
                 };
 
-                // 綁定智慧點擊事件
-                marker.on('click', (e) => handleNearbyMarkerClick(e, [realtimeLayer, ...activeRepairLayers]));
+                // 0205V5 Fix: 修正傳遞參數，確保傳入的是 Marker Array
+                marker.on('click', (e) => {
+                    const realTimeMarkers = realtimeLayer.getLayers();
+                    handleNearbyMarkerClick(e, [...realTimeMarkers, ...activeRepairLayers]);
+                });
 
                 marker.addTo(realtimeLayer);
             });

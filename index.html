@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0206V1-Fix)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0206V2)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -22,9 +22,9 @@
     /* 新版泡泡窗配色 (Emerald Theme) */
     --popup-bg: #f2fcf5;
     --popup-border: #d1fae5;
-    --popup-text-main: #064e3b; /* emerald-900 */
-    --popup-text-sub: #059669;  /* emerald-600 */
-    --popup-accent: #10b981;    /* emerald-500 */
+    --popup-text-main: #064e3b; 
+    --popup-text-sub: #059669;  
+    --popup-accent: #10b981;    
   }
   
   body { 
@@ -64,13 +64,11 @@
   .tab-btn { flex: 1; padding: 10px 5px; border: none; background: transparent; cursor: pointer; font-size: 13px; font-weight: bold; color: #666; border-radius: 8px 8px 0 0; transition: all 0.2s; white-space: nowrap; }
   .tab-btn.active { background: #fff; color: var(--primary-color); box-shadow: 0 -2px 5px rgba(0,0,0,0.05); position: relative; top: 1px; }
   
-  /* 0203V1 Update: 調整 flex 讓內容可滾動，並保留空間給底部聲明 */
   .tab-content-container { flex: 1; overflow-y: auto; padding: 15px; background: #fff; position: relative; }
   .tab-pane { display: none; animation: fadeIn 0.3s; }
   .tab-pane.active { display: block; }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-  /* 0203V3 Update: 側邊欄底部版權聲明區塊 (簡化版 + 手機安全區優化) */
   .sidebar-footer {
       flex-shrink: 0; 
       padding: 10px 15px;
@@ -483,6 +481,7 @@
   .multi-select-item:last-child { border-bottom: none; }
   .multi-select-title { font-size: 13px; font-weight: bold; color: #004080; margin-bottom: 3px; }
   .multi-select-meta { font-size: 11px; color: #666; display: flex; gap: 8px; align-items: center; }
+  .badge-type { background: #e0f7fa; color: #006064; padding: 1px 5px; border-radius: 3px; font-size: 10px; border: 1px solid #b2ebf2; }
 
   #floatingCoords { position:absolute; pointer-events:none; background:rgba(255,255,255,0.9); border:1px solid #ccc; border-radius:4px; padding:4px 8px; font-size:11px; display:none; z-index:1300; bottom: 10px; right: 10px; }
 
@@ -490,6 +489,67 @@
   @keyframes popIn {
       0% { transform: scale(0.9); opacity: 0; }
       100% { transform: scale(1); opacity: 1; }
+  }
+  
+  /* === AI 風險預測專用樣式 (Added in v.0206V1-AI-Plus) === */
+  .ai-pulse-marker {
+    width: 24px; height: 24px;
+    background: rgba(155, 89, 182, 0.9); /* 紫色系 */
+    border: 2px solid #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 0 0 rgba(155, 89, 182, 0.7);
+    animation: pulse-purple 2s infinite;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 12px; font-weight: bold; z-index: 5000;
+  }
+  .ai-marker-med {
+      background: rgba(230, 126, 34, 0.9); /* 橘色 */
+      box-shadow: 0 0 0 0 rgba(230, 126, 34, 0.7);
+      animation: pulse-orange 2s infinite;
+  }
+  
+  @keyframes pulse-purple {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(155, 89, 182, 0.7); }
+    70% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(155, 89, 182, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(155, 89, 182, 0); }
+  }
+  @keyframes pulse-orange {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(230, 126, 34, 0.7); }
+    70% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(230, 126, 34, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(230, 126, 34, 0); }
+  }
+
+  /* AI Dashboard Styles */
+  #aiDashboard { margin-top: 10px; display: none; animation: fadeIn 0.3s; }
+  .ai-dash-filters { display: flex; gap: 5px; overflow-x: auto; margin-bottom: 10px; padding-bottom: 5px; }
+  .ai-filter-btn { 
+      padding: 4px 8px; border-radius: 12px; border: 1px solid #ddd; background: #fff; 
+      font-size: 11px; white-space: nowrap; cursor: pointer; color: #555;
+  }
+  .ai-filter-btn.active { background: #9b59b6; color: white; border-color: #9b59b6; }
+  .ai-list-item { 
+      padding: 8px; border-bottom: 1px dashed #eee; font-size: 12px; cursor: pointer; 
+      display: flex; justify-content: space-between; align-items: center; transition: background 0.2s;
+  }
+  .ai-list-item:hover { background: #fdf2fe; }
+  .ai-score-badge { font-weight: bold; color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 10px; }
+  .badge-high { background: #9b59b6; }
+  .badge-med { background: #e67e22; }
+
+  /* AI Popup 樣式優化 */
+  .ai-report-header {
+      background: linear-gradient(135deg, #8e44ad, #9b59b6);
+      color: white; padding: 12px; font-weight: bold; font-size: 14px;
+      display: flex; align-items: center; gap: 8px;
+      border-radius: 8px 8px 0 0;
+  }
+  .ai-report-body { padding: 15px; font-size: 13px; color: #333; line-height: 1.6; }
+  .ai-stat-row { display: flex; justify-content: space-between; border-bottom: 1px dashed #eee; padding: 5px 0; }
+  .ai-stat-val { font-weight: bold; color: #8e44ad; }
+  .ai-advice-box { 
+      background: #fdf2fe; border-left: 4px solid #9b59b6; 
+      padding: 10px; margin-top: 10px; font-size: 12px; color: #555; 
   }
 
   @media (max-width: 768px) {
@@ -775,6 +835,30 @@
           </div>
           <div id="dupCheckResult" style="margin-top:10px; font-size:13px; color:#333;"></div>
       </div>
+
+      <div class="card-section" style="border-left: 5px solid #9b59b6;">
+          <div class="card-title" style="color:#8e44ad;"><i class="fas fa-brain"></i> AI 道路健康風險預測</div>
+          <div class="small" style="margin-bottom:8px; color:#666;">
+              透過演算法分析維修頻率、結構風險與植被影響，點擊列表可快速定位。
+          </div>
+          <label class="toggle-switch">
+              <input type="checkbox" id="aiRiskToggle" onchange="toggleAiRiskLayer(this)"> 顯示 AI 風險預警熱點
+          </label>
+          <div id="aiLoading" style="display:none; color:#8e44ad; font-size:12px; margin-top:5px;">
+              <i class="fas fa-circle-notch fa-spin"></i> 運算中...
+          </div>
+          
+          <div id="aiDashboard">
+              <div class="ai-dash-filters">
+                  <div class="ai-filter-btn active" onclick="filterAiResults('all', this)">全部</div>
+                  <div class="ai-filter-btn" onclick="filterAiResults('high', this)">極高風險</div>
+                  <div class="ai-filter-btn" onclick="filterAiResults('road', this)">土木結構</div>
+                  <div class="ai-filter-btn" onclick="filterAiResults('tree', this)">環境植被</div>
+              </div>
+              <div id="aiResultList" style="max-height:200px; overflow-y:auto; border:1px solid #eee; border-radius:6px; background:#fafafa;">
+              </div>
+          </div>
+      </div>
   </div>
   
   <div id="tab-dengue" class="tab-content-container tab-pane">
@@ -923,6 +1007,22 @@ function preloadImages(urls) {
     });
 }
 
+// 0206V2 Added: 獨立的 Drive 連結轉換器 (供即時通報使用)
+function getDirectDriveUrl(url) {
+    if (!url) return '';
+    const trimmed = url.trim();
+    // 偵測是否為 Google Drive 檢視連結
+    if (trimmed.indexOf('drive.google.com') > -1) {
+        // 嘗試提取 FILE_ID
+        const match = trimmed.match(/\/d\/([a-zA-Z0-9_-]+)/);
+        if (match && match[1]) {
+            // 轉換為直連格式 (lh3.googleusercontent.com 比較快且穩定)
+            return `https://lh3.googleusercontent.com/d/$${match[1]}`;
+        }
+    }
+    return trimmed;
+}
+
 // 0205V7 Fix: 自動轉換 Google Drive View Link 為 Direct Link
 function getPhotosFromProps(props) {
     if(!props) return [];
@@ -934,19 +1034,7 @@ function getPhotosFromProps(props) {
     
     const combinedStr = rawPhotos.join(';');
     
-    return combinedStr.split(/[;\n\r]+/).map(u => {
-        let url = u.trim();
-        // 偵測是否為 Google Drive 檢視連結
-        if (url.indexOf('drive.google.com') > -1 && url.indexOf('/view') > -1) {
-            // 嘗試提取 FILE_ID
-            const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
-            if (match && match[1]) {
-                // 轉換為直連格式 (lh3.googleusercontent.com 比較快且穩定)
-                return `https://lh3.googleusercontent.com/d/$${match[1]}`;
-            }
-        }
-        return url;
-    }).filter(u => u.length > 0);
+    return combinedStr.split(/[;\n\r]+/).map(u => getDirectDriveUrl(u)).filter(u => u.length > 0);
 }
 
 /* === 核心功能：新版泡泡窗生成函式 === */
@@ -1120,34 +1208,30 @@ function createPopup(data) {
     }
 
     // --- 0206V1 Fix: 照片分流邏輯 ---
-    // 用來解析字串並修復 Google Drive 連結的內部函式
     const processPhotoStr = (str) => {
         if (!str) return [];
-        return str.split(/[;\n\r]+/).map(u => {
-            let url = u.trim();
-            // 偵測是否為 Google Drive 檢視連結
-            if (url.indexOf('drive.google.com') > -1 && url.indexOf('/view') > -1) {
-                const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
-                if (match && match[1]) {
-                    return `https://lh3.googleusercontent.com/d/$${match[1]}`;
-                }
-            }
-            return url;
-        }).filter(u => u.length > 0);
+        // V2 Fix: 使用全域轉換器
+        return str.split(/[;\n\r]+/).map(u => getDirectDriveUrl(u)).filter(u => u.length > 0);
     };
 
     let arrBefore = [];
     let arrAfter = [];
 
-    // 判斷：若有「施工後照片」欄位（資料庫案件），則前後分離；否則使用輪播（民眾通報）
+    // 判斷：若有「施工後照片」欄位（資料庫案件），則前後分離；否則使用輪播（民眾通報/即時）
     if (props['施工後照片'] && props['施工後照片'].trim() !== '') {
         // 【資料庫案件模式】：前後分離
         arrBefore = processPhotoStr(props['施工前照片']);
         arrAfter = processPhotoStr(props['施工後照片']);
     } else {
         // 【民眾通報/單欄位模式】：使用輪播 (全部放在左側)
-        // 這裡維持使用原本的 getPhotosFromProps，它會把所有能找到的圖片欄位合併
-        arrBefore = getPhotosFromProps(props);
+        // 修復: 強制檢查 GAS 常用的 photoUrl 欄位並進行轉換 (V2 Fix)
+        arrBefore = [];
+        if (props.photoUrl) arrBefore.push(getDirectDriveUrl(props.photoUrl));
+        if (props.photoUrl2) arrBefore.push(getDirectDriveUrl(props.photoUrl2));
+        // 如果都沒有，才去找傳統的施工前照片
+        if (arrBefore.length === 0) {
+             arrBefore = getPhotosFromProps(props);
+        }
         arrAfter = [];
     }
     // --- 0206V1 Fix End ---
@@ -1909,6 +1993,7 @@ window.showMultiSelectPopup = function(latlng, markers) {
         const props = data.props || {};
         const caseNo = props['案件編號'] || '無編號';
         const date = props['完工日期'] || '';
+        const repairType = props['搶修類型'] || '';
         const ll = m.getLatLng();
         const twd = twd97FromWgs84(ll.lat, ll.lng);
         const twdStr = `${twd.x}, ${twd.y}`;
@@ -1922,6 +2007,7 @@ window.showMultiSelectPopup = function(latlng, markers) {
             <div class="multi-select-meta">
                 <span><i class="fas fa-barcode"></i> ${caseNo}</span>
                 <span><i class="fas fa-calendar-alt"></i> ${date}</span>
+                ${repairType ? `<span class="badge-type">${repairType}</span>` : ''}
             </div>
             <div class="multi-select-meta" style="margin-top:2px; color:#555; font-size:10px;">
                 <span><i class="fas fa-map-marker-alt"></i> TWD97: ${twdStr}</span>
@@ -2082,7 +2168,7 @@ async function preloadAllDataForContractors() {
             document.getElementById('contractorSelect').value=''; 
             resetTypeCheckboxesToNone();
             performSearch(p=>p['派工時機']?.trim()===this.value, `派工時機：${this.value}`);
-        } else { clearSearchResults(); }
+        } else { clearSearchResults(); } 
     });
     renderTypeCheckboxes();
 }
@@ -2284,6 +2370,13 @@ document.getElementById('clearRepairBtn').addEventListener('click', () => {
     clusterLayer.clearLayers(); if(clusterToggle.checked) clusterToggle.checked = false;
     dengueLayer.clearLayers(); dengueRadiusLayer.clearLayers(); document.getElementById('dengueCoordsInput').value = ''; document.querySelectorAll('input[name="dengueRadius"]').forEach(r => r.checked = false);
     bottomPanel.classList.remove('open'); map.closePopup();
+    
+    // Clear AI layer if active
+    if(document.getElementById('aiRiskToggle').checked) {
+        document.getElementById('aiRiskToggle').checked = false;
+        aiRiskLayer.clearLayers();
+        document.getElementById('aiDashboard').style.display = 'none';
+    }
 });
 const clusterToggle = document.getElementById('clusterToggle'), clusterSlider = document.getElementById('clusterSlider'), clusterValue = document.getElementById('clusterValue');
 clusterToggle.addEventListener('change', () => { if(clusterToggle.checked) calculateClusters(); else clusterLayer.clearLayers(); });
@@ -2555,6 +2648,274 @@ window.jumpToSpecificSibling = function(caseId, targetLat, targetLng) {
         });
     }
 };
+
+/* ==========================================
+   AI 道路健康風險預測模組 (Client-side JS版)
+   Updated in v.Dash with Dashboard & New Visuals
+   ========================================== */
+const aiRiskLayer = L.layerGroup().addTo(map);
+let aiRiskData = []; // Store results for dashboard
+
+async function toggleAiRiskLayer(checkbox) {
+    aiRiskLayer.clearLayers();
+    aiRiskData = [];
+    const loading = document.getElementById('aiLoading');
+    const dashboard = document.getElementById('aiDashboard');
+    
+    if (!checkbox.checked) {
+        loading.style.display = 'none';
+        dashboard.style.display = 'none';
+        return;
+    }
+
+    if (activeRepairLayers.length === 0) {
+        alert("系統提示：\n目前地圖上沒有載入任何維修案件。\n\n請先至「透明」分頁勾選年份，或載入資料後再執行 AI 預測。");
+        checkbox.checked = false;
+        return;
+    }
+
+    loading.style.display = 'block';
+    dashboard.style.display = 'none';
+    
+    setTimeout(() => {
+        runAiRiskAnalysis();
+        loading.style.display = 'none';
+        dashboard.style.display = 'block';
+        updateAiDashboard('all'); // Initialize dashboard
+    }, 100);
+}
+
+function runAiRiskAnalysis() {
+    const points = activeRepairLayers.map(layer => {
+        if (layer.feature && layer.feature.geometry.type === 'Point') {
+            return layer.feature;
+        }
+        return null;
+    }).filter(p => p !== null);
+
+    const ANALYSIS_RADIUS = 0.05; // 50 meters
+    const processedCenters = []; 
+    let riskCount = 0;
+
+    points.forEach(point => {
+        const center = turf.point(point.geometry.coordinates);
+        
+        const isOverlap = processedCenters.some(pc => turf.distance(center, pc) < 0.03); 
+        if (isOverlap) return;
+
+        const neighbors = points.filter(p => {
+            const target = turf.point(p.geometry.coordinates);
+            return turf.distance(center, target) <= ANALYSIS_RADIUS;
+        });
+
+        if (neighbors.length < 2) return;
+
+        let riskScore = 0;
+        let treeTrimCount = 0;
+        let roadFixCount = 0;
+        let recentCaseCount = 0;
+        const now = new Date();
+
+        // 關鍵字庫 (Road/Civil)
+        const kwRoad = ['AC','PC','瀝青','混凝土','坑洞','下陷','沉陷','掏空','裂縫','破裂','鋪設','修補','填補','路緣','擋土牆'];
+        // 關鍵字庫 (Tree/Veg)
+        const kwTree = ['樹','竹','草','枝','葉','蕉','鋸除','清運','倒伏','修剪'];
+        // 關鍵字庫 (Water)
+        const kwWater = ['排水','清淤','溝','沙包','抽水','積水','泥濘','土石'];
+
+        neighbors.forEach(n => {
+            const props = n.properties;
+            const name = (props['工程名稱'] || '').toString();
+            const type = (props['搶修類型'] || '').toString();
+            const fullText = name + type;
+            const dateStr = (props['完工日期'] || '').toString().trim();
+            
+            // Classification
+            let isTree = kwTree.some(k => fullText.includes(k));
+            let isRoad = kwRoad.some(k => fullText.includes(k));
+            
+            if (isTree) treeTrimCount++;
+            else roadFixCount++; // Default to road if ambiguous but grouped
+
+            // Risk Weights
+            if (fullText.includes('坑洞') || fullText.includes('沉陷') || fullText.includes('掏空') || fullText.includes('下陷')) {
+                riskScore += 2;
+            } else {
+                riskScore += 1;
+            }
+
+            // Time Weight
+            if (dateStr.length === 7) {
+                const y = parseInt(dateStr.substring(0, 3)) + 1911;
+                const m = parseInt(dateStr.substring(3, 5)) - 1;
+                const d = parseInt(dateStr.substring(5, 7));
+                const caseDate = new Date(y, m, d);
+                const diffMonths = (now.getFullYear() - caseDate.getFullYear()) * 12 + (now.getMonth() - caseDate.getMonth());
+                
+                if (diffMonths <= 6) {
+                    riskScore += 3; 
+                    recentCaseCount++;
+                } else if (diffMonths <= 12) {
+                    riskScore += 1.5; 
+                }
+            }
+        });
+
+        if (riskScore >= 5 || (neighbors.length >= 3 && recentCaseCount > 0)) {
+            const marker = createRiskMarker(center, neighbors.length, treeTrimCount, roadFixCount, recentCaseCount, riskScore);
+            processedCenters.push(center);
+            
+            // Save data for dashboard
+            aiRiskData.push({
+                marker: marker,
+                score: riskScore,
+                total: neighbors.length,
+                tree: treeTrimCount,
+                road: roadFixCount,
+                recent: recentCaseCount,
+                lat: center.geometry.coordinates[1],
+                lng: center.geometry.coordinates[0]
+            });
+            riskCount++;
+        }
+    });
+
+    if (riskCount === 0) {
+        alert("AI 分析完成：\n目前範圍內無顯著的高風險群聚熱點。");
+    }
+}
+
+function createRiskMarker(centerPoint, totalCount, treeCount, roadCount, recentCount, score) {
+    const lat = centerPoint.geometry.coordinates[1];
+    const lng = centerPoint.geometry.coordinates[0];
+    
+    let level = "中度風險";
+    let cssClass = "ai-marker-med"; // Orange default
+    if (score > 10) {
+        level = "極高風險";
+        cssClass = "ai-pulse-marker"; // Purple high risk
+    } else if (score > 7) {
+        level = "高度風險";
+        cssClass = "ai-pulse-marker";
+    }
+
+    const icon = L.divIcon({
+        className: 'custom-div-icon',
+        // 使用 FontAwesome 雷達圖標
+        html: `<div class="${cssClass}" title="AI 風險預警"><i class="fas fa-radiation-alt"></i></div>`,
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+    });
+
+    // Z-index offset 確保蓋在普通點上面
+    const marker = L.marker([lat, lng], { icon: icon, zIndexOffset: 1000 }).addTo(aiRiskLayer);
+
+    let advice = "";
+    if (treeCount > roadCount) {
+        advice = "此處植被修剪頻繁，建議檢查路樹根系是否影響路基/排水，或評估行道樹矮化/移植可行性。";
+    } else if (recentCount >= 2) {
+        advice = "半年內發生多次重複維修，顯示該處路基極不穩定！建議安排透地雷達檢測或開挖檢視地下管線。";
+    } else {
+        advice = "此處為維修熱區，建議納入下一年度優先路平專案路段。";
+    }
+
+    const popupHtml = `
+        <div style="width:280px;">
+            <div class="ai-report-header">
+                <i class="fas fa-robot"></i> AI 道路健康風險評估
+            </div>
+            <div class="ai-report-body">
+                <div class="ai-stat-row">
+                    <span>風險等級</span>
+                    <span class="ai-stat-val">${level} (Score: ${score})</span>
+                </div>
+                <div class="ai-stat-row">
+                    <span>範圍半徑</span>
+                    <span style="font-family:monospace;">50 公尺內</span>
+                </div>
+                <div class="ai-stat-row">
+                    <span>累計維修總數</span>
+                    <span class="ai-stat-val">${totalCount} 次</span>
+                </div>
+                <div class="ai-stat-row">
+                    <span>土木結構修補</span>
+                    <span>${roadCount} 次</span>
+                </div>
+                <div class="ai-stat-row">
+                    <span>環境植被處理</span>
+                    <span>${treeCount} 次</span>
+                </div>
+                <div class="ai-stat-row">
+                    <span>近半年內案件</span>
+                    <span style="color:${recentCount>0?'red':'#333'}">${recentCount} 次</span>
+                </div>
+                
+                <div class="ai-advice-box">
+                    <strong><i class="fas fa-clipboard-check"></i> 預防性決策建議：</strong><br>
+                    ${advice}
+                </div>
+            </div>
+        </div>
+    `;
+
+    marker.bindPopup(popupHtml, { className: 'custom-popup', maxWidth: 300 });
+    return marker;
+}
+
+// Dashboard Functions
+window.filterAiResults = function(type, btn) {
+    // Update active button
+    document.querySelectorAll('.ai-filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    
+    updateAiDashboard(type);
+};
+
+function updateAiDashboard(filterType) {
+    const list = document.getElementById('aiResultList');
+    list.innerHTML = '';
+    
+    // Sort by score desc
+    let sorted = [...aiRiskData].sort((a,b) => b.score - a.score);
+    
+    // Filter
+    if (filterType === 'high') sorted = sorted.filter(d => d.score > 10);
+    else if (filterType === 'road') sorted = sorted.filter(d => d.road > d.tree);
+    else if (filterType === 'tree') sorted = sorted.filter(d => d.tree >= d.road);
+    
+    // Show on map
+    aiRiskLayer.eachLayer(l => l.setOpacity(0)); // Hide all first
+    
+    sorted.forEach((d, i) => {
+        d.marker.setOpacity(1); // Show filtered
+        
+        const badgeClass = d.score > 10 ? 'badge-high' : 'badge-med';
+        const badgeText = d.score > 10 ? '極高' : '中高';
+        const typeText = d.road > d.tree ? '土木' : '植被';
+        
+        const div = document.createElement('div');
+        div.className = 'ai-list-item';
+        div.innerHTML = `
+            <div>
+                <span class="ai-score-badge ${badgeClass}">${badgeText}</span>
+                <span style="font-weight:bold; color:#555;">熱點 #${i+1}</span>
+            </div>
+            <div style="text-align:right; color:#666;">
+                ${typeText} | ${d.total}次維修
+            </div>
+        `;
+        div.onclick = () => {
+            map.flyTo([d.lat, d.lng], 18);
+            setTimeout(() => d.marker.openPopup(), 500);
+            if(window.innerWidth <= 768) document.body.classList.remove('sidebar-open');
+        };
+        list.appendChild(div);
+    });
+    
+    if(sorted.length === 0) {
+        list.innerHTML = '<div style="padding:10px; text-align:center; color:#999;">無符合條件的熱點</div>';
+    }
+}
 </script>
 </body>
 </html>

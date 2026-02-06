@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0205V8-FinalFix)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0206V1-Fix)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -942,7 +942,7 @@ function getPhotosFromProps(props) {
             const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
             if (match && match[1]) {
                 // 轉換為直連格式 (lh3.googleusercontent.com 比較快且穩定)
-                return `https://lh3.googleusercontent.com/d/${match[1]}`;
+                return `https://lh3.googleusercontent.com/d/$${match[1]}`;
             }
         }
         return url;
@@ -1119,12 +1119,38 @@ function createPopup(data) {
         mobileSiblingNavHtml = `<div class="sibling-nav-container mobile">${dots}</div>`;
     }
 
-    // 0205V8 FIX: 使用全域定義的正確函式名稱 getPhotosFromProps，解決 undefined 錯誤
-    const photoList = getPhotosFromProps(props); 
-    
-    // 陣列分割 (暫時全部放前面，若後續有明確區分再改)
-    const arrBefore = photoList; 
-    const arrAfter = [];         
+    // --- 0206V1 Fix: 照片分流邏輯 ---
+    // 用來解析字串並修復 Google Drive 連結的內部函式
+    const processPhotoStr = (str) => {
+        if (!str) return [];
+        return str.split(/[;\n\r]+/).map(u => {
+            let url = u.trim();
+            // 偵測是否為 Google Drive 檢視連結
+            if (url.indexOf('drive.google.com') > -1 && url.indexOf('/view') > -1) {
+                const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+                if (match && match[1]) {
+                    return `https://lh3.googleusercontent.com/d/$${match[1]}`;
+                }
+            }
+            return url;
+        }).filter(u => u.length > 0);
+    };
+
+    let arrBefore = [];
+    let arrAfter = [];
+
+    // 判斷：若有「施工後照片」欄位（資料庫案件），則前後分離；否則使用輪播（民眾通報）
+    if (props['施工後照片'] && props['施工後照片'].trim() !== '') {
+        // 【資料庫案件模式】：前後分離
+        arrBefore = processPhotoStr(props['施工前照片']);
+        arrAfter = processPhotoStr(props['施工後照片']);
+    } else {
+        // 【民眾通報/單欄位模式】：使用輪播 (全部放在左側)
+        // 這裡維持使用原本的 getPhotosFromProps，它會把所有能找到的圖片欄位合併
+        arrBefore = getPhotosFromProps(props);
+        arrAfter = [];
+    }
+    // --- 0206V1 Fix End ---
 
     const generatePhotoSection = (title, urls, typeKey) => {
         const uid = Math.random().toString(36).substr(2, 9);

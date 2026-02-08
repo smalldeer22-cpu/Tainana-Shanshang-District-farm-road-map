@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0208V3)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0209-Final)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -19,7 +19,7 @@
     --text-dark: #333;
     --sidebar-width: 350px;
     
-    /* 配色變數 */
+    /* 新版泡泡窗配色 (Emerald Theme) */
     --popup-bg: #f2fcf5;
     --popup-border: #d1fae5;
     --popup-text-main: #064e3b; 
@@ -27,375 +27,500 @@
     --popup-accent: #10b981;    
   }
   
-  html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; font-family: "Microsoft JhengHei", Arial, sans-serif; background-color: var(--bg-light); color: var(--text-dark); }
-
-  /* === 2. 佈局容器 === */
-  #container { display: flex; width: 100%; height: 100%; position: relative; overflow: hidden; }
-  
-  /* 側邊欄 (Z-Index 修正：2001 確保高於遮罩) */
-  #sidebar {
-    width: var(--sidebar-width);
-    min-width: var(--sidebar-width);
-    background: #fff;
-    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-    display: flex;
-    flex-direction: column;
-    z-index: 2001; 
-    transition: margin-left 0.3s ease;
-    position: relative;
-    height: 100%;
+  body { 
+      margin:0; 
+      font-family:"Microsoft JhengHei", "Heiti TC", sans-serif; 
+      display:flex; 
+      height: 100vh; 
+      height: 100dvh; 
+      overflow:hidden; 
+      position: relative; 
+      background: var(--bg-light); 
   }
-  
-  body.collapsed #sidebar { margin-left: calc(var(--sidebar-width) * -1); }
-  #map { flex-grow: 1; height: 100%; position: relative; z-index: 1; width: calc(100% - var(--sidebar-width)); transition: width 0.3s ease; }
-  body.collapsed #map { width: 100%; }
-
+   
+  /* === 2. 懸浮漢堡按鈕 === */
   #toggleSidebarBtn {
     position: absolute; top: 10px; left: 360px; width: 40px; height: 40px;
     background: #fff; color: var(--text-dark); border: 2px solid rgba(0,0,0,0.1); border-radius: 8px;
     cursor: pointer; z-index: 2000; display: flex; align-items: center; justify-content: center;
     box-shadow: 0 2px 6px rgba(0,0,0,0.2); transition: left 0.3s ease; 
   }
+  #toggleSidebarBtn:hover { background: #f4f4f4; }
   body.collapsed #toggleSidebarBtn { left: 10px; }
 
-  /* === 3. 側邊欄組件 === */
+  /* === 3. 側邊欄樣式 === */
+  #sidebar {
+    width: var(--sidebar-width); min-width: var(--sidebar-width); background: #fff; border-right: 1px solid #eee;
+    display: flex; flex-direction: column; z-index: 1500; box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+    margin-left: 0; transition: margin-left 0.3s ease; position: relative;
+  }
+  body.collapsed #sidebar { margin-left: calc(var(--sidebar-width) * -1); }
+
   .sidebar-header { padding: 15px; background: var(--primary-color); color: white; text-align: center; flex-shrink: 0; }
   .sidebar-header h3 { margin: 0; font-size: 16px; font-weight: bold; line-height: 1.4; }
+  
+  /* 分頁籤樣式 */
   .tabs-nav { display: flex; background: #eef2f6; padding: 5px 5px 0 5px; flex-shrink: 0; overflow-x: auto; }
   .tab-btn { flex: 1; padding: 10px 5px; border: none; background: transparent; cursor: pointer; font-size: 13px; font-weight: bold; color: #666; border-radius: 8px 8px 0 0; transition: all 0.2s; white-space: nowrap; }
   .tab-btn.active { background: #fff; color: var(--primary-color); box-shadow: 0 -2px 5px rgba(0,0,0,0.05); position: relative; top: 1px; }
+  
   .tab-content-container { flex: 1; overflow-y: auto; padding: 15px; background: #fff; position: relative; }
   .tab-pane { display: none; animation: fadeIn 0.3s; }
   .tab-pane.active { display: block; }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-  .sidebar-footer { flex-shrink: 0; padding: 10px 15px; background: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 11px; color: #64748b; text-align: center; }
 
+  .sidebar-footer {
+      flex-shrink: 0; 
+      padding: 10px 15px;
+      padding-bottom: calc(10px + env(safe-area-inset-bottom));
+      background: #f8fafc;
+      border-top: 1px solid #e2e8f0;
+      font-size: 11px;
+      color: #64748b;
+      line-height: 1.6; 
+      text-align: center;
+      white-space: normal; 
+  }
+
+  /* 卡片區塊樣式 */
   .card-section { background: #fff; border-radius: 12px; padding: 12px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: 1px solid #f0f0f0; }
-  .card-title { font-size: 14px; font-weight: bold; color: var(--primary-color); margin-bottom: 10px; border-bottom: 2px solid #f0f0f0; }
+  .card-title { font-size: 14px; font-weight: bold; color: var(--primary-color); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 2px solid #f0f0f0; }
   
   /* 年度摺疊選單 */
   .year-group { margin-bottom: 8px; border: 1px solid #eee; border-radius: 6px; overflow: hidden; }
-  .year-header { background: #f8fafc; padding: 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 13px; color: #475569; }
+  .year-header { background: #f8fafc; padding: 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 13px; color: #475569; user-select: none; }
+  .year-header:hover { background: #e2e8f0; }
   .year-content { display: none; padding: 8px 12px; background: #fff; border-top: 1px solid #eee; }
   .year-group.open .year-content { display: block; }
+  .year-group.open .toggle-icon { transform: rotate(90deg); }
+  .toggle-icon { display:inline-block; transition: transform 0.2s; width:12px; margin-right:5px;}
+  .year-select-all { font-size: 12px; color: var(--primary-color); cursor: pointer; }
   .checkbox-item { margin-bottom: 6px; display: flex; align-items: center; gap: 6px; font-size: 13px; }
+  .checkbox-item input { margin: 0; accent-color: var(--primary-color); }
 
-  /* === 4. Popup 視覺樣式核心 === */
-  .custom-popup .leaflet-popup-content-wrapper { padding: 0 !important; border-radius: 20px !important; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.15) !important; border: 2px solid var(--popup-border) !important; background: rgba(242, 252, 245, 0.95) !important; backdrop-filter: blur(5px); }
-  .custom-popup .leaflet-popup-content { margin: 0 !important; width: 960px !important; max-width: 90vw !important; }
+  /* V3 Added: 多選摺疊樣式 */
+  .multiselect-group { border: 1px solid #ddd; border-radius: 6px; margin-bottom: 10px; background: #fff; }
+  .multiselect-header { 
+      padding: 10px; cursor: pointer; background: #fff; color: #555; font-size: 14px; 
+      display: flex; justify-content: space-between; align-items: center; border-radius: 6px;
+      transition: background 0.2s;
+  }
+  .multiselect-header:hover { background: #f5f5f5; }
+  .multiselect-header i { transition: transform 0.2s; font-size: 12px; color: #999; }
+  .multiselect-group.open .multiselect-header { background: #f0f7ff; border-radius: 6px 6px 0 0; color: var(--primary-color); font-weight: bold; border-bottom: 1px solid #e0e0e0; }
+  .multiselect-group.open .multiselect-header i { transform: rotate(180deg); color: var(--primary-color); }
+  .multiselect-content { display: none; padding: 10px; max-height: 250px; overflow-y: auto; background: #fafafa; border-radius: 0 0 6px 6px; }
+  .multiselect-group.open .multiselect-content { display: block; }
+  .select-all-row { border-bottom: 1px dashed #ddd; padding-bottom: 5px; margin-bottom: 5px; font-weight: bold; color: #004080; }
+
+  select, textarea, input[type="text"] { width: 100%; padding: 10px; margin-top: 5px; font-size: 14px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+  
+  button.primary { width: 100%; padding: 10px; margin-top: 8px; cursor: pointer; border-radius: 6px; border: none; background: var(--primary-color); color: #fff; font-size: 14px; font-weight: bold; }
+  button.primary:hover { background: #003366; }
+  button.secondary { width: 100%; padding: 8px; margin-top: 8px; cursor: pointer; border-radius: 6px; border: 1px solid #ddd; background: #fff; color: #555; font-size: 13px; }
+  button.secondary:hover { background: #f5f5f5; }
+  button:disabled { background: #ccc !important; cursor: not-allowed; color: #666 !important; }
+
+  /* === 登革熱專用樣式 === */
+  .dengue-option { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; cursor: pointer; font-weight: bold; color: #555; }
+  .dengue-option input { width: auto; margin: 0; transform: scale(1.2); }
+  .gray-dot-marker { width: 14px; height: 14px; background: #7f8c8d; border: 2px solid #fff; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.4); }
+
+  /* === 4. 地圖區 === */
+  #map { flex: 1; position: relative; z-index: 1; transition: width 0.3s ease; }
+  body.measuring, body.measuring #map { cursor: crosshair !important; }
+
+  .map-floating-controls { position: absolute; top: 20px; right: 20px; z-index: 1000; display: flex; flex-direction: column; gap: 10px; }
+  .float-btn { width: 40px; height: 40px; border-radius: 50%; background: #fff; border: none; color: #444; box-shadow: 0 2px 8px rgba(0,0,0,0.2); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; position: relative; }
+  .float-btn:hover { background: #f0f0f0; color: var(--primary-color); transform: scale(1.1); }
+  .float-btn.active { background: var(--accent-color); color: #000; }
+  .float-btn::after { content: attr(data-title); position: absolute; right: 50px; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.7); color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 12px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+  .float-btn:hover::after { opacity: 1; }
+
+  /* 定位套件樣式覆寫 */
+  .leaflet-control-locate { border: none !important; box-shadow: none !important; margin: 0 !important; }
+  .leaflet-control-locate a { width: 40px !important; height: 40px !important; border-radius: 50% !important; background: #fff !important; color: #444 !important; font-size: 16px !important; line-height: 40px !important; display: flex !important; align-items: center !important; justify-content: center !important; box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important; cursor: pointer !important; }
+  .leaflet-control-locate a:hover { background: #f0f0f0 !important; color: #004080 !important; transform: scale(1.1); }
+  .leaflet-control-locate.active a { color: #2074b6 !important; background: #fff !important; }
+  .leaflet-control-locate.following a { color: #e65100 !important; border: 2px solid #e65100 !important; }
+  .leaflet-control-locate a .leaflet-control-locate-location-arrow { display: none; }
+
+  /* 聚合圖標 */
+  .marker-cluster-custom { background-color: rgba(46, 204, 113, 0.6); border-radius: 50%; }
+  .marker-cluster-custom div { width: 30px; height: 30px; margin-left: 5px; margin-top: 5px; text-align: center; border-radius: 50%; color: white; font-weight: bold; background-color: rgba(39, 174, 96, 0.9); line-height: 30px; font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+
+  /* 聚合控制面板 */
+  #clusterControlPanel {
+    position: absolute; bottom: 220px; left: 360px; z-index: 1000;
+    background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(5px);
+    padding: 15px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    width: 220px; border: 1px solid rgba(255,255,255,0.2);
+    display: none; transition: left 0.3s ease;
+  }
+  body.collapsed #clusterControlPanel { left: 20px; } 
+
+  .cluster-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+  .cluster-title { font-size:14px; font-weight:bold; color:var(--primary-color); display:flex; align-items:center; gap:6px; }
+  .cluster-value-badge { background: var(--accent-color); color:#fff; padding:2px 6px; border-radius:4px; font-size:12px; }
+  input[type=range].custom-range { -webkit-appearance: none; width: 100%; background: transparent; }
+  input[type=range].custom-range::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: var(--primary-color); cursor: pointer; margin-top: -6px; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+  input[type=range].custom-range::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: #ddd; border-radius: 2px; }
+
+  /* === 6. 底部時間軸面板 === */
+  #bottomPanel { 
+      position: absolute; bottom: 0; left: var(--sidebar-width); right: 0; 
+      height: 280px; background: rgba(255, 255, 255, 0.98); 
+      box-shadow: 0 -4px 16px rgba(0,0,0,0.1); z-index: 1400; 
+      display: flex; flex-direction: column; transform: translateY(100%); 
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), height 0.3s ease; 
+      border-top: 1px solid #e0e0e0; overflow: hidden; 
+  }
+  body.collapsed #bottomPanel { left: 0; } 
+  #bottomPanel.open { transform: translateY(0); }
+  #bottomPanel.minimized { height: auto !important; transform: translateY(0) !important; }
+  #bottomPanel.minimized #timelineFilterBar, #bottomPanel.minimized #timelineContainer { display: none !important; }
+
+  #bottomPanelHeader { padding: 8px 20px; min-height: 50px; height: auto; background: var(--primary-color); color: white; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+  .header-left { display: flex; flex-direction: column; gap: 2px; justify-content: center; overflow: hidden; }
+  #panelTitle { font-size: 15px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #timelineStats { font-size: 13px; color: #ffeb3b; font-weight: normal; opacity: 1; white-space: normal; line-height: 1.5; margin-top: 2px; }
+  @media (max-width: 768px) { #timelineStats { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.6; } .stat-divider { display: none; } }
+  .header-right { display: flex; gap: 15px; align-items: center; flex-shrink: 0;}
+  .control-btn { background:none; border:none; color:#fff; font-size:16px; cursor:pointer; padding: 5px; transition: color 0.2s; }
+  .control-btn:hover { color: #ffeb3b; }
+
+  #timelineFilterBar { 
+      background: #f1f5f9; padding: 8px 10px; 
+      border-bottom: 1px solid #e0e0e0; 
+      display: flex; gap: 6px; 
+      align-items: center; flex-shrink: 0; 
+      height: auto; min-height: 50px; box-sizing: border-box; 
+      flex-wrap: nowrap; 
+      overflow-x: auto; 
+  }
+  #timelineFilterBar::-webkit-scrollbar { height: 0px; background: transparent; }
+  
+  .filter-label { font-size: 12px; color: #333; font-weight: bold; white-space: nowrap; display: flex; align-items: center; gap: 4px; margin-right: 2px; flex-shrink: 0; }
+  
+  .timeline-select-pill {
+      padding: 4px 8px; border: 1px solid #cbd5e1; border-radius: 20px; background-color: #fff;
+      font-size: 12px; font-weight: bold; color: #334155; cursor: pointer; outline: none; transition: all 0.2s;
+      min-width: auto; max-width: 180px; flex-shrink: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+      background-image: linear-gradient(to bottom, #fff, #f8fafc);
+  }
+  .timeline-select-pill:hover { border-color: var(--primary-color); color: var(--primary-color); }
+  .timeline-select-pill:focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(0, 64, 128, 0.1); }
+  
+  #timelineContainer { flex: 1; overflow-x: auto; padding: 15px 20px; display: flex; align-items: flex-start; gap: 0; }
+  .h-item { width: 160px; text-align: center; cursor: pointer; position: relative; transition: transform 0.2s; }
+  .h-item:hover { transform: translateY(-5px); }
+  .h-date { font-size: 13px; font-weight: bold; color: #333; margin-bottom: 8px; }
+  .h-line-container { position: relative; height: 24px; display: flex; align-items: center; justify-content: center; }
+  .h-line-container::before { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 3px; background: #ddd; z-index: 0; }
+  .h-item.alert-right .h-line-container::after { content: ''; position: absolute; left: 50%; right: -50%; top: 50%; height: 4px; background: repeating-linear-gradient(45deg, #d32f2f, #d32f2f 5px, #ffcdd2 5px, #ffcdd2 10px); z-index: 0; animation: alertPulse 1.5s infinite; }
+  @keyframes alertPulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
+  .h-dot { background: var(--primary-color); border: 2px solid #fff; border-radius: 50%; z-index: 1; position: relative; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+  .h-item:hover .h-dot { transform: scale(1.3); background: var(--accent-color); border-color: #fff; }
+  .dot-sm { width: 12px; height: 12px; }
+  .dot-md { width: 16px; height: 16px; }
+  .dot-lg { width: 22px; height: 22px; box-shadow: 0 0 0 3px rgba(0, 64, 128, 0.3); }
+  .h-badge { margin-top: 8px; display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; color: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.2); white-space: nowrap; position: relative; z-index: 2; }
+  .badge-normal { background-color: var(--primary-color); border: 1px solid #fff; }
+  .badge-urgent { background-color: #d32f2f; border: 1px solid #fff; }
+
+  /* === 7. 右鍵選單 === */
+  #contextMenu { display: none; position: fixed; z-index: 5000; background: #fff; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); overflow: hidden; min-width: 160px; border: 1px solid #ddd; top: 0; left: 0; }
+  .ctx-item { padding: 10px 15px; cursor: pointer; font-size: 14px; color: #333; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #f0f0f0; }
+  .ctx-item:hover { background: #f5faff; color: var(--primary-color); }
+  .ctx-item i { width: 20px; text-align: center; }
+
+  /* === 新版泡泡窗 CSS (v.0209-Final) === */
+  .custom-popup .leaflet-popup-content-wrapper { padding: 0 !important; border-radius: 12px !important; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.15) !important; border: 2px solid var(--popup-border) !important; background: rgba(250, 253, 255, 0.98) !important; backdrop-filter: blur(5px); }
+  .custom-popup .leaflet-popup-content { margin: 0 !important; width: 600px !important; max-width: 90vw !important; }
   .custom-popup .leaflet-popup-tip { background: var(--popup-border) !important; }
 
-  .popup-card { display: flex; flex-direction: row; min-height: 320px; }
-  .popup-deco-strip { width: 8px; background: var(--popup-text-sub); flex-shrink: 0; }
-  .popup-col-info { width: 280px; padding: 20px; display: flex; flex-direction: column; justify-content: space-between; border-right: 1px solid #e0e0e0; flex-shrink: 0; background: rgba(255,255,255,0.6); }
-  .popup-col-photo { flex: 1; padding: 15px; display: flex; flex-direction: column; gap: 10px; border-right: 1px solid #e0e0e0; background: #fff; min-width: 0; }
-  .popup-col-photo:last-child { border-right: none; }
+  .popup-card { display: flex; flex-direction: column; width: 100%; box-sizing: border-box; }
+  
+  /* 頂部 Header */
+  .popup-header { display: flex; align-items: center; gap: 8px; padding: 10px 15px; border-bottom: 1px dashed #e0e0e0; background: #fff; flex-wrap: wrap; }
+  .status-pill { padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; color: #fff; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+  .pill-working { background: #10b981; } .pill-done { background: #64748b; } .pill-urgent { background: #f59e0b; }  
+  .case-id { font-size: 16px; font-weight: 900; color: #1e293b; letter-spacing: -0.5px; }
 
-  /* 進度條 */
-  .progress-container { display: flex; justify-content: space-between; align-items: center; position: relative; margin: 12px 0 15px 0; padding: 0 5px; }
-  .progress-track { position: absolute; top: 12px; left: 10px; right: 10px; height: 4px; background: #e0e0e0; z-index: 0; border-radius: 2px; }
-  .progress-fill { position: absolute; top: 12px; left: 10px; height: 4px; background: var(--popup-accent); z-index: 0; border-radius: 2px; transition: width 0.3s ease; }
-  .progress-step { z-index: 1; text-align: center; width: 33%; position: relative; display: flex; flex-direction: column; align-items: center; }
-  .step-circle { width: 24px; height: 24px; background: #e0e0e0; border-radius: 50%; margin-bottom: 4px; border: 2px solid #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #fff; font-weight: bold; }
-  .progress-step.active .step-circle { background: var(--popup-accent); }
-  .step-label { font-size: 11px; color: #666; font-weight: bold; margin-bottom: 2px; }
-  .step-date { font-size: 10px; color: #999; font-family: monospace; }
+  /* 五星評分 Pill */
+  .rating-pill { 
+      display: inline-flex; align-items: center; gap: 4px; 
+      background: #f8f9fa; color: #333; 
+      padding: 3px 10px; border-radius: 20px; 
+      font-size: 12px; font-weight: bold; cursor: pointer; 
+      border: 1px solid #e2e8f0; transition: all 0.2s;
+  }
+  .rating-pill:hover { background: #fff3cd; border-color: #ffeeba; color: #856404; transform: scale(1.05); }
+
+  /* 進度條 (Progress Bar) */
+  .progress-container { display: flex; justify-content: space-between; position: relative; margin: 15px 20px 5px 20px; padding: 0; }
+  .progress-container::before { content: ''; position: absolute; top: 9px; left: 15px; right: 15px; height: 3px; background: #e2e8f0; z-index: 0; }
+  .progress-step { position: relative; z-index: 1; text-align: center; display: flex; flex-direction: column; align-items: center; width: 33%; }
+  .step-circle { width: 18px; height: 18px; background: #fff; border: 3px solid #cbd5e1; border-radius: 50%; transition: all 0.3s; box-sizing: border-box; }
+  .step-date { font-size: 10px; color: #94a3b8; margin-top: 4px; white-space: nowrap; font-family: monospace; }
+  .step-label { font-size: 11px; font-weight: bold; color: #94a3b8; margin-bottom: 2px; }
+  
+  /* 進度條激活狀態 */
+  .progress-step.active .step-circle { border-color: var(--popup-accent); background: var(--popup-accent); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2); }
   .progress-step.active .step-label { color: var(--popup-text-main); }
-  .progress-step.active .step-date { color: #555; }
+  .progress-step.active .step-date { color: #333; font-weight: bold; }
 
-  /* 資訊文字 */
-  .status-pill { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 900; letter-spacing: 0.5px; color: #fff; margin-bottom: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-  .pill-working { background: #10b981; } .pill-done { background: #64748b; } .pill-urgent { background: #f59e0b; }
-  .case-id { font-size: 26px; font-weight: 900; color: #000; line-height: 1.2; letter-spacing: -0.5px; margin-bottom: 6px; }
-  .case-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; color: #3d5a80; margin-bottom: 10px; }
-  .file-tag { background: #ecfdf5; padding: 2px 6px; border-radius: 4px; font-family: monospace; opacity: 0.8; }
+  /* 4個 Icon 按鈕一行 (純圖示) */
+  .icon-btn-row { display: flex; gap: 10px; padding: 10px 15px; background: #fff; justify-content: center; }
+  .icon-only-btn { 
+      flex: 1; height: 36px; border-radius: 8px; 
+      background: #f0f9ff; border: 1px solid #bae6fd; color: #0284c7;
+      display: flex; align-items: center; justify-content: center; 
+      font-size: 16px; cursor: pointer; transition: all 0.2s; text-decoration: none;
+      max-width: 80px; /* 限制最大寬度避免過大 */
+  }
+  .icon-only-btn:hover { background: #0284c7; color: white; transform: translateY(-2px); border-color: #0284c7; }
+
+  /* 照片顯示區 - Desktop (並列) */
+  .desktop-photo-row { display: flex; gap: 5px; height: 200px; padding: 0 15px; margin-bottom: 10px; }
+  .photo-half { flex: 1; position: relative; border-radius: 6px; overflow: hidden; border: 1px solid #e2e8f0; background: #f1f5f9; }
+  .photo-half img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; cursor: pointer; }
+  .photo-half img:hover { transform: scale(1.05); }
+  .photo-label { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.6); color: #fff; font-size: 10px; padding: 3px; text-align: center; font-weight: bold; }
   
-  .price-block { margin: 10px 0; border-bottom: 1px dashed #ccc; padding-bottom: 10px; }
-  .price-label { font-size: 10px; color: var(--popup-text-sub); font-weight: 900; letter-spacing: 1px; text-transform: uppercase; }
-  .price-val { font-size: 30px; font-weight: 900; color: #064e3b; font-style: italic; letter-spacing: -0.5px; line-height: 1.2; }
+  /* 照片顯示區 - Mobile (Tabs) */
+  .mobile-photo-tabs { display: none; padding: 0 15px; gap: 5px; margin-bottom: 5px; }
+  .m-photo-tab { flex: 1; padding: 6px; text-align: center; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; }
+  .m-photo-tab.active { background: var(--primary-color); color: white; border-color: var(--primary-color); }
+  .mobile-photo-area { display: none; height: 220px; padding: 0 15px; margin-bottom: 10px; }
+  .mobile-photo-view { width: 100%; height: 100%; border-radius: 6px; overflow: hidden; border: 1px solid #e2e8f0; position: relative; display: none; }
+  .mobile-photo-view.active { display: block; }
+  .mobile-photo-view img { width: 100%; height: 100%; object-fit: cover; }
 
-  /* 詳細資訊列表 */
-  .compact-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; }
-  .compact-item { font-size: 13px; line-height: 1.4; color: #334155; }
-  .compact-label { font-weight: 900; color: #047857; background: #d1fae5; padding: 2px 6px; border-radius: 4px; font-size: 12px; display: inline-block; margin-bottom: 2px; }
-  .compact-val { font-weight: bold; font-size: 15px; color: #1f2937; word-break: break-word; }
-  .compact-row { display: flex; gap: 10px; }
+  /* 詳細資訊收合區 */
+  .details-toggle { 
+      padding: 8px; text-align: center; font-size: 11px; font-weight: bold; color: #666; 
+      cursor: pointer; border-top: 1px solid #eee; background: #fafafa; transition: all 0.2s;
+  }
+  .details-toggle:hover { background: #f0f0f0; color: var(--primary-color); }
+  .details-content { display: none; padding: 15px; background: #fff; border-top: 1px dashed #eee; font-size: 12px; line-height: 1.6; color: #333; }
+  .details-content.open { display: block; animation: slideDown 0.3s; }
   
-  .type-pill { background: rgba(16, 185, 129, 0.1); color: var(--popup-text-sub); padding: 2px 6px; border-radius: 4px; font-size: 11px; white-space: nowrap; }
+  /* 詳細資訊表格 */
+  .info-table { width: 100%; border-collapse: collapse; }
+  .info-table td { padding: 4px; vertical-align: top; }
+  .info-label { color: #888; font-weight: bold; white-space: nowrap; width: 60px; }
+
+  /* Mobile RWD 調整 */
+  @media (max-width: 768px) {
+      .custom-popup .leaflet-popup-content { width: 320px !important; }
+      .desktop-photo-row { display: none; }
+      .mobile-photo-tabs { display: flex; }
+      .mobile-photo-area { display: block; }
+      /* 手機版排版順序 */
+      .popup-card { gap: 5px; }
+      .icon-btn-row { order: 3; padding: 5px 15px; } /* 按鈕在進度條下方 */
+      .progress-container { order: 2; margin-bottom: 5px; }
+      .popup-header { order: 1; }
+      .mobile-photo-tabs { order: 4; }
+      .mobile-photo-area { order: 5; }
+      .details-toggle { order: 6; }
+      .details-content { order: 7; }
+  }
   
-  /* 按鈕排版 (Desktop 2x2, Mobile 1x4) */
-  .popup-btns { margin-top: auto; padding-top: 10px; }
-  .popup-btns.view-desktop { display: grid !important; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .popup-btns.view-mobile { display: grid !important; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-top: 5px; }
-
-  .popup-btn-new { background: white; color: #065f46; border: 1.5px solid #6ee7b7; padding: 12px 0; border-radius: 30px; font-size: 14px; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.05); white-space: nowrap; }
-  .popup-btns.view-mobile .popup-btn-new { padding: 8px 0; font-size: 12px; gap: 2px; } /* 手機版按鈕緊湊 */
-  .popup-btn-new:hover { background: #f0fdf4; border-color: #10b981; color: #047857; }
-
-  /* 照片輪播與切換 */
-  .photo-section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
-  .photo-viewer { flex: 1; position: relative; border-radius: 8px; border: 1px solid var(--popup-border); background: #f1f5f9; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-  .photo-viewer img { width: 100%; height: 100%; object-fit: cover; display: none; }
-  .photo-viewer img.active { display: block; }
+  /* === 評論 Modal === */
+  #commentModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 20000; align-items: center; justify-content: center; }
+  .comment-box { background: #fff; width: 90%; max-width: 400px; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.3); animation: popIn 0.3s; display: flex; flex-direction: column; max-height: 80vh; }
+  .comment-header { padding: 15px; background: var(--primary-color); color: white; display: flex; justify-content: space-between; align-items: center; font-weight: bold; }
+  .comment-body { padding: 15px; overflow-y: auto; flex: 1; }
+  .comment-item { border-bottom: 1px solid #eee; padding: 10px 0; }
+  .comment-item:last-child { border-bottom: none; }
+  .star-row { color: #f39c12; font-size: 12px; margin-bottom: 4px; }
+  .comment-text { font-size: 13px; color: #333; line-height: 1.4; }
+  .comment-date { font-size: 11px; color: #999; text-align: right; margin-top: 4px; }
   
-  /* 手機版照片 Tab */
-  .mobile-photo-tabs { display: flex; gap: 5px; margin-bottom: 5px; margin-top: 5px; }
-  .m-tab { flex: 1; padding: 8px; text-align: center; background: #e2e8f0; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; transition: all 0.2s; }
-  .m-tab.active { background: var(--primary-color); color: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+  /* 動畫 */
+  @keyframes slideDown { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:translateY(0); } }
 
-  /* 摺疊按鈕 */
-  .mobile-details-toggle { width: 100%; padding: 10px; text-align: center; font-size: 13px; color: var(--primary-color); font-weight: bold; cursor: pointer; border-top: 1px dashed #ccc; margin-top: 10px; background: #f8fafc; border-radius: 0 0 8px 8px; }
-  .mobile-details-toggle:hover { background: #eef2f6; }
+  /* 其他原有樣式 */
+  .analysis-control { margin-top: 10px; padding: 10px; background: #fff3e0; border-radius: 8px; border: 1px solid #ffe0b2; }
+  .slider-container { margin-top: 10px; display: flex; align-items: center; gap: 10px; }
+  .slider-container input { flex: 1; cursor: pointer; }
+  .slider-value { font-weight: bold; color: #d32f2f; min-width: 50px; text-align: right; }
+  .toggle-switch { display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: bold; color: #e65100; }
+  .toggle-switch input { width: auto; margin: 0; }
+  .measure-label { background: rgba(255,255,255,0.9); border: 1px solid #333; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 12px; white-space: nowrap; display: flex; align-items: center; gap: 5px; }
+  .measure-close-btn { color: red; cursor: pointer; font-weight: bold; padding: 0 4px; }
+  
+  /* 統計區塊 */
+  .stats-columns { display: flex; gap: 8px; margin-top: 5px; }
+  .stats-col { flex: 1; padding: 8px; border-radius: 6px; overflow: hidden; }
+  .col-general { background: #e3f2fd; border: 1px solid #bbdefb; } 
+  .col-emergency { background: #ffebee; border: 1px solid #ffcdd2; } 
+  .stats-header { font-size: 14px; font-weight: bold; text-align: center; margin-bottom: 8px; padding-bottom: 5px; border-bottom: 2px solid rgba(0,0,0,0.1); }
+  .col-general .stats-header { color: #004080; }
+  .col-emergency .stats-header { color: #d32f2f; }
+  .stat-year-row { margin-bottom: 8px; border-bottom: 1px dashed rgba(0,0,0,0.1); padding-bottom: 6px; }
+  .stat-year-row:last-child { border-bottom: none; }
+  .stat-year-title { font-size: 13px; font-weight: bold; color: #444; display: flex; justify-content: space-between; align-items: center; }
+  .stat-percent-text { font-size: 11px; color: #777; background: rgba(255,255,255,0.6); padding: 1px 4px; border-radius: 3px; }
+  .stat-data-row { font-size: 13px; margin-top: 3px; color: #222; font-weight: bold; }
+  .stat-bar-bg { background: rgba(0,0,0,0.1); height: 5px; border-radius: 3px; width: 100%; margin-top: 5px; overflow: hidden; }
+  .stat-bar-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
+  .col-general .stat-bar-fill { background-color: var(--primary-color); }
+  .col-emergency .stat-bar-fill { background-color: #d32f2f; }
+  
+  /* 案件通報 */
+  #reportOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f8faff; z-index: 9999; display: none; flex-direction: column; font-family: "Microsoft JhengHei", sans-serif; }
+  .report-header { background: var(--primary-color); color: white; padding: 15px; display:flex; justify-content:space-between; align-items:center; }
+  .report-body { flex: 1; padding: 15px; overflow-y: auto; }
+  .report-grid { display: flex; gap: 15px; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+  .report-col { flex: 1; display: flex; flex-direction: column; gap: 8px; justify-content: flex-start; }
+  .report-item { font-size: 14px; color: #333; }
+  .report-label { font-weight: bold; color: #555; margin-right: 5px; }
+  .report-textarea { width: 100%; height: 100%; min-height: 60px; resize: none; border: 1px solid #ccc; border-radius: 4px; padding: 8px; font-size: 14px; box-sizing: border-box; }
+  @media (max-width: 768px) { .report-grid { flex-direction: column; gap: 15px; } .report-textarea { height: 80px; } }
+  .photo-upload-container { display: flex; gap: 10px; margin-top: 15px; height: 200px; }
+  .photo-box-upload { flex: 1; border: 2px dashed #ccc; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #fff; position: relative; overflow: hidden; }
+  .photo-box-upload.has-image { border-style: solid; border-color: #666; }
+  .photo-box-upload img { width: 100%; height: 100%; object-fit: cover; display: none; }
+  .add-photo-btn { font-size: 40px; color: #ccc; cursor: pointer; }
+  .delete-photo-btn { width: 100%; background: #d32f2f; color: white; border: none; padding: 8px; font-weight: bold; cursor: pointer; margin-top: 5px; border-radius: 4px; display: none; }
+  .report-footer { padding: 15px; display: flex; justify-content: space-between; gap: 15px; background: #fff; border-top: 1px solid #eee; }
+  .btn-cancel { flex: 1; padding: 12px; background: #7f8c8d; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; }
+  .btn-submit { flex: 1; padding: 12px; background: var(--accent-color); color: black; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; }
 
-  /* 顯示控制 */
-  .view-desktop { display: block !important; }
-  .view-mobile { display: none !important; }
-  .info-details-block { display: block; }
+  /* 歷史案件列表樣式 */
+  .nearby-item { padding:8px 6px; border-bottom:1px dashed #ccc; cursor:pointer; display:flex; justify-content:space-between; align-items:center; transition:background 0.2s; }
+  .nearby-item:last-child { border-bottom:none; }
+  .nearby-item:hover { background: #fff; border-radius:4px; }
+  .nearby-tag { font-size:11px; padding:2px 6px; border-radius:4px; color:white; white-space:nowrap; }
+
+  #reportDetailModal .custom-popup .leaflet-popup-content-wrapper { box-shadow: 0 10px 25px rgba(0,0,0,0.5) !important; width:100%; border-radius: 12px !important; }
+  #reportDetailModal .custom-popup .leaflet-popup-content { width: 100% !important; margin: 0 !important; max-width: none !important; }
+  #reportDetailModal .popup-card { min-height: 400px; }
+  @media (max-width: 768px) { #reportDetailModal .popup-card { flex-direction:column; } }
+
+  /* 重複檢核 */
+  .dup-check-item { padding: 8px; border-bottom: 1px solid #eee; font-size: 13px; cursor: pointer; transition: background-color 0.2s; }
+  .dup-check-item:hover { background-color: #f0f7ff; }
+  .dup-check-item:last-child { border-bottom: none; }
+  .dup-check-title { font-weight: bold; color: #333; margin-bottom: 2px; }
+  .dup-check-info { color: #666; display:flex; justify-content:space-between; }
+  .dup-tag { font-size: 11px; padding: 1px 4px; border-radius: 3px; color: #fff; margin-left: 5px; }
+  .tag-gen { background: var(--primary-color); }
+  .tag-emg { background: #d32f2f; }
+
+  /* 多選清單列表樣式 */
+  .multi-select-popup .info-header {
+      background: #004080; color: white; padding: 8px 12px; font-weight: bold; font-size: 14px;
+      display: flex; justify-content: space-between; align-items: center;
+  }
+  .multi-select-item {
+      padding: 10px; border-bottom: 1px solid #eee; cursor: pointer; transition: background 0.2s;
+  }
+  .multi-select-item:hover { background: #f0f7ff; }
+  .multi-select-item:last-child { border-bottom: none; }
+  .multi-select-title { font-size: 13px; font-weight: bold; color: #004080; margin-bottom: 3px; }
+  .multi-select-meta { font-size: 11px; color: #666; display: flex; gap: 8px; align-items: center; }
+  .badge-type { background: #e0f7fa; color: #006064; padding: 1px 5px; border-radius: 3px; font-size: 10px; border: 1px solid #b2ebf2; }
+
+  #floatingCoords { position:absolute; pointer-events:none; background:rgba(255,255,255,0.9); border:1px solid #ccc; border-radius:4px; padding:4px 8px; font-size:11px; display:none; z-index:1300; bottom: 10px; right: 10px; }
+
+  @keyframes popIn {
+      0% { transform: scale(0.9); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+  }
+  
+  /* AI 風險預測 */
+  .ai-pulse-marker {
+    width: 24px; height: 24px;
+    background: rgba(155, 89, 182, 0.9);
+    border: 2px solid #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 0 0 rgba(155, 89, 182, 0.7);
+    animation: pulse-purple 2s infinite;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 12px; font-weight: bold; z-index: 5000;
+  }
+  .ai-marker-med {
+      background: rgba(230, 126, 34, 0.9);
+      box-shadow: 0 0 0 0 rgba(230, 126, 34, 0.7);
+      animation: pulse-orange 2s infinite;
+  }
+  @keyframes pulse-purple {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(155, 89, 182, 0.7); }
+    70% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(155, 89, 182, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(155, 89, 182, 0); }
+  }
+  @keyframes pulse-orange {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(230, 126, 34, 0.7); }
+    70% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(230, 126, 34, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(230, 126, 34, 0); }
+  }
+  #aiDashboard { margin-top: 10px; display: none; animation: fadeIn 0.3s; }
+  .ai-dash-filters { display: flex; gap: 5px; overflow-x: auto; margin-bottom: 10px; padding-bottom: 5px; }
+  .ai-filter-btn { 
+      padding: 4px 8px; border-radius: 12px; border: 1px solid #ddd; background: #fff; 
+      font-size: 11px; white-space: nowrap; cursor: pointer; color: #555;
+  }
+  .ai-filter-btn.active { background: #9b59b6; color: white; border-color: #9b59b6; }
+  .ai-list-item { 
+      padding: 8px; border-bottom: 1px dashed #eee; font-size: 12px; cursor: pointer; 
+      display: flex; justify-content: space-between; align-items: center; transition: background 0.2s;
+  }
+  .ai-list-item:hover { background: #fdf2fe; }
+  .ai-score-badge { font-weight: bold; color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 10px; }
+  .badge-high { background: #9b59b6; }
+  .badge-med { background: #e67e22; }
+  .ai-report-header {
+      background: linear-gradient(135deg, #8e44ad, #9b59b6);
+      color: white; padding: 12px; font-weight: bold; font-size: 14px;
+      display: flex; align-items: center; gap: 8px;
+      border-radius: 8px 8px 0 0;
+  }
+  .ai-report-body { padding: 15px; font-size: 13px; color: #333; line-height: 1.6; }
+  .ai-stat-row { display: flex; justify-content: space-between; border-bottom: 1px dashed #eee; padding: 5px 0; }
+  .ai-stat-val { font-weight: bold; color: #8e44ad; }
+  .ai-advice-box { 
+      background: #fdf2fe; border-left: 4px solid #9b59b6; 
+      padding: 10px; margin-top: 10px; font-size: 12px; color: #555; 
+  }
 
   @media (max-width: 768px) {
     #sidebar { position: absolute; bottom: 0; left: 0; width: 100%; height: 60%; top: auto; border-radius: 20px 20px 0 0; border-right: none; transform: translateY(100%); margin-left: 0; }
     body.sidebar-open #sidebar { transform: translateY(0); }
     #overlay-mask { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 1400; }
     body.sidebar-open #overlay-mask { display: block; }
-    
-    .popup-card { flex-direction: column; }
-    .popup-col-info { width: auto; border-right: none; border-bottom: 1px solid #eee; padding: 15px; }
-    
-    .view-desktop { display: none !important; }
-    .view-mobile { display: block !important; }
-    
-    .info-details-block { display: none; padding-top: 10px; border-top: 1px dashed #ccc; margin-top: 10px; } /* 預設隱藏詳細資訊 */
-    .info-details-block.open { display: block; }
-    
-    /* 照片顯示控制 (預設顯示 After) */
-    .photo-col-before { display: none !important; }
-    .photo-col-after { display: flex !important; min-height: 250px; } /* 手機版照片高度 */
-    
-    .photo-col-before.active-view { display: flex !important; min-height: 250px; }
-    .photo-col-after.active-view { display: flex !important; }
-    .photo-col-after:not(.active-view) { display: none !important; }
-    
-    .popup-col-photo { border-right: none; padding: 0 15px 15px 15px; }
+    #toggleSidebarBtn { left: 10px; top: 10px; }
+    #bottomPanel { left: 0; height: 300px; z-index: 2100; }
+    .map-floating-controls { top: 70px; right: 10px; }
+    #clusterControlPanel { bottom: 200px; left: 15px; right: 15px; width: auto; }
   }
 </style>
 </head>
 <body>
 
 <div id="overlay-mask"></div>
-<button id="toggleSidebarBtn"><i class="fas fa-bars"></i></button>
-
-<div id="container">
-  <div id="sidebar">
-    <div class="sidebar-header">
-      <h3>臺南市山上區<br>公眾通行道路圖資及施工/維修案件透明</h3>
-    </div>
-
-    <div class="tabs-nav">
-        <button class="tab-btn active" onclick="switchTab('tab-layers')"><i class="fas fa-layer-group"></i> 透明</button>
-        <button class="tab-btn" onclick="switchTab('tab-search')"><i class="fas fa-search"></i> 搜尋</button>
-        <button class="tab-btn" onclick="switchTab('tab-tools')"><i class="fas fa-tools"></i> 工具</button>
-        <button class="tab-btn" onclick="switchTab('tab-dengue')"><i class="fas fa-shield-virus"></i> 登革熱</button>
-    </div>
-
-    <div id="tab-layers" class="tab-content-container tab-pane active">
-        <div class="card-section" style="border-left: 5px solid #ff9800;">
-            <div class="card-title" style="color:#e65100;"><i class="fas fa-satellite-dish"></i> 民眾通報即時看板</div>
-            <label class="toggle-switch">
-                <input type="checkbox" id="realtimeToggle" onchange="toggleRealtimeLayer(this)"> 顯示即時通報案件
-            </label>
-            <div class="small" style="color:#666; margin-top:5px; display:flex; gap:10px;">
-                <span><span style="color:#ff9800;">●</span> 派工中</span>
-                <span><span style="color:#004080;">●</span> 已完工</span>
-                <span><span style="color:#7f8c8d;">●</span> 待處理</span>
-            </div>
-        </div>
-
-        <div class="card-section">
-            <div class="card-title"><i class="fas fa-road"></i> 施工/維修案件公告</div>
-            <div class="small" style="margin-bottom:8px; color:#666;">勾選年份批次顯示位置 (<span style="color:#004080">●</span>近 / <span style="color:red">●</span>遠)</div>
-            <div id="repairCheckboxes" style="max-height:400px; overflow-y:auto;"></div>
-            <button class="secondary" id="clearRepairBtn"><i class="fas fa-eraser"></i> 清除所有顯示</button>
-        </div>
-
-        <div class="card-section">
-            <div class="card-title"><i class="fas fa-calculator"></i> 里別維修統計</div>
-            <select id="statsVillageSelect" style="margin-bottom:10px;">
-                <option value="">(讀取中...)</option>
-            </select>
-            <div id="statsResult" style="display:none;">
-                <div class="stats-columns">
-                    <div class="stats-col col-general">
-                        <div class="stats-header">一般工程</div>
-                        <div id="statsGenList"></div>
-                    </div>
-                    <div class="stats-col col-emergency">
-                        <div class="stats-header">搶險搶修</div>
-                        <div id="statsEmgList"></div>
-                    </div>
-                </div>
-            </div>
-            <button class="secondary" id="clearStatsBtn" style="margin-top:10px;"><i class="fas fa-eraser"></i> 清除所有顯示</button>
-        </div>
-    </div>
-
-    <div id="tab-search" class="tab-content-container tab-pane">
-        <div class="card-section">
-            <div class="card-title"><i class="fas fa-route"></i> 公眾通行道路圖資查詢</div>
-            <select id="roadSelect"><option>載入中...</option></select>
-        </div>
-        <div class="card-section">
-            <div class="card-title"><i class="fas fa-search-plus"></i> 案件進階搜尋</div>
-            <select id="villageSelect" style="margin-bottom:10px;">
-                <option value="">-- 請選擇行政區 --</option>
-            </select>
-            <select id="contractorSelect" style="margin-bottom:10px;"><option value="">-- 請選擇廠商 --</option></select>
-            <div id="contractorStatsResult" style="display:none; margin-top:10px;">
-                <div class="stats-columns">
-                    <div class="stats-col col-general">
-                        <div class="stats-header">一般工程</div>
-                        <div id="contractorGenList"></div>
-                    </div>
-                    <div class="stats-col col-emergency">
-                        <div class="stats-header">搶險搶修</div>
-                        <div id="contractorEmgList"></div>
-                    </div>
-                </div>
-                <button class="secondary" id="clearContractorStatsBtn" style="margin-top:10px;">清除</button>
-            </div>
-            
-            <select id="timingSelect" style="margin-bottom:10px;">
-                <option value="">-- 請選擇派工時機 --</option>
-            </select>
-            
-            <div class="multiselect-group" id="typeFilterContainer">
-                <div class="multiselect-header" onclick="toggleTypeFilter()">
-                    <span id="typeFilterLabel">請選擇維修類型 (未選)</span>
-                    <i class="fas fa-chevron-down"></i>
-                </div>
-                <div class="multiselect-content" id="typeFilterContent">
-                    <div class="checkbox-item select-all-row">
-                        <label><input type="checkbox" id="typeSelectAll" onchange="toggleAllTypes(this)"> 全選/取消</label>
-                    </div>
-                    <div id="typeCheckboxList"></div>
-                </div>
-            </div>
-
-            <div class="search-block-label"><i class="fas fa-keyboard"></i> 關鍵字搜尋</div>
-            <input type="text" id="keywordInput" placeholder="例如：案件編號(113001) 案件名稱 廠商名稱">
-            <button id="searchBtn" class="primary"><i class="fas fa-search"></i> 開始搜尋</button>
-            <button id="clearSearchBtn" class="secondary" style="display:none; background:#ffebee; border-color:#ffcdd2; color:#d32f2f;"><i class="fas fa-times"></i> 清除結果</button>
-            <div id="searchStatus" class="small" style="margin-top:8px; color:#004080; font-weight:bold;"></div>
-        </div>
-    </div>
-    
-    <div id="tab-tools" class="tab-content-container tab-pane">
-        <div class="card-section">
-            <div class="card-title"><i class="fas fa-map-marker-alt"></i> 座標查詢工具</div>
-            <textarea id="coordsInput" rows="4" placeholder="例如：181924,2555825"></textarea>
-            <div style="display:flex; gap:5px; margin-top:5px;">
-              <button id="plotBtn" class="primary" style="margin-top:0;">顯示點位</button>
-              <button id="clearBtn" class="secondary" style="margin-top:0;">清除</button>
-            </div>
-        </div>
-        
-        <div class="card-section">
-            <div class="card-title"><i class="fas fa-home"></i> 門牌查詢</div>
-            <a href="https://addressrs.moi.gov.tw/address/index.cfm?city_id=67000" target="_blank" class="popup-btn" style="background:#28a745; color:white; border:none; width:100%; box-sizing:border-box; text-align:center; display:block; padding:10px;">
-                <i class="fas fa-map-marked-alt"></i> 臺南市門牌電子地圖查詢系統
-            </a>
-        </div>
-        
-        <div class="card-section">
-            <div class="card-title"><i class="fas fa-chart-network"></i> 空間群聚分析</div>
-            <label class="toggle-switch"><input type="checkbox" id="clusterToggle"> 啟動熱區分析</label>
-            <div class="analysis-control">
-                <div style="font-size:12px; color:#666;">群聚閾值 (半徑)：</div>
-                <div class="slider-container">
-                    <input type="range" id="clusterSlider" min="0" max="500" step="10" value="50">
-                    <span id="clusterValue" class="slider-value">50m</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="card-section">
-            <div class="card-title"><i class="fas fa-history"></i> 重複性案件檢核</div>
-            <label class="toggle-switch" style="margin-bottom:10px;">
-                <input type="checkbox" id="autoDupCheckToggle"> 啟動自動檢核重複性案件
-            </label>
-            <div class="small" style="margin-bottom:5px;">輸入 TWD97 座標 (X,Y)</div>
-            <input type="text" id="dupCheckInput" placeholder="例如：181924,2555825">
-            <div style="display:flex; gap:5px; margin-top:5px;">
-              <button id="dupCheckBtn" class="primary" style="background:#e65100; margin-top:0;"><i class="fas fa-search"></i> 開始檢核</button>
-              <button id="dupClearBtn" class="secondary" style="width:auto; margin-top:0; white-space:nowrap; flex-shrink:0;">清除</button>
-            </div>
-            <div id="dupCheckResult" style="margin-top:10px; font-size:13px; color:#333;"></div>
-        </div>
-
-        <div class="card-section" style="border-left: 5px solid #9b59b6;">
-            <div class="card-title" style="color:#8e44ad;"><i class="fas fa-brain"></i> AI 道路健康風險預測</div>
-            <div class="small" style="margin-bottom:8px; color:#666;">
-                透過演算法分析維修頻率、結構風險與植被影響，點擊列表可快速定位。
-            </div>
-            <label class="toggle-switch">
-                <input type="checkbox" id="aiRiskToggle" onchange="toggleAiRiskLayer(this)"> 顯示 AI 風險預警熱點
-            </label>
-            <div id="aiLoading" style="display:none; color:#8e44ad; font-size:12px; margin-top:5px;">
-                <i class="fas fa-circle-notch fa-spin"></i> 運算中...
-            </div>
-            
-            <div id="aiDashboard">
-                <div class="ai-dash-filters">
-                    <div class="ai-filter-btn active" onclick="filterAiResults('all', this)">全部</div>
-                    <div class="ai-filter-btn" onclick="filterAiResults('high', this)">極高風險</div>
-                    <div class="ai-filter-btn" onclick="filterAiResults('road', this)">土木結構</div>
-                    <div class="ai-filter-btn" onclick="filterAiResults('tree', this)">環境植被</div>
-                </div>
-                <div id="aiResultList" style="max-height:200px; overflow-y:auto; border:1px solid #eee; border-radius:6px; background:#fafafa;">
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <div id="tab-dengue" class="tab-content-container tab-pane">
-        <div class="card-section">
-            <div class="card-title"><i class="fas fa-map-pin"></i> 座標輸入</div>
-            <div class="small" style="margin-bottom:5px;">輸入 TWD97 座標 (X,Y)，每行一組</div>
-            <textarea id="dengueCoordsInput" rows="4" placeholder="例如：181924,2555825"></textarea>
-            <div style="display:flex; gap:5px; margin-top:5px;">
-              <button id="plotDengueBtn" class="primary" style="background:#7f8c8d; margin-top:0;">顯示點位</button>
-              <button id="clearDengueBtn" class="secondary" style="margin-top:0;">清除</button>
-            </div>
-        </div>
-        <div class="card-section">
-            <div class="card-title"><i class="fas fa-home"></i> 門牌查詢</div>
-            <a href="https://addressrs.moi.gov.tw/address/index.cfm?city_id=67000" target="_blank" class="popup-btn" style="background:#28a745; color:white; border:none; width:100%; box-sizing:border-box; text-align:center; display:block; padding:10px;">
-                <i class="fas fa-map-marked-alt"></i> 臺南市門牌電子地圖查詢系統
-            </a>
-        </div>
-        <div class="card-section">
-            <div class="card-title"><i class="fas fa-circle-notch"></i> 選擇方圓半徑</div>
-            <div style="display:flex; flex-direction:column; gap:8px; margin-top:10px;">
-                <label class="dengue-option"><input type="radio" name="dengueRadius" value="50" onchange="updateDengueRadius()"> 50 公尺</label>
-                <label class="dengue-option"><input type="radio" name="dengueRadius" value="150" onchange="updateDengueRadius()"> 150 公尺</label>
-                <label class="dengue-option"><input type="radio" name="dengueRadius" value="200" onchange="updateDengueRadius()"> 200 公尺</label>
-            </div>
-        </div>
-    </div>
-
-    <div class="sidebar-footer">
-        <div>本網頁圖資僅供參考，實際狀況應以權管機關現場鑑界為準。</div>
-        <div style="margin-top:2px;">資料來源：Google Maps, OSM, 國土測繪中心, 臺南市山上區公所</div>
-    </div>
-  </div>
-
-  <div id="map"></div>
-</div>
+<button id="toggleSidebarBtn" title="切換選單"><i class="fas fa-bars"></i></button>
 
 <div class="map-floating-controls">
     <button class="float-btn" id="toggleMapBtn" data-title="切換衛星/地圖"><i class="fas fa-layer-group"></i></button>
     <button class="float-btn" id="toggleCadastralBtn" data-title="地籍圖開關"><i class="fas fa-map"></i></button>
     <button class="float-btn" id="toggleClusterControlBtn" data-title="點位聚合設定"><i class="fas fa-circle-nodes"></i></button>
     <button class="float-btn" id="openReportBtn" data-title="案件通報" style="color:#d32f2f;"><i class="fas fa-camera"></i></button>
+</div>
+
+<div id="commentModal">
+    <div class="comment-box">
+        <div class="comment-header">
+            <span><i class="fas fa-comments"></i> 意見回饋</span>
+            <button onclick="closeCommentModal()" style="background:none; border:none; color:white; font-size:18px; cursor:pointer;"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="comment-body" id="commentList">
+            </div>
+    </div>
 </div>
 
 <div id="reportOverlay">
@@ -502,6 +627,219 @@
     <div id="timelineContainer"><div style="padding:20px; color:#777;">請點選地圖上的藍色路線以檢視紀錄。</div></div>
 </div>
 
+<div id="sidebar">
+  <div class="sidebar-header">
+      <h3>臺南市山上區<br>公眾通行道路圖資及施工/維修案件透明</h3>
+  </div>
+
+  <div class="tabs-nav">
+      <button class="tab-btn active" onclick="switchTab('tab-layers')"><i class="fas fa-layer-group"></i> 透明</button>
+      <button class="tab-btn" onclick="switchTab('tab-search')"><i class="fas fa-search"></i> 搜尋</button>
+      <button class="tab-btn" onclick="switchTab('tab-tools')"><i class="fas fa-tools"></i> 工具</button>
+      <button class="tab-btn" onclick="switchTab('tab-dengue')"><i class="fas fa-shield-virus"></i> 登革熱</button>
+  </div>
+
+  <div id="tab-layers" class="tab-content-container tab-pane active">
+      <div class="card-section" style="border-left: 5px solid #ff9800;">
+          <div class="card-title" style="color:#e65100;"><i class="fas fa-satellite-dish"></i> 民眾通報即時看板</div>
+          <label class="toggle-switch">
+              <input type="checkbox" id="realtimeToggle" onchange="toggleRealtimeLayer(this)"> 顯示即時通報案件
+          </label>
+          <div class="small" style="color:#666; margin-top:5px; display:flex; gap:10px;">
+              <span><span style="color:#ff9800;">●</span> 派工中</span>
+              <span><span style="color:#004080;">●</span> 已完工</span>
+              <span><span style="color:#7f8c8d;">●</span> 待處理</span>
+          </div>
+      </div>
+
+      <div class="card-section">
+          <div class="card-title"><i class="fas fa-road"></i> 施工/維修案件公告</div>
+          <div class="small" style="margin-bottom:8px; color:#666;">勾選年份批次顯示位置 (<span style="color:#004080">●</span>近 / <span style="color:red">●</span>遠)</div>
+          <div id="repairCheckboxes" style="max-height:400px; overflow-y:auto;"></div>
+          <button class="secondary" id="clearRepairBtn"><i class="fas fa-eraser"></i> 清除所有顯示</button>
+      </div>
+
+      <div class="card-section">
+          <div class="card-title"><i class="fas fa-calculator"></i> 里別維修統計</div>
+          <div class="small" style="margin-bottom:5px; color:#666;">系統將自動排除同案件重複計算</div>
+          <select id="statsVillageSelect" style="margin-bottom:10px;">
+              <option value="">(讀取中...)</option>
+          </select>
+          <div id="statsResult" style="display:none;">
+              <div class="stats-columns">
+                  <div class="stats-col col-general">
+                      <div class="stats-header">一般工程</div>
+                      <div id="statsGenList"></div>
+                  </div>
+                  <div class="stats-col col-emergency">
+                      <div class="stats-header">搶險搶修</div>
+                      <div id="statsEmgList"></div>
+                  </div>
+              </div>
+          </div>
+          <button class="secondary" id="clearStatsBtn" style="margin-top:10px;"><i class="fas fa-eraser"></i> 清除所有顯示</button>
+      </div>
+  </div>
+
+  <div id="tab-search" class="tab-content-container tab-pane">
+      <div class="card-section">
+          <div class="card-title"><i class="fas fa-route"></i> 公眾通行道路圖資查詢</div>
+          <select id="roadSelect"><option>載入中...</option></select>
+      </div>
+      <div class="card-section">
+          <div class="card-title"><i class="fas fa-search-plus"></i> 案件進階搜尋</div>
+          <div class="search-block-label"><i class="fas fa-map-marked-alt"></i> 依里別快篩</div>
+          <select id="villageSelect" style="margin-bottom:10px;">
+              <option value="">-- 請選擇行政區 (載入中...) --</option>
+          </select>
+          <div style="text-align:center; font-size:12px; color:#999; margin:5px 0;">- 或 -</div>
+          <div class="search-block-label"><i class="fas fa-filter"></i> 依廠商快篩</div>
+          <select id="contractorSelect" style="margin-bottom:10px;"><option value="">(讀取系統資料中...)</option></select>
+          <div id="contractorStatsResult" style="display:none; margin-top:10px;">
+              <div class="stats-columns">
+                  <div class="stats-col col-general">
+                      <div class="stats-header">一般工程</div>
+                      <div id="contractorGenList"></div>
+                  </div>
+                  <div class="stats-col col-emergency">
+                      <div class="stats-header">搶險搶修</div>
+                      <div id="contractorEmgList"></div>
+                  </div>
+              </div>
+              <button class="secondary" id="clearContractorStatsBtn" style="margin-top:10px;"><i class="fas fa-eraser"></i> 清除所有顯示</button>
+          </div>
+          <div style="text-align:center; font-size:12px; color:#999; margin:5px 0;">- 或 -</div>
+          
+          <div class="search-block-label"><i class="fas fa-clock"></i> 依派工時機快篩</div>
+          <select id="timingSelect" style="margin-bottom:10px;">
+              <option value="">(讀取系統資料中...)</option>
+          </select>
+          
+          <div class="search-block-label"><i class="fas fa-tools"></i> 依維修類型快篩 (多選)</div>
+          <div class="multiselect-group" id="typeFilterContainer">
+              <div class="multiselect-header" onclick="toggleTypeFilter()">
+                  <span id="typeFilterLabel">請選擇維修類型 (未選)</span>
+                  <i class="fas fa-chevron-down"></i>
+              </div>
+              <div class="multiselect-content" id="typeFilterContent">
+                  <div class="checkbox-item select-all-row">
+                      <label><input type="checkbox" id="typeSelectAll" onchange="toggleAllTypes(this)"> 全選/取消</label>
+                  </div>
+                  <div id="typeCheckboxList"></div>
+              </div>
+          </div>
+
+          <div style="text-align:center; font-size:12px; color:#999; margin:5px 0;">- 或 -</div>
+          
+          <div class="search-block-label"><i class="fas fa-keyboard"></i> 關鍵字搜尋</div>
+          <input type="text" id="keywordInput" placeholder="例如：案件編號(113001) 案件名稱 廠商名稱">
+          <button id="searchBtn" class="primary"><i class="fas fa-search"></i> 開始搜尋</button>
+          <button id="clearSearchBtn" class="secondary" style="display:none; background:#ffebee; border-color:#ffcdd2; color:#d32f2f;"><i class="fas fa-times"></i> 清除結果</button>
+          <div id="searchStatus" class="small" style="margin-top:8px; color:#004080; font-weight:bold;"></div>
+      </div>
+  </div>
+  
+  <div id="tab-tools" class="tab-content-container tab-pane">
+      <div class="card-section">
+          <div class="card-title"><i class="fas fa-map-marker-alt"></i> 座標查詢工具</div>
+          <div class="small" style="margin-bottom:5px;">輸入 TWD97 座標 (X,Y)，每行一組</div>
+          <textarea id="coordsInput" rows="4" placeholder="例如：181924,2555825"></textarea>
+          <div style="display:flex; gap:5px; margin-top:5px;">
+            <button id="plotBtn" class="primary" style="margin-top:0;">顯示點位</button>
+            <button id="clearBtn" class="secondary" style="margin-top:0;">清除</button>
+          </div>
+      </div>
+      
+      <div class="card-section">
+          <div class="card-title"><i class="fas fa-home"></i> 門牌查詢</div>
+          <a href="https://addressrs.moi.gov.tw/address/index.cfm?city_id=67000" target="_blank" class="popup-btn" style="background:#28a745; color:white; border:none; width:100%; box-sizing:border-box; text-align:center; display:block; padding:10px;">
+              <i class="fas fa-map-marked-alt"></i> 臺南市門牌電子地圖查詢系統
+          </a>
+      </div>
+      
+      <div class="card-section">
+          <div class="card-title"><i class="fas fa-chart-network"></i> 空間群聚分析</div>
+          <label class="toggle-switch"><input type="checkbox" id="clusterToggle"> 啟動熱區分析</label>
+          <div class="analysis-control">
+              <div style="font-size:12px; color:#666;">群聚閾值 (半徑)：</div>
+              <div class="slider-container">
+                  <input type="range" id="clusterSlider" min="0" max="500" step="10" value="50">
+                  <span id="clusterValue" class="slider-value">50m</span>
+              </div>
+          </div>
+      </div>
+
+      <div class="card-section">
+          <div class="card-title"><i class="fas fa-history"></i> 重複性案件檢核</div>
+          <label class="toggle-switch" style="margin-bottom:10px;">
+              <input type="checkbox" id="autoDupCheckToggle"> 啟動自動檢核重複性案件
+          </label>
+          <div class="small" style="margin-bottom:5px;">輸入 TWD97 座標 (X,Y)</div>
+          <input type="text" id="dupCheckInput" placeholder="例如：181924,2555825">
+          <div style="display:flex; gap:5px; margin-top:5px;">
+            <button id="dupCheckBtn" class="primary" style="background:#e65100; margin-top:0;"><i class="fas fa-search"></i> 開始檢核</button>
+            <button id="dupClearBtn" class="secondary" style="width:auto; margin-top:0; white-space:nowrap; flex-shrink:0;">清除</button>
+          </div>
+          <div id="dupCheckResult" style="margin-top:10px; font-size:13px; color:#333;"></div>
+      </div>
+
+      <div class="card-section" style="border-left: 5px solid #9b59b6;">
+          <div class="card-title" style="color:#8e44ad;"><i class="fas fa-brain"></i> AI 道路健康風險預測</div>
+          <div class="small" style="margin-bottom:8px; color:#666;">
+              透過演算法分析維修頻率、結構風險與植被影響，點擊列表可快速定位。
+          </div>
+          <label class="toggle-switch">
+              <input type="checkbox" id="aiRiskToggle" onchange="toggleAiRiskLayer(this)"> 顯示 AI 風險預警熱點
+          </label>
+          <div id="aiLoading" style="display:none; color:#8e44ad; font-size:12px; margin-top:5px;">
+              <i class="fas fa-circle-notch fa-spin"></i> 運算中...
+          </div>
+          
+          <div id="aiDashboard">
+              <div class="ai-dash-filters">
+                  <div class="ai-filter-btn active" onclick="filterAiResults('all', this)">全部</div>
+                  <div class="ai-filter-btn" onclick="filterAiResults('high', this)">極高風險</div>
+                  <div class="ai-filter-btn" onclick="filterAiResults('road', this)">土木結構</div>
+                  <div class="ai-filter-btn" onclick="filterAiResults('tree', this)">環境植被</div>
+              </div>
+              <div id="aiResultList" style="max-height:200px; overflow-y:auto; border:1px solid #eee; border-radius:6px; background:#fafafa;">
+              </div>
+          </div>
+      </div>
+  </div>
+  
+  <div id="tab-dengue" class="tab-content-container tab-pane">
+      <div class="card-section">
+          <div class="card-title"><i class="fas fa-map-pin"></i> 座標輸入</div>
+          <div class="small" style="margin-bottom:5px;">輸入 TWD97 座標 (X,Y)，每行一組</div>
+          <textarea id="dengueCoordsInput" rows="4" placeholder="例如：181924,2555825"></textarea>
+          <div style="display:flex; gap:5px; margin-top:5px;">
+            <button id="plotDengueBtn" class="primary" style="background:#7f8c8d; margin-top:0;">顯示點位</button>
+            <button id="clearDengueBtn" class="secondary" style="margin-top:0;">清除</button>
+          </div>
+      </div>
+      <div class="card-section">
+          <div class="card-title"><i class="fas fa-home"></i> 門牌查詢</div>
+          <a href="https://addressrs.moi.gov.tw/address/index.cfm?city_id=67000" target="_blank" class="popup-btn" style="background:#28a745; color:white; border:none; width:100%; box-sizing:border-box; text-align:center; display:block; padding:10px;">
+              <i class="fas fa-map-marked-alt"></i> 臺南市門牌電子地圖查詢系統
+          </a>
+      </div>
+      <div class="card-section">
+          <div class="card-title"><i class="fas fa-circle-notch"></i> 選擇方圓半徑</div>
+          <div style="display:flex; flex-direction:column; gap:8px; margin-top:10px;">
+              <label class="dengue-option"><input type="radio" name="dengueRadius" value="50" onchange="updateDengueRadius()"> 50 公尺</label>
+              <label class="dengue-option"><input type="radio" name="dengueRadius" value="150" onchange="updateDengueRadius()"> 150 公尺</label>
+              <label class="dengue-option"><input type="radio" name="dengueRadius" value="200" onchange="updateDengueRadius()"> 200 公尺</label>
+          </div>
+      </div>
+  </div>
+
+  <div class="sidebar-footer">
+      <div>本網頁圖資僅供參考，實際狀況應以權管機關現場鑑界為準。</div>
+      <div style="margin-top:2px;">資料來源：Google Maps, OSM, 國土測繪中心, 臺南市山上區公所</div>
+  </div>
+</div>
+
 <div id="map"></div>
 <div id="floatingCoords"></div>
 
@@ -575,11 +913,7 @@ let measureTooltip = null;
 let markersClusterGroup = null; 
 let activeRepairLayers = []; 
 let selectedTimelineMarker = null;
-
-// 0205V1 Added: 目前正在操作的照片框ID
 let activePhotoId = 0;
-
-// 0205V4 Added: 即時看板圖層
 const realtimeLayer = L.layerGroup().addTo(map);
 
 const DEEP_BLUE = '#004080'; 
@@ -605,7 +939,6 @@ const searchResultLayer = L.featureGroup().addTo(map);
 const clusterLayer = L.featureGroup().addTo(map);
 const measureLayer = L.layerGroup().addTo(map).setZIndex(1001);
 
-/* === V19 Added: 圖片預載 helper function === */
 function preloadImages(urls) {
     if (!urls || !Array.isArray(urls)) return;
     urls.forEach(url => {
@@ -616,460 +949,225 @@ function preloadImages(urls) {
     });
 }
 
-// 0206V3 Modified: 強力修復版 - 網址轉換器
 function getDirectDriveUrl(url) {
     if (!url) return '';
     let cleanUrl = url.trim();
-    
-    // 嘗試抓取 ID
     let id = '';
-    
-    // Pattern 1: .../file/d/ID/...
     let match1 = cleanUrl.match(/\/d\/([a-zA-Z0-9_-]+)/);
     if (match1) id = match1[1];
-    
-    // Pattern 2: ...id=ID...
     if (!id) {
         let match2 = cleanUrl.match(/[?&]id=([a-zA-Z0-9_-]+)/);
         if (match2) id = match2[1];
     }
-
     if (id) {
-        // 使用 lh3.googleusercontent.com 直連 (最穩定)
         return `https://lh3.googleusercontent.com/d/${id}`;
     }
-    
     return cleanUrl;
 }
 
-// 0205V7 Fix: 自動轉換 Google Drive View Link 為 Direct Link
 function getPhotosFromProps(props) {
     if(!props) return [];
-    
-    // 合併前後照片欄位，並支援分號分隔
     const rawPhotos = [];
     if(props['施工前照片']) rawPhotos.push(props['施工前照片']);
     if(props['施工後照片']) rawPhotos.push(props['施工後照片']);
-    
     const combinedStr = rawPhotos.join(';');
-    
     return combinedStr.split(/[;\n\r]+/).map(u => getDirectDriveUrl(u)).filter(u => u.length > 0);
 }
 
-/* === 核心功能：新版泡泡窗生成函式 === */
+/* === 新版 Bubble Window JS 邏輯 === */
 
-window.switchMobilePhotoTab = function(el, type) {
+// 手機版切換照片 Tab 邏輯
+window.switchMobilePhotoTab = function(el, type, uid) {
     const card = el.closest('.popup-card');
-    const tabs = card.querySelectorAll('.m-tab');
+    const tabs = card.querySelectorAll('.m-photo-tab');
     tabs.forEach(t => t.classList.remove('active'));
     el.classList.add('active');
     
-    const beforeView = card.querySelector('.photo-col-before');
-    const afterView = card.querySelector('.photo-col-after');
+    const beforeView = document.getElementById(`m-view-before-${uid}`);
+    const afterView = document.getElementById(`m-view-after-${uid}`);
     
     if(type === 'before') {
-        beforeView.classList.add('active-view');
-        afterView.classList.remove('active-view');
+        if(beforeView) beforeView.classList.add('active');
+        if(afterView) afterView.classList.remove('active');
     } else {
-        beforeView.classList.remove('active-view');
-        afterView.classList.add('active-view');
+        if(beforeView) beforeView.classList.remove('active');
+        if(afterView) afterView.classList.add('active');
     }
 };
 
-window.toggleMobileDetails = function(el) {
+window.toggleDetails = function(el) {
     const card = el.closest('.popup-card');
-    const details = card.querySelector('.info-details-block');
-    
-    if(details.classList.contains('open')) {
-        details.classList.remove('open');
-        el.innerHTML = '▼ 查看詳細資訊 (廠商、座標、日期)';
+    const content = card.querySelector('.details-content');
+    if(content.classList.contains('open')) {
+        content.classList.remove('open');
+        el.innerHTML = '▼ 查看詳細資訊';
     } else {
-        details.classList.add('open');
+        content.classList.add('open');
         el.innerHTML = '▲ 收起詳細資訊';
     }
 };
 
-window.switchPhotoSet = function(el, index) {
-    const card = el.closest('.popup-card');
-    if(!card) return;
-    const viewers = card.querySelectorAll('.photo-viewer');
-    viewers.forEach(viewer => {
-        const imgs = viewer.querySelectorAll('img');
-        if(imgs.length > index) { 
-            imgs.forEach(img => img.classList.remove('active'));
-            imgs[index].classList.add('active');
-        }
-    });
-    const allDotContainers = card.querySelectorAll('.carousel-dots');
-    allDotContainers.forEach(container => {
-        const dots = container.querySelectorAll('.dot');
-        if(dots.length > index) {
-            dots.forEach(dot => dot.classList.remove('active'));
-            dots[index].classList.add('active');
-        }
-    });
+// 開啟意見回饋 Modal
+window.openCommentModal = function(caseId) {
+    const modal = document.getElementById('commentModal');
+    const list = document.getElementById('commentList');
+    list.innerHTML = `<div style="text-align:center;color:#666;padding:20px;">載入中...</div>`;
+    modal.style.display = 'flex';
+    
+    // 模擬載入資料 (實際應串接 Google Sheet)
+    setTimeout(() => {
+        list.innerHTML = '';
+        const mockComments = [
+            { star: 5, text: "修補效率很快，謝謝！", date: "2025/02/08" },
+            { star: 4, text: "路面平整，但標線有點模糊。", date: "2025/02/07" },
+            { star: 5, text: "辛苦了！", date: "2025/02/05" }
+        ];
+        
+        let html = '';
+        mockComments.forEach(c => {
+            let stars = '';
+            for(let i=0; i<5; i++) {
+                stars += `<i class="fas fa-star" style="color:${i<c.star?'#f39c12':'#ddd'};"></i>`;
+            }
+            html += `
+            <div class="comment-item">
+                <div class="star-row">${stars}</div>
+                <div class="comment-text">${c.text}</div>
+                <div class="comment-date">${c.date}</div>
+            </div>`;
+        });
+        
+        // 輸入框
+        html = `
+        <div style="margin-bottom:15px; background:#f8f9fa; padding:10px; border-radius:8px;">
+            <div style="font-weight:bold; margin-bottom:5px; font-size:13px;">新增留言：</div>
+            <textarea style="width:100%; height:60px; border:1px solid #ddd; border-radius:4px; padding:5px; font-size:13px;" placeholder="寫下您的意見..."></textarea>
+            <div style="display:flex; justify-content:space-between; margin-top:5px; align-items:center;">
+                <div style="color:#f39c12;">
+                    <i class="far fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i>
+                </div>
+                <button style="background:var(--primary-color); color:white; border:none; padding:4px 12px; border-radius:4px; cursor:pointer;">送出</button>
+            </div>
+        </div>` + html;
+        
+        list.innerHTML = html;
+    }, 500);
 };
 
-function renderTypeTags(rawType, isMobile) {
-    if (!rawType) return isMobile ? '' : '<span class="type-pill">一般工程</span>';
-    const types = rawType.split(/[,，]/).map(s => s.trim()).filter(s => s.length > 0);
-    if (types.length === 0) return isMobile ? '' : '<span class="type-pill">一般工程</span>';
-    if (types.length <= 2) {
-        return `<div class="type-tag-group">${types.map(t => `<span class="type-pill">${t}</span>`).join('')}</div>`;
-    }
-    const visible = types.slice(0, 2);
-    const hidden = types.slice(2);
-    const uid = Math.random().toString(36).substr(2, 9);
-    const hiddenId = `hidden-${uid}`;
-    const btnId = `btn-${uid}`;
-    const expandScript = `document.getElementById('${hiddenId}').style.display='contents';document.getElementById('${btnId}').style.display='none';`;
-
-    return `<div class="type-tag-group">
-        ${visible.map(t => `<span class="type-pill">${t}</span>`).join('')}
-        <span id="${hiddenId}" style="display:none;">${hidden.map(t => `<span class="type-pill">${t}</span>`).join('')}</span>
-        <span id="${btnId}" class="type-pill-more" onclick="${expandScript}" title="點擊展開: ${hidden.join(', ')}">+${hidden.length} 更多</span>
-    </div>`;
+function closeCommentModal() {
+    document.getElementById('commentModal').style.display = 'none';
 }
 
 function createPopup(data) {
-    const { fileName, props, lat, lng, dist } = data;
+    const { fileName, props, lat, lng } = data;
     const twd = twd97FromWgs84(lat, lng);
-    const distText = isNaN(dist) ? 'N/A' : dist.toFixed(0) + 'm';
+    const uid = Math.random().toString(36).substr(2, 9);
     
-    // 0205V6 Fix: 強制將案件編號轉為 String，避免純數字造成 split 錯誤
-    const caseIdRaw = String(props['案件編號'] || '無編號');
-    const caseId = caseIdRaw;
-    
+    const caseId = props['案件編號'] || '無編號';
     const status = props['案件狀態'] || '已完工';
-    const timing = props['派工時機'] || '一般';
-    const typeRaw = props['搶修類型'] || '一般工程'; 
-    const description = props['案情描述'] || '無描述'; 
     const contractor = props['施工廠商'] || '-';
-    const supervisor = props['監造廠商'] || '-';
     const date = props['完工日期'] || '-';
-    const procurementUrl = props['採購網址'] ? props['採購網址'].trim() : '';
-
-    let price = '0元';
-    const rawPrice = props['決標金額'];
-    if(rawPrice) {
-        const num = parseInt(rawPrice.toString().replace(/,/g, ''));
-        if(!isNaN(num)) {
-            const formatPriceV15 = (n) => {
-                if(n < 10000) return n.toLocaleString() + '元';
-                const w = Math.floor(n / 10000);
-                const r = n % 10000;
-                let rStr = r.toString().padStart(4, '0');
-                if(r >= 1000) {
-                    rStr = rStr.substring(0, 1) + ',' + rStr.substring(1);
-                }
-                return `${w}萬${rStr}元`;
-            };
-            price = formatPriceV15(num);
-        }
-    }
+    
+    // 燈號邏輯
+    let step = 3; // 預設完工
+    if(status.includes('待處理')) step = 1;
+    else if(status.includes('派工') || status.includes('施工')) step = 2;
+    
+    const date1 = props['通報日期'] || props['完工日期'] || '1140101'; // 模擬日期
+    const date2 = step >= 2 ? (props['派工日期'] || props['完工日期'] || '1140105') : '';
+    const date3 = step >= 3 ? (props['完工日期'] || '1140110') : '';
 
     let pillClass = 'pill-done';
     if(status.includes('施工') || status.includes('派工')) pillClass = 'pill-working';
-    else if(status.includes('緊急') || status.includes('搶修')) pillClass = 'pill-urgent';
+    else if(status.includes('搶修')) pillClass = 'pill-urgent';
 
-    let formattedCaseId = caseId; 
+    // 隨機生成留言數
+    const commentCount = Math.floor(Math.random() * 10);
     
-    // 0205V6 Fix: 使用安全的字串操作
-    if (caseId.indexOf('-') > -1) {
-        const idParts = caseId.split('-');
-        if (idParts.length >= 2) {
-            const suffix = idParts[idParts.length - 1]; 
-            if (/^\d{1,4}$/.test(suffix)) {
-                const num = parseInt(suffix, 10);
-                if (!isNaN(num)) {
-                    formattedCaseId = `${fileName}第${num}案`;
-                }
-            }
-        }
-    }
-    
-    const mobileCaseIdDisplay = formattedCaseId;
-    let siblingNavHtml = '';
-    let mobileSiblingNavHtml = '';
-    let siblings = [];
-    if (caseIdRaw !== '無編號') {
-        const candidates = [...activeRepairLayers, ...realtimeLayer.getLayers(), ...searchResultLayer.getLayers()]; 
-        // V6 Fix: 確保比較時都轉為 String
-        const rawSiblings = candidates.filter(m => String(m.customData?.props['案件編號'] || '') === caseIdRaw);
-        const uniqueMap = new Map();
-        rawSiblings.forEach(m => {
-            const ll = m.getLatLng();
-            const key = ll.lat.toFixed(6) + ',' + ll.lng.toFixed(6);
-            if(!uniqueMap.has(key)) uniqueMap.set(key, m);
-        });
-        siblings = Array.from(uniqueMap.values());
-        siblings.sort((a, b) => {
-            const la = a.getLatLng();
-            const lb = b.getLatLng();
-            if(Math.abs(la.lat - lb.lat) > 0.00001) return lb.lat - la.lat;
-            return lb.lng - la.lng;
-        });
-    }
-
-    if (siblings.length > 1) {
-        let dots = '';
-        siblings.forEach((sib, idx) => {
-            const sLat = sib.getLatLng().lat;
-            const sLng = sib.getLatLng().lng;
-            const isCurrent = (Math.abs(sLat - lat) < 0.000001 && Math.abs(sLng - lng) < 0.000001);
-            const activeClass = isCurrent ? 'active' : '';
-            const clickEvent = isCurrent ? '' : `onclick="jumpToSpecificSibling('${caseIdRaw}', ${sLat}, ${sLng})"`;
-            const titleText = isCurrent ? '目前位置' : `前往關聯點位 ${idx+1}`;
-            dots += `<div class="sibling-dot ${activeClass}" ${clickEvent} title="${titleText}">${idx+1}</div>`;
-        });
-        siblingNavHtml = `<div class="sibling-nav-container">${dots}</div>`;
-        mobileSiblingNavHtml = `<div class="sibling-nav-container mobile">${dots}</div>`;
-    }
-
-    // --- 0206V1 Fix: 照片分流邏輯 ---
+    // 處理照片 (支援 Google Drive 直連)
     const processPhotoStr = (str) => {
         if (!str) return [];
-        // V2 Fix: 使用全域轉換器
         return str.split(/[;\n\r]+/).map(u => getDirectDriveUrl(u)).filter(u => u.length > 0);
     };
 
-    let arrBefore = [];
-    let arrAfter = [];
-
-    // 判斷：若有「施工後照片」欄位（資料庫案件），則前後分離；否則使用輪播（民眾通報/即時）
-    if (props['施工後照片'] && props['施工後照片'].trim() !== '') {
-        // 【資料庫案件模式】：前後分離
-        arrBefore = processPhotoStr(props['施工前照片']);
-        arrAfter = processPhotoStr(props['施工後照片']);
-    } else {
-        // 【民眾通報/單欄位模式】：使用輪播 (全部放在左側)
-        // 修復: 強制檢查 GAS 常用的 photoUrl 欄位並進行轉換 (V2 Fix)
-        arrBefore = [];
-        if (props.photoUrl) arrBefore.push(getDirectDriveUrl(props.photoUrl));
-        if (props.photoUrl2) arrBefore.push(getDirectDriveUrl(props.photoUrl2));
-        // 如果都沒有，才去找傳統的施工前照片
-        if (arrBefore.length === 0) {
-             arrBefore = getPhotosFromProps(props);
-        }
-        arrAfter = [];
-    }
-    // --- 0206V1 Fix End ---
-
-    // --- 0206V3-Progress: 進度條邏輯 ---
-    // 1. 取出日期
-    let d1 = props['通報時間'] || props['timestamp'] || '-';
-    // 若 GAS 回傳 ISO 時間格式 (2025-02-06T...)，轉換為民國年/月/日
-    if(d1 !== '-' && d1.includes('T')) {
-        try {
-            let dateObj = new Date(d1);
-            if(!isNaN(dateObj.getTime())) {
-                let y = dateObj.getFullYear() - 1911;
-                let m = (dateObj.getMonth() + 1).toString().padStart(2, '0');
-                let d = dateObj.getDate().toString().padStart(2, '0');
-                d1 = `${y}/${m}/${d}`;
-            }
-        } catch(e) {}
-    }
-
-    let d2 = props['派工日期'] || '-';
-    let d3 = props['完工日期'] || '-';
-
-    // 格式化函數 (將 1140206 轉為 114/02/06)
-    const fmt = (s) => {
-        if(!s || s === '-') return '-';
-        s = String(s).trim();
-        if(s.length === 7 && /^\d+$/.test(s)) {
-            return `${s.substring(0,3)}/${s.substring(3,5)}/${s.substring(5,7)}`;
-        }
-        return s;
-    };
-
-    d2 = fmt(d2);
-    d3 = fmt(d3);
-
-    // 2. 判斷目前進度階段 (1~3)
-    let progressStep = 1; // 預設至少在待處理
-    let fillPercent = 0;
-
-    // 邏輯: 有完工日 -> 階段3; 沒完工但有派工日 -> 階段2; 否則 -> 階段1
-    // 特殊邏輯: 如果是歷史案件(通常 status=已完成)，即使 d1 缺漏，也視為已完成
-    if ((d3 !== '-' && d3) || status === '已完成') {
-        progressStep = 3;
-        fillPercent = 100;
-    } else if (d2 !== '-' && d2) {
-        progressStep = 2;
-        fillPercent = 50;
-    } else {
-        progressStep = 1;
-        fillPercent = 0;
-    }
-
-    // 3. 產生進度條 HTML
-    const progressBarHtml = `
-        <div class="progress-container">
-            <div class="progress-track"></div>
-            <div class="progress-fill" style="width: ${fillPercent}%"></div>
-            
-            <div class="progress-step ${progressStep >= 1 ? 'active' : ''}">
-                <div class="step-circle">${progressStep >= 1 ? '✔' : '1'}</div>
-                <div class="step-label">待處理</div>
-                <div class="step-date">${d1}</div>
-            </div>
-            
-            <div class="progress-step ${progressStep >= 2 ? 'active' : ''}">
-                <div class="step-circle">${progressStep >= 2 ? '✔' : '2'}</div>
-                <div class="step-label">派工中</div>
-                <div class="step-date">${d2}</div>
-            </div>
-            
-            <div class="progress-step ${progressStep >= 3 ? 'active' : ''}">
-                <div class="step-circle">${progressStep >= 3 ? '✔' : '3'}</div>
-                <div class="step-label">已完工</div>
-                <div class="step-date">${d3}</div>
-            </div>
-        </div>
-    `;
-    // --- End Progress Bar Logic ---
-
-    const generatePhotoSection = (title, urls, typeKey) => {
-        const uid = Math.random().toString(36).substr(2, 9);
-        const viewerId = `viewer-${typeKey}-${uid}`;
-        let imgsHtml = '';
-        let dotsHtml = '';
-
-        if(urls.length > 0) {
-            urls.forEach((url, i) => { 
-                const activeClass = i === 0 ? 'active' : ''; 
-                imgsHtml += `<img src="${url.trim()}" class="${activeClass}" oncontextmenu="return false;" draggable="false">`; 
-            });
-            if(urls.length > 1) {
-                dotsHtml = `<div class="carousel-dots">`;
-                urls.forEach((_, i) => { const activeClass = i === 0 ? 'active' : ''; dotsHtml += `<div class="dot ${activeClass}" onclick="switchPhotoSet(this, ${i})">${i+1}</div>`; });
-                dotsHtml += `</div>`;
-            }
-        } else { imgsHtml = `<div class="no-photo"><i class="fas fa-image"></i><span>暫無影像</span></div>`; }
-
-        return `
-            <div class="photo-section-header">
-                <div class="photo-title"><i class="fas fa-camera"></i> ${title}</div>
-            </div>
-            <div class="photo-viewer" id="${viewerId}">
-                ${imgsHtml}
-            </div>
-            ${dotsHtml}
-        `;
-    };
-
-    const tenderBtn = procurementUrl 
-        ? `<a href="${procurementUrl}" target="_blank" class="popup-btn-new"><i class="fas fa-file-alt"></i><span>決標</span></a>` 
-        : `<span class="popup-btn-new" style="opacity:0.5;cursor:not-allowed;"><i class="fas fa-file-alt"></i><span>無公告</span></span>`;
-
-    // 0208V3: 定義詳細資訊區塊 (共用於桌面展開與手機收合)
-    const infoDetails = `
-        <div class="compact-list">
-            <div class="compact-item" style="border-bottom:1px dashed #eee; padding-bottom:5px; margin-bottom:5px;">
-                <span class="compact-label" style="color:#047857;background:#d1fae5;">案情描述</span>
-                <div class="compact-val" style="font-weight:normal;">${description}</div>
-            </div>
-            <div class="compact-item"><span class="compact-label">施工廠商</span><div class="compact-val">${contractor}</div></div>
-            <div class="compact-row">
-                <div class="compact-item" style="flex:1"><span class="compact-label">監造廠商</span><div class="compact-val">${supervisor}</div></div>
-                <div class="compact-item" style="flex:1"><span class="compact-label">WGS84</span><div class="compact-val">${lat.toFixed(6)}, ${lng.toFixed(6)}</div></div>
-            </div>
-            <div class="compact-row">
-                <div class="compact-item" style="flex:1"><span class="compact-label">完工日期</span><div class="compact-val">${date}</div></div>
-                <div class="compact-item" style="flex:1"><span class="compact-label">TWD97</span><div class="compact-val">${twd.x}, ${twd.y}</div></div>
-            </div>
-        </div>
-    `;
-
-    // 0208V3: 定義 1x4 按鈕組 (用於手機版)
-    const mobileBtns = `
-        <div class="popup-btns view-mobile">
-            ${tenderBtn}
-            <a href="https://maps.nlsc.gov.tw/go/${lng}/${lat}" target="_blank" class="popup-btn-new"><i class="fas fa-map"></i><span>地籍</span></a>
-            <a href="https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${lat},${lng}" target="_blank" class="popup-btn-new"><i class="fas fa-camera"></i><span>街景</span></a>
-            <a href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}" target="_blank" class="popup-btn-new"><i class="fas fa-location-arrow"></i><span>導航</span></a>
-        </div>
-    `;
+    let arrBefore = processPhotoStr(props['施工前照片']);
+    let arrAfter = processPhotoStr(props['施工後照片']);
+    
+    // 若無特定欄位，嘗試通用欄位
+    if(arrBefore.length === 0 && props.photoUrl) arrBefore.push(getDirectDriveUrl(props.photoUrl));
+    
+    const imgBefore = arrBefore.length > 0 ? arrBefore[0] : '';
+    const imgAfter = arrAfter.length > 0 ? arrAfter[0] : '';
+    
+    // 無圖替換
+    const noImgHtml = '<div style="width:100%;height:100%;background:#f1f5f9;display:flex;align-items:center;justify-content:center;color:#999;font-size:12px;">無影像</div>';
+    const renderImg = (src) => src ? `<img src="${src}" onclick="window.open('${src}')">` : noImgHtml;
 
     return `
     <div class="popup-card">
-        <div class="popup-deco-strip"></div>
-        <div class="popup-col-info">
-            <div class="view-mobile" style="margin: 0 10px;">
-                ${progressBarHtml}
-            </div>
-            
-            <div class="mobile-compact-header view-mobile">
-                <div class="m-row-1">
-                    <div class="status-pill ${pillClass}">${status}</div>
-                    <div class="case-id mobile-id-text">${mobileCaseIdDisplay}</div>
-                </div>
-                ${mobileSiblingNavHtml}
-                <div class="m-row-2">
-                    <div class="price-val">${price}</div>
-                    <div class="m-tags-line"><span>${fileName}</span>${renderTypeTags(typeRaw, true)}</div>
-                </div>
-            </div>
-            
-            <div class="mobile-photo-tabs view-mobile">
-                <div class="m-tab" onclick="switchMobilePhotoTab(this, 'before')">現場照片</div>
-                <div class="m-tab active" onclick="switchMobilePhotoTab(this, 'after')">施工後</div>
-            </div>
-            
-            <div class="view-mobile">
-                <div class="popup-col-photo photo-col-before">${generatePhotoSection('現場照片', arrBefore, 'before')}</div>
-                <div class="popup-col-photo photo-col-after active-view">${generatePhotoSection('施工後', arrAfter, 'after')}</div>
-            </div>
-
-            ${mobileBtns}
-
-            <div class="mobile-details-toggle view-mobile" onclick="toggleMobileDetails(this)">▼ 查看詳細資訊 (廠商、座標、日期)</div>
-
-            <div class="info-details-block">
-                ${infoDetails}
-            </div>
-            
-            <div class="desktop-only view-desktop">
-                ${progressBarHtml}
-                
-                <div class="case-id" style="display:flex; align-items:center; flex-wrap:wrap;">${formattedCaseId}</div>
-                ${siblingNavHtml}
-                <div class="case-meta"><span class="file-tag">${fileName}</span>${renderTypeTags(typeRaw, false)}</div>
-                
-                <div class="popup-tags">
-                    <div class="tag-pill tag-dark"><i class="fas fa-clock"></i> ${timing}</div>
-                    <div class="tag-pill tag-light"><i class="fas fa-map-marker-alt" style="color:#10b981;"></i> 距路線 ${distText}</div>
-                </div>
-                <div class="price-block"><div class="price-label">決標金額</div><div class="price-val">${price}</div></div>
-                
-                ${infoDetails}
-            </div>
-            
-            <div class="popup-btns view-desktop">
-                ${tenderBtn}
-                <a href="https://maps.nlsc.gov.tw/go/${lng}/${lat}" target="_blank" class="popup-btn-new"><i class="fas fa-map"></i><span>地籍</span></a>
-                <a href="https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${lat},${lng}" target="_blank" class="popup-btn-new"><i class="fas fa-camera"></i><span>街景</span></a>
-                <a href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}" target="_blank" class="popup-btn-new"><i class="fas fa-location-arrow"></i><span>導航</span></a>
+        <div class="popup-header">
+            <div class="case-id">${caseId}</div>
+            <div class="status-pill ${pillClass}">${status}</div>
+            <div class="rating-pill" onclick="openCommentModal('${caseId}')">
+                <i class="fas fa-star" style="color:#f39c12;"></i> 5 (${commentCount})
             </div>
         </div>
-        <div class="popup-col-photo photo-col-before active-view-desktop view-desktop">${generatePhotoSection('現場照片', arrBefore, 'before')}</div>
-        <div class="popup-col-photo photo-col-after active-view-desktop view-desktop">${generatePhotoSection('施工後', arrAfter, 'after')}</div>
-        
-        <style>
-            @media (max-width: 768px) {
-                .photo-col-before { display: none !important; }
-                .photo-col-before.active-view { display: flex !important; }
-                .photo-col-after { display: none !important; }
-                .photo-col-after.active-view { display: flex !important; }
-                /* 確保手機版照片區塊可見 */
-                .view-mobile .popup-col-photo { padding: 0 15px 15px 15px; }
-            }
-            @media (min-width: 769px) {
-                .photo-col-before, .photo-col-after { display: flex !important; } /* Desktop always show both */
-            }
-        </style>
+
+        <div class="progress-container">
+            <div class="progress-step active">
+                <div class="step-circle"></div>
+                <div class="step-label">待處理</div>
+                <div class="step-date">${date1}</div>
+            </div>
+            <div class="progress-step ${step>=2 ? 'active' : ''}">
+                <div class="step-circle"></div>
+                <div class="step-label">派工中</div>
+                <div class="step-date">${date2}</div>
+            </div>
+            <div class="progress-step ${step>=3 ? 'active' : ''}">
+                <div class="step-circle"></div>
+                <div class="step-label">已完工</div>
+                <div class="step-date">${date3}</div>
+            </div>
+        </div>
+
+        <div class="icon-btn-row">
+            <a href="${props['採購網址']||'#'}" target="_blank" class="icon-only-btn" title="決標公告"><i class="fas fa-file-alt"></i></a>
+            <a href="https://maps.nlsc.gov.tw/go/${lng}/${lat}" target="_blank" class="icon-only-btn" title="地籍圖"><i class="fas fa-map"></i></a>
+            <a href="https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${lat},${lng}" target="_blank" class="icon-only-btn" title="Google 街景"><i class="fas fa-street-view"></i></a>
+            <a href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}" target="_blank" class="icon-only-btn" title="導航"><i class="fas fa-location-arrow"></i></a>
+        </div>
+
+        <div class="desktop-photo-row">
+            <div class="photo-half">
+                ${renderImg(imgBefore)}
+                <div class="photo-label">施工前</div>
+            </div>
+            <div class="photo-half">
+                ${renderImg(imgAfter)}
+                <div class="photo-label">施工後</div>
+            </div>
+        </div>
+
+        <div class="mobile-photo-tabs">
+            <div class="m-photo-tab active" onclick="switchMobilePhotoTab(this, 'after', '${uid}')">施工後</div>
+            <div class="m-photo-tab" onclick="switchMobilePhotoTab(this, 'before', '${uid}')">施工前</div>
+        </div>
+        <div class="mobile-photo-area">
+            <div class="mobile-photo-view active" id="m-view-after-${uid}">${renderImg(imgAfter)}</div>
+            <div class="mobile-photo-view" id="m-view-before-${uid}">${renderImg(imgBefore)}</div>
+        </div>
+
+        <div class="details-toggle" onclick="toggleDetails(this)">▼ 查看詳細資訊</div>
+        <div class="details-content">
+            <table class="info-table">
+                <tr><td class="info-label">案情描述</td><td>${props['案情描述']||'無'}</td></tr>
+                <tr><td class="info-label">施工廠商</td><td>${contractor}</td></tr>
+                <tr><td class="info-label">決標金額</td><td>${props['決標金額']||'0'} 元</td></tr>
+                <tr><td class="info-label">完工日期</td><td>${date}</td></tr>
+                <tr><td class="info-label">TWD97</td><td>${twd.x}, ${twd.y}</td></tr>
+            </table>
+        </div>
     </div>
     `;
 }
@@ -1089,11 +1187,11 @@ async function toggleRealtimeLayer(checkbox) {
             data.features.forEach(f => {
                 const props = f.properties;
                 const status = props['案件狀態'] || '待處理';
-                let color = '#7f8c8d'; // 預設灰色
+                let color = '#7f8c8d'; 
                 let radius = 8;
 
-                if(status === '派工中') { color = '#ff9800'; radius = 10; } // 橘色
-                else if(status === '已完工') { color = '#004080'; } // 深藍色
+                if(status === '派工中') { color = '#ff9800'; radius = 10; } 
+                else if(status === '已完工') { color = '#004080'; } 
 
                 const lat = f.geometry.coordinates[1];
                 const lng = f.geometry.coordinates[0];
@@ -1112,14 +1210,11 @@ async function toggleRealtimeLayer(checkbox) {
                     props: props
                 };
 
-                // 0205V5 Fix: 修正傳遞參數，確保傳入的是 Marker Array
                 marker.on('click', (e) => {
-                    // 0205V6 Added: 點擊事件錯誤攔截
                     try {
                         const realTimeMarkers = realtimeLayer.getLayers();
                         handleNearbyMarkerClick(e, [...realTimeMarkers, ...activeRepairLayers]);
                     } catch (err) {
-                        alert("發生錯誤：無法開啟詳細資料。\n原因：" + err.message);
                         console.error(err);
                     }
                 });
@@ -1140,7 +1235,6 @@ const openReportBtn = document.getElementById('openReportBtn');
 openReportBtn.addEventListener('click', function() { reportOverlay.style.display = 'flex'; initReportData(); });
 function closeReport() { 
     reportOverlay.style.display = 'none'; 
-    // Double Insurance: 關閉選單
     document.getElementById('photoSourceModal').style.display = 'none';
     resetReportForm(); 
 }
@@ -1264,39 +1358,28 @@ function closeReportDetailModal() {
     document.getElementById('reportDetailModal').style.display = 'none';
 }
 
-// 0205V1 Modified: 修改 triggerCamera 為開啟選單，而非直接拍照
 function triggerCamera(id) {
     const img = document.getElementById(`imgPreview${id}`);
-    // 只有當尚未有照片時，才觸發選擇選單
     if (!img.src || img.style.display === 'none' || img.src === window.location.href) {
         activePhotoId = id;
         document.getElementById('photoSourceModal').style.display = 'flex';
     }
 }
 
-// 0205V3 Modified: 強效版修復 - 雙重保險 + 強制重繪 + 延長延遲
 function selectSource(type) {
     if(!activePhotoId) return;
     const input = document.getElementById(`fileInput${activePhotoId}`);
     const modal = document.getElementById('photoSourceModal');
     
-    // 如果選拍照，加上 capture="environment" (後鏡頭)
     if(type === 'camera') {
         input.setAttribute('capture', 'environment');
     } else {
-        // 如果選相簿，移除 capture 屬性
         input.removeAttribute('capture');
     }
     
-    // 1. 關閉選單 (DOM 操作)
     modal.style.display = 'none';
-    
-    // 2. 強制重繪 (Force Reflow) - 關鍵！
-    // 讀取 offsetHeight 會強迫瀏覽器立刻計算佈局，確保 display:none 被套用
     modal.offsetHeight;
 
-    // 3. 延遲觸發 (Extended Buffer)
-    // 延長到 300ms，確保 UI 已經完全消失後才叫起系統相機
     setTimeout(() => {
         input.click();
     }, 300);
@@ -1307,7 +1390,6 @@ function closeSourceModal() {
 }
 
 function previewImage(input, id) {
-    // Double Insurance: 確保選單真的關閉了 (防止相機返回後選單還在)
     document.getElementById('photoSourceModal').style.display = 'none';
 
     if (input.files && input.files[0]) {
@@ -2114,8 +2196,6 @@ document.getElementById('clearRepairBtn').addEventListener('click', () => {
     clusterLayer.clearLayers(); if(clusterToggle.checked) clusterToggle.checked = false;
     dengueLayer.clearLayers(); dengueRadiusLayer.clearLayers(); document.getElementById('dengueCoordsInput').value = ''; document.querySelectorAll('input[name="dengueRadius"]').forEach(r => r.checked = false);
     bottomPanel.classList.remove('open'); map.closePopup();
-    
-    // Clear AI layer if active
     if(document.getElementById('aiRiskToggle').checked) {
         document.getElementById('aiRiskToggle').checked = false;
         aiRiskLayer.clearLayers();
@@ -2143,7 +2223,7 @@ document.getElementById('repairCheckboxes').addEventListener('change', () => { i
 function formatMoney(val) { if (!val) return 0; return parseInt(val.toString().replace(/,/g, '')) || 0; }
 function getDateDiffDays(dateStr1, dateStr2) {
     if (!dateStr1 || dateStr1.length < 7 || !dateStr2 || dateStr2.length < 7) return 9999;
-    const s1 = String(dateStr1), s2 = String(dateStr2); // 強制轉型，避免數字格式崩潰
+    const s1 = String(dateStr1), s2 = String(dateStr2); 
     const d1 = new Date(parseInt(s1.substring(0,3))+1911, parseInt(s1.substring(3,5))-1, parseInt(s1.substring(5,7)));
     const d2 = new Date(parseInt(s2.substring(0,3))+1911, parseInt(s2.substring(3,5))-1, parseInt(s2.substring(5,7)));
     return Math.ceil(Math.abs(d1 - d2) / (1000 * 60 * 60 * 24)); 
@@ -2228,17 +2308,10 @@ function showTimeline(routeLayer) {
 
 function renderTimeline(matches) {
     const cont = document.getElementById('timelineContainer'), statsDiv = document.getElementById('timelineStats');
-    
-    cont.innerHTML = '';
-    routeMatchLayer.clearLayers(); 
-    selectedTimelineMarker = null; 
-
+    cont.innerHTML = ''; routeMatchLayer.clearLayers(); selectedTimelineMarker = null; 
     if(matches.length === 0) { cont.innerHTML = '<div style="padding:20px;">無符合篩選條件的紀錄</div>'; statsDiv.innerHTML = '總花費：<span>$0</span> | 維修：<span>0 次</span>'; return; }
-    
     matches.sort((a,b) => String(b.props['完工日期']||'').localeCompare(String(a.props['完工日期']||'')));
-    
     let totalCost = 0, genCost = 0, genCount = 0, emgCost = 0, emgCount = 0, processedCases = new Set();
-    
     try {
         matches.forEach(m => {
             const caseNo = m.props['案件編號'], money = formatMoney(m.props['決標金額']), labelName = String(m.label || ""), isEmergency = /搶修|災害|緊急/.test(labelName);
@@ -2282,59 +2355,30 @@ function renderTimeline(matches) {
             const alertClass = isFrequent ? 'alert-right' : '';
             const item = document.createElement('div'); item.className = `h-item ${alertClass}`;
             item.innerHTML = `<div class="h-date">${m.props['完工日期']||'未知'}</div><div class="h-line-container"><div class="h-dot ${sizeClass}"></div></div><div class="h-badge ${labelName.includes('搶修')||labelName.includes('災害')||labelName.includes('緊急') ? 'badge-urgent' : 'badge-normal'}">${labelName.includes('搶修')||labelName.includes('災害')||labelName.includes('緊急') ? '搶修' : '一般'}</div>`;
-            
             item.addEventListener('mouseenter', () => { 
                 const photoUrls = getPhotosFromProps(m.props);
                 preloadImages(photoUrls);
-
                 if (selectedTimelineMarker === marker) return; 
-                marker.setStyle(highlightStyle); 
-                marker.bringToFront(); 
-                
-                if(!marker._tempPopup) {
-                    marker._tempPopup = L.popup({ className: 'custom-popup', maxWidth: 960, offset: [0, -10], closeButton: false })
-                        .setLatLng([m.lat, m.lng])
-                        .setContent(popupContent);
-                }
+                marker.setStyle(highlightStyle); marker.bringToFront(); 
+                if(!marker._tempPopup) { marker._tempPopup = L.popup({ className: 'custom-popup', maxWidth: 960, offset: [0, -10], closeButton: false }).setLatLng([m.lat, m.lng]).setContent(popupContent); }
                 marker._tempPopup.openOn(map);
             });
-            
             item.addEventListener('mouseleave', () => { 
                 if (selectedTimelineMarker === marker) return; 
                 marker.setStyle(normalStyle); 
-                if(marker._tempPopup) {
-                    map.closePopup(marker._tempPopup);
-                    marker._tempPopup = null;
-                }
-                if(selectedTimelineMarker && selectedTimelineMarker._lockedPopup) {
-                    selectedTimelineMarker._lockedPopup.openOn(map);
-                }
+                if(marker._tempPopup) { map.closePopup(marker._tempPopup); marker._tempPopup = null; }
+                if(selectedTimelineMarker && selectedTimelineMarker._lockedPopup) { selectedTimelineMarker._lockedPopup.openOn(map); }
             });
-
             item.addEventListener('click', (e) => {
                 e.stopPropagation(); 
-                if (selectedTimelineMarker && selectedTimelineMarker !== marker) {
-                     selectedTimelineMarker.setStyle(normalStyle);
-                     if(selectedTimelineMarker._lockedPopup) map.closePopup(selectedTimelineMarker._lockedPopup);
-                }
-                selectedTimelineMarker = marker; 
-                marker.setStyle(highlightStyle);
-                marker.bringToFront();
-                
-                if(!marker._lockedPopup) {
-                    marker._lockedPopup = L.popup({ className: 'custom-popup', maxWidth: 960, offset: [0, -10] })
-                        .setLatLng([m.lat, m.lng])
-                        .setContent(popupContent);
-                }
-                marker._lockedPopup.openOn(map);
-                map.flyTo([m.lat, m.lng], 18);
+                if (selectedTimelineMarker && selectedTimelineMarker !== marker) { selectedTimelineMarker.setStyle(normalStyle); if(selectedTimelineMarker._lockedPopup) map.closePopup(selectedTimelineMarker._lockedPopup); }
+                selectedTimelineMarker = marker; marker.setStyle(highlightStyle); marker.bringToFront();
+                if(!marker._lockedPopup) { marker._lockedPopup = L.popup({ className: 'custom-popup', maxWidth: 960, offset: [0, -10] }).setLatLng([m.lat, m.lng]).setContent(popupContent); }
+                marker._lockedPopup.openOn(map); map.flyTo([m.lat, m.lng], 18);
             });
             cont.appendChild(item);
         });
-    } catch(err) {
-        console.error("Timeline render error:", err);
-        cont.innerHTML = '<div style="padding:20px; color:red;">顯示失敗：資料格式有誤</div>';
-    }
+    } catch(err) { console.error("Timeline render error:", err); cont.innerHTML = '<div style="padding:20px; color:red;">顯示失敗：資料格式有誤</div>'; }
 }
 function updateDengueRadius() {
     dengueRadiusLayer.clearLayers(); const radios = document.getElementsByName('dengueRadius'); let r = 0;
@@ -2352,313 +2396,87 @@ map.on('popupopen', function(e) {
         zoom: map.getZoom()
     }));
 });
-
-map.on('popupclose', function(e) {
-    sessionStorage.removeItem('savedPopup');
-});
-
+map.on('popupclose', function(e) { sessionStorage.removeItem('savedPopup'); });
 window.addEventListener('load', function() {
     setTimeout(function(){
         var saved = sessionStorage.getItem('savedPopup');
         if(saved) {
-            try {
-                var data = JSON.parse(saved);
-                map.setView([data.lat, data.lng], data.zoom || 18);
-                L.popup({className:'custom-popup', maxWidth:960})
-                 .setLatLng([data.lat, data.lng])
-                 .setContent(data.content)
-                 .openOn(map);
-            } catch(e) {
-                console.error("Restore popup failed", e);
-            }
+            try { var data = JSON.parse(saved); map.setView([data.lat, data.lng], data.zoom || 18); L.popup({className:'custom-popup', maxWidth:960}).setLatLng([data.lat, data.lng]).setContent(data.content).openOn(map); } catch(e) {}
         }
     }, 500); 
 });
 
-window.jumpToSpecificSibling = function(caseId, targetLat, targetLng) {
-    const allLayers = [...activeRepairLayers, ...searchResultLayer.getLayers()];
-    const target = allLayers.find(m => {
-        const p = m.getLatLng();
-        return Math.abs(p.lat - targetLat) < 0.000001 && 
-               Math.abs(p.lng - targetLng) < 0.000001 && 
-               m.customData && m.customData.props &&
-               m.customData.props['案件編號'] === caseId;
-    });
-    
-    if(target) {
-        map.flyTo(target.getLatLng(), 18, { duration: 1.5 });
-        map.once('moveend', function() {
-            openDetailPopupFromMarker(target);
-        });
-    }
-};
-
-/* ==========================================
-   AI 道路健康風險預測模組 (Client-side JS版)
-   Updated in v.Dash with Dashboard & New Visuals
-   ========================================== */
 const aiRiskLayer = L.layerGroup().addTo(map);
-let aiRiskData = []; // Store results for dashboard
-
+let aiRiskData = [];
 async function toggleAiRiskLayer(checkbox) {
-    aiRiskLayer.clearLayers();
-    aiRiskData = [];
-    const loading = document.getElementById('aiLoading');
-    const dashboard = document.getElementById('aiDashboard');
-    
-    if (!checkbox.checked) {
-        loading.style.display = 'none';
-        dashboard.style.display = 'none';
-        return;
-    }
-
-    if (activeRepairLayers.length === 0) {
-        alert("系統提示：\n目前地圖上沒有載入任何維修案件。\n\n請先至「透明」分頁勾選年份，或載入資料後再執行 AI 預測。");
-        checkbox.checked = false;
-        return;
-    }
-
-    loading.style.display = 'block';
-    dashboard.style.display = 'none';
-    
-    setTimeout(() => {
-        runAiRiskAnalysis();
-        loading.style.display = 'none';
-        dashboard.style.display = 'block';
-        updateAiDashboard('all'); // Initialize dashboard
-    }, 100);
+    aiRiskLayer.clearLayers(); aiRiskData = []; const loading = document.getElementById('aiLoading'); const dashboard = document.getElementById('aiDashboard');
+    if (!checkbox.checked) { loading.style.display = 'none'; dashboard.style.display = 'none'; return; }
+    if (activeRepairLayers.length === 0) { alert("系統提示：\n目前地圖上沒有載入任何維修案件。\n\n請先至「透明」分頁勾選年份，或載入資料後再執行 AI 預測。"); checkbox.checked = false; return; }
+    loading.style.display = 'block'; dashboard.style.display = 'none';
+    setTimeout(() => { runAiRiskAnalysis(); loading.style.display = 'none'; dashboard.style.display = 'block'; updateAiDashboard('all'); }, 100);
 }
 
 function runAiRiskAnalysis() {
-    const points = activeRepairLayers.map(layer => {
-        if (layer.feature && layer.feature.geometry.type === 'Point') {
-            return layer.feature;
-        }
-        return null;
-    }).filter(p => p !== null);
-
-    const ANALYSIS_RADIUS = 0.05; // 50 meters
-    const processedCenters = []; 
-    let riskCount = 0;
-
+    const points = activeRepairLayers.map(layer => { if (layer.feature && layer.feature.geometry.type === 'Point') return layer.feature; return null; }).filter(p => p !== null);
+    const ANALYSIS_RADIUS = 0.05; const processedCenters = []; let riskCount = 0;
     points.forEach(point => {
         const center = turf.point(point.geometry.coordinates);
-        
-        const isOverlap = processedCenters.some(pc => turf.distance(center, pc) < 0.03); 
-        if (isOverlap) return;
-
-        const neighbors = points.filter(p => {
-            const target = turf.point(p.geometry.coordinates);
-            return turf.distance(center, target) <= ANALYSIS_RADIUS;
-        });
-
+        const isOverlap = processedCenters.some(pc => turf.distance(center, pc) < 0.03); if (isOverlap) return;
+        const neighbors = points.filter(p => { const target = turf.point(p.geometry.coordinates); return turf.distance(center, target) <= ANALYSIS_RADIUS; });
         if (neighbors.length < 2) return;
-
-        let riskScore = 0;
-        let treeTrimCount = 0;
-        let roadFixCount = 0;
-        let recentCaseCount = 0;
-        const now = new Date();
-
-        // 關鍵字庫 (Road/Civil)
+        let riskScore = 0; let treeTrimCount = 0; let roadFixCount = 0; let recentCaseCount = 0; const now = new Date();
         const kwRoad = ['AC','PC','瀝青','混凝土','坑洞','下陷','沉陷','掏空','裂縫','破裂','鋪設','修補','填補','路緣','擋土牆'];
-        // 關鍵字庫 (Tree/Veg)
         const kwTree = ['樹','竹','草','枝','葉','蕉','鋸除','清運','倒伏','修剪'];
-        // 關鍵字庫 (Water)
-        const kwWater = ['排水','清淤','溝','沙包','抽水','積水','泥濘','土石'];
-
         neighbors.forEach(n => {
-            const props = n.properties;
-            const name = (props['工程名稱'] || '').toString();
-            const type = (props['搶修類型'] || '').toString();
-            const fullText = name + type;
-            const dateStr = (props['完工日期'] || '').toString().trim();
-            
-            // Classification
+            const props = n.properties; const name = (props['工程名稱'] || '').toString(); const type = (props['搶修類型'] || '').toString(); const fullText = name + type; const dateStr = (props['完工日期'] || '').toString().trim();
             let isTree = kwTree.some(k => fullText.includes(k));
-            let isRoad = kwRoad.some(k => fullText.includes(k));
-            
-            if (isTree) treeTrimCount++;
-            else roadFixCount++; // Default to road if ambiguous but grouped
-
-            // Risk Weights
-            if (fullText.includes('坑洞') || fullText.includes('沉陷') || fullText.includes('掏空') || fullText.includes('下陷')) {
-                riskScore += 2;
-            } else {
-                riskScore += 1;
-            }
-
-            // Time Weight
+            if (isTree) treeTrimCount++; else roadFixCount++;
+            if (fullText.includes('坑洞') || fullText.includes('沉陷') || fullText.includes('掏空') || fullText.includes('下陷')) riskScore += 2; else riskScore += 1;
             if (dateStr.length === 7) {
-                const y = parseInt(dateStr.substring(0, 3)) + 1911;
-                const m = parseInt(dateStr.substring(3, 5)) - 1;
-                const d = parseInt(dateStr.substring(5, 7));
-                const caseDate = new Date(y, m, d);
+                const y = parseInt(dateStr.substring(0, 3)) + 1911; const m = parseInt(dateStr.substring(3, 5)) - 1; const d = parseInt(dateStr.substring(5, 7)); const caseDate = new Date(y, m, d);
                 const diffMonths = (now.getFullYear() - caseDate.getFullYear()) * 12 + (now.getMonth() - caseDate.getMonth());
-                
-                if (diffMonths <= 6) {
-                    riskScore += 3; 
-                    recentCaseCount++;
-                } else if (diffMonths <= 12) {
-                    riskScore += 1.5; 
-                }
+                if (diffMonths <= 6) { riskScore += 3; recentCaseCount++; } else if (diffMonths <= 12) riskScore += 1.5; 
             }
         });
-
         if (riskScore >= 5 || (neighbors.length >= 3 && recentCaseCount > 0)) {
             const marker = createRiskMarker(center, neighbors.length, treeTrimCount, roadFixCount, recentCaseCount, riskScore);
             processedCenters.push(center);
-            
-            // Save data for dashboard
-            aiRiskData.push({
-                marker: marker,
-                score: riskScore,
-                total: neighbors.length,
-                tree: treeTrimCount,
-                road: roadFixCount,
-                recent: recentCaseCount,
-                lat: center.geometry.coordinates[1],
-                lng: center.geometry.coordinates[0]
-            });
+            aiRiskData.push({ marker: marker, score: riskScore, total: neighbors.length, tree: treeTrimCount, road: roadFixCount, recent: recentCaseCount, lat: center.geometry.coordinates[1], lng: center.geometry.coordinates[0] });
             riskCount++;
         }
     });
-
-    if (riskCount === 0) {
-        alert("AI 分析完成：\n目前範圍內無顯著的高風險群聚熱點。");
-    }
+    if (riskCount === 0) alert("AI 分析完成：\n目前範圍內無顯著的高風險群聚熱點。");
 }
 
 function createRiskMarker(centerPoint, totalCount, treeCount, roadCount, recentCount, score) {
-    const lat = centerPoint.geometry.coordinates[1];
-    const lng = centerPoint.geometry.coordinates[0];
-    
-    let level = "中度風險";
-    let cssClass = "ai-marker-med"; // Orange default
-    if (score > 10) {
-        level = "極高風險";
-        cssClass = "ai-pulse-marker"; // Purple high risk
-    } else if (score > 7) {
-        level = "高度風險";
-        cssClass = "ai-pulse-marker";
-    }
-
-    const icon = L.divIcon({
-        className: 'custom-div-icon',
-        // 使用 FontAwesome 雷達圖標
-        html: `<div class="${cssClass}" title="AI 風險預警"><i class="fas fa-radiation-alt"></i></div>`,
-        iconSize: [24, 24],
-        iconAnchor: [12, 12]
-    });
-
-    // Z-index offset 確保蓋在普通點上面
+    const lat = centerPoint.geometry.coordinates[1]; const lng = centerPoint.geometry.coordinates[0];
+    let level = "中度風險"; let cssClass = "ai-marker-med"; 
+    if (score > 10) { level = "極高風險"; cssClass = "ai-pulse-marker"; } else if (score > 7) { level = "高度風險"; cssClass = "ai-pulse-marker"; }
+    const icon = L.divIcon({ className: 'custom-div-icon', html: `<div class="${cssClass}" title="AI 風險預警"><i class="fas fa-radiation-alt"></i></div>`, iconSize: [24, 24], iconAnchor: [12, 12] });
     const marker = L.marker([lat, lng], { icon: icon, zIndexOffset: 1000 }).addTo(aiRiskLayer);
-
     let advice = "";
-    if (treeCount > roadCount) {
-        advice = "此處植被修剪頻繁，建議檢查路樹根系是否影響路基/排水，或評估行道樹矮化/移植可行性。";
-    } else if (recentCount >= 2) {
-        advice = "半年內發生多次重複維修，顯示該處路基極不穩定！建議安排透地雷達檢測或開挖檢視地下管線。";
-    } else {
-        advice = "此處為維修熱區，建議納入下一年度優先路平專案路段。";
-    }
-
-    const popupHtml = `
-        <div style="width:280px;">
-            <div class="ai-report-header">
-                <i class="fas fa-robot"></i> AI 道路健康風險評估
-            </div>
-            <div class="ai-report-body">
-                <div class="ai-stat-row">
-                    <span>風險等級</span>
-                    <span class="ai-stat-val">${level} (Score: ${score})</span>
-                </div>
-                <div class="ai-stat-row">
-                    <span>範圍半徑</span>
-                    <span style="font-family:monospace;">50 公尺內</span>
-                </div>
-                <div class="ai-stat-row">
-                    <span>累計維修總數</span>
-                    <span class="ai-stat-val">${totalCount} 次</span>
-                </div>
-                <div class="ai-stat-row">
-                    <span>土木結構修補</span>
-                    <span>${roadCount} 次</span>
-                </div>
-                <div class="ai-stat-row">
-                    <span>環境植被處理</span>
-                    <span>${treeCount} 次</span>
-                </div>
-                <div class="ai-stat-row">
-                    <span>近半年內案件</span>
-                    <span style="color:${recentCount>0?'red':'#333'}">${recentCount} 次</span>
-                </div>
-                
-                <div class="ai-advice-box">
-                    <strong><i class="fas fa-clipboard-check"></i> 預防性決策建議：</strong><br>
-                    ${advice}
-                </div>
-            </div>
-        </div>
-    `;
-
-    marker.bindPopup(popupHtml, { className: 'custom-popup', maxWidth: 300 });
-    return marker;
+    if (treeCount > roadCount) advice = "此處植被修剪頻繁，建議檢查路樹根系是否影響路基/排水，或評估行道樹矮化/移植可行性。";
+    else if (recentCount >= 2) advice = "半年內發生多次重複維修，顯示該處路基極不穩定！建議安排透地雷達檢測或開挖檢視地下管線。";
+    else advice = "此處為維修熱區，建議納入下一年度優先路平專案路段。";
+    const popupHtml = `<div style="width:280px;"><div class="ai-report-header"><i class="fas fa-robot"></i> AI 道路健康風險評估</div><div class="ai-report-body"><div class="ai-stat-row"><span>風險等級</span><span class="ai-stat-val">${level} (Score: ${score})</span></div><div class="ai-stat-row"><span>範圍半徑</span><span style="font-family:monospace;">50 公尺內</span></div><div class="ai-stat-row"><span>累計維修總數</span><span class="ai-stat-val">${totalCount} 次</span></div><div class="ai-stat-row"><span>土木結構修補</span><span>${roadCount} 次</span></div><div class="ai-stat-row"><span>環境植被處理</span><span>${treeCount} 次</span></div><div class="ai-stat-row"><span>近半年內案件</span><span style="color:${recentCount>0?'red':'#333'}">${recentCount} 次</span></div><div class="ai-advice-box"><strong><i class="fas fa-clipboard-check"></i> 預防性決策建議：</strong><br>${advice}</div></div></div>`;
+    marker.bindPopup(popupHtml, { className: 'custom-popup', maxWidth: 300 }); return marker;
 }
 
-// Dashboard Functions
-window.filterAiResults = function(type, btn) {
-    // Update active button
-    document.querySelectorAll('.ai-filter-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    
-    updateAiDashboard(type);
-};
-
+window.filterAiResults = function(type, btn) { document.querySelectorAll('.ai-filter-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); updateAiDashboard(type); };
 function updateAiDashboard(filterType) {
-    const list = document.getElementById('aiResultList');
-    list.innerHTML = '';
-    
-    // Sort by score desc
+    const list = document.getElementById('aiResultList'); list.innerHTML = '';
     let sorted = [...aiRiskData].sort((a,b) => b.score - a.score);
-    
-    // Filter
-    if (filterType === 'high') sorted = sorted.filter(d => d.score > 10);
-    else if (filterType === 'road') sorted = sorted.filter(d => d.road > d.tree);
-    else if (filterType === 'tree') sorted = sorted.filter(d => d.tree >= d.road);
-    
-    // Show on map
-    aiRiskLayer.eachLayer(l => l.setOpacity(0)); // Hide all first
-    
+    if (filterType === 'high') sorted = sorted.filter(d => d.score > 10); else if (filterType === 'road') sorted = sorted.filter(d => d.road > d.tree); else if (filterType === 'tree') sorted = sorted.filter(d => d.tree >= d.road);
+    aiRiskLayer.eachLayer(l => l.setOpacity(0)); 
     sorted.forEach((d, i) => {
-        d.marker.setOpacity(1); // Show filtered
-        
-        const badgeClass = d.score > 10 ? 'badge-high' : 'badge-med';
-        const badgeText = d.score > 10 ? '極高' : '中高';
-        const typeText = d.road > d.tree ? '土木' : '植被';
-        
-        const div = document.createElement('div');
-        div.className = 'ai-list-item';
-        div.innerHTML = `
-            <div>
-                <span class="ai-score-badge ${badgeClass}">${badgeText}</span>
-                <span style="font-weight:bold; color:#555;">熱點 #${i+1}</span>
-            </div>
-            <div style="text-align:right; color:#666;">
-                ${typeText} | ${d.total}次維修
-            </div>
-        `;
-        div.onclick = () => {
-            map.flyTo([d.lat, d.lng], 18);
-            setTimeout(() => d.marker.openPopup(), 500);
-            if(window.innerWidth <= 768) document.body.classList.remove('sidebar-open');
-        };
+        d.marker.setOpacity(1); 
+        const badgeClass = d.score > 10 ? 'badge-high' : 'badge-med'; const badgeText = d.score > 10 ? '極高' : '中高'; const typeText = d.road > d.tree ? '土木' : '植被';
+        const div = document.createElement('div'); div.className = 'ai-list-item';
+        div.innerHTML = `<div><span class="ai-score-badge ${badgeClass}">${badgeText}</span> <span style="font-weight:bold; color:#555;">熱點 #${i+1}</span></div><div style="text-align:right; color:#666;">${typeText} | ${d.total}次維修</div>`;
+        div.onclick = () => { map.flyTo([d.lat, d.lng], 18); setTimeout(() => d.marker.openPopup(), 500); if(window.innerWidth <= 768) document.body.classList.remove('sidebar-open'); };
         list.appendChild(div);
     });
-    
-    if(sorted.length === 0) {
-        list.innerHTML = '<div style="padding:10px; text-align:center; color:#999;">無符合條件的熱點</div>';
-    }
+    if(sorted.length === 0) list.innerHTML = '<div style="padding:10px; text-align:center; color:#999;">無符合條件的熱點</div>';
 }
 </script>
 </body>

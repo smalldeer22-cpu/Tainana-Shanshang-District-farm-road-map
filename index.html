@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0208V2)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0208V3)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -27,13 +27,12 @@
     --popup-accent: #10b981;    
   }
   
-  /* 強制鎖定視窗，防止版面溢出 */
   html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; font-family: "Microsoft JhengHei", Arial, sans-serif; background-color: var(--bg-light); color: var(--text-dark); }
 
   /* === 2. 佈局容器 === */
   #container { display: flex; width: 100%; height: 100%; position: relative; overflow: hidden; }
   
-  /* 側邊欄 (修正 Z-Index 問題，確保手機版可點擊，設為 2001 高於遮罩層) */
+  /* 側邊欄 (Z-Index 修正：2001 確保高於遮罩) */
   #sidebar {
     width: var(--sidebar-width);
     min-width: var(--sidebar-width);
@@ -47,482 +46,143 @@
     height: 100%;
   }
   
-  /* 漢堡按鈕控制 (Desktop) */
   body.collapsed #sidebar { margin-left: calc(var(--sidebar-width) * -1); }
-  
-  /* 地圖區 */
   #map { flex-grow: 1; height: 100%; position: relative; z-index: 1; width: calc(100% - var(--sidebar-width)); transition: width 0.3s ease; }
   body.collapsed #map { width: 100%; }
 
-  /* 懸浮漢堡按鈕 */
   #toggleSidebarBtn {
     position: absolute; top: 10px; left: 360px; width: 40px; height: 40px;
     background: #fff; color: var(--text-dark); border: 2px solid rgba(0,0,0,0.1); border-radius: 8px;
     cursor: pointer; z-index: 2000; display: flex; align-items: center; justify-content: center;
     box-shadow: 0 2px 6px rgba(0,0,0,0.2); transition: left 0.3s ease; 
   }
-  #toggleSidebarBtn:hover { background: #f4f4f4; }
   body.collapsed #toggleSidebarBtn { left: 10px; }
 
-  /* === 3. 側邊欄內容組件 === */
+  /* === 3. 側邊欄組件 === */
   .sidebar-header { padding: 15px; background: var(--primary-color); color: white; text-align: center; flex-shrink: 0; }
   .sidebar-header h3 { margin: 0; font-size: 16px; font-weight: bold; line-height: 1.4; }
-  
-  /* 分頁籤樣式 */
   .tabs-nav { display: flex; background: #eef2f6; padding: 5px 5px 0 5px; flex-shrink: 0; overflow-x: auto; }
   .tab-btn { flex: 1; padding: 10px 5px; border: none; background: transparent; cursor: pointer; font-size: 13px; font-weight: bold; color: #666; border-radius: 8px 8px 0 0; transition: all 0.2s; white-space: nowrap; }
   .tab-btn.active { background: #fff; color: var(--primary-color); box-shadow: 0 -2px 5px rgba(0,0,0,0.05); position: relative; top: 1px; }
-  
   .tab-content-container { flex: 1; overflow-y: auto; padding: 15px; background: #fff; position: relative; }
   .tab-pane { display: none; animation: fadeIn 0.3s; }
   .tab-pane.active { display: block; }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+  .sidebar-footer { flex-shrink: 0; padding: 10px 15px; background: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 11px; color: #64748b; text-align: center; }
 
-  .sidebar-footer {
-      flex-shrink: 0; 
-      padding: 10px 15px;
-      padding-bottom: calc(10px + env(safe-area-inset-bottom));
-      background: #f8fafc;
-      border-top: 1px solid #e2e8f0;
-      font-size: 11px;
-      color: #64748b;
-      line-height: 1.6; 
-      text-align: center;
-      white-space: normal; 
-  }
-
-  /* 卡片區塊樣式 */
   .card-section { background: #fff; border-radius: 12px; padding: 12px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: 1px solid #f0f0f0; }
-  .card-title { font-size: 14px; font-weight: bold; color: var(--primary-color); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 2px solid #f0f0f0; }
+  .card-title { font-size: 14px; font-weight: bold; color: var(--primary-color); margin-bottom: 10px; border-bottom: 2px solid #f0f0f0; }
   
   /* 年度摺疊選單 */
   .year-group { margin-bottom: 8px; border: 1px solid #eee; border-radius: 6px; overflow: hidden; }
-  .year-header { background: #f8fafc; padding: 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 13px; color: #475569; user-select: none; }
-  .year-header:hover { background: #e2e8f0; }
+  .year-header { background: #f8fafc; padding: 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 13px; color: #475569; }
   .year-content { display: none; padding: 8px 12px; background: #fff; border-top: 1px solid #eee; }
   .year-group.open .year-content { display: block; }
-  .year-group.open .toggle-icon { transform: rotate(90deg); }
-  .toggle-icon { display:inline-block; transition: transform 0.2s; width:12px; margin-right:5px;}
-  .year-select-all { font-size: 12px; color: var(--primary-color); cursor: pointer; }
   .checkbox-item { margin-bottom: 6px; display: flex; align-items: center; gap: 6px; font-size: 13px; }
-  .checkbox-item input { margin: 0; accent-color: var(--primary-color); }
 
-  /* V3 Added: 多選摺疊樣式 */
-  .multiselect-group { border: 1px solid #ddd; border-radius: 6px; margin-bottom: 10px; background: #fff; }
-  .multiselect-header { 
-      padding: 10px; cursor: pointer; background: #fff; color: #555; font-size: 14px; 
-      display: flex; justify-content: space-between; align-items: center; border-radius: 6px;
-      transition: background 0.2s;
-  }
-  .multiselect-header:hover { background: #f5f5f5; }
-  .multiselect-header i { transition: transform 0.2s; font-size: 12px; color: #999; }
-  .multiselect-group.open .multiselect-header { background: #f0f7ff; border-radius: 6px 6px 0 0; color: var(--primary-color); font-weight: bold; border-bottom: 1px solid #e0e0e0; }
-  .multiselect-group.open .multiselect-header i { transform: rotate(180deg); color: var(--primary-color); }
-  .multiselect-content { display: none; padding: 10px; max-height: 250px; overflow-y: auto; background: #fafafa; border-radius: 0 0 6px 6px; }
-  .multiselect-group.open .multiselect-content { display: block; }
-  .select-all-row { border-bottom: 1px dashed #ddd; padding-bottom: 5px; margin-bottom: 5px; font-weight: bold; color: #004080; }
-
-  select, textarea, input[type="text"] { width: 100%; padding: 10px; margin-top: 5px; font-size: 14px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
-  
-  button.primary { width: 100%; padding: 10px; margin-top: 8px; cursor: pointer; border-radius: 6px; border: none; background: var(--primary-color); color: #fff; font-size: 14px; font-weight: bold; }
-  button.primary:hover { background: #003366; }
-  button.secondary { width: 100%; padding: 8px; margin-top: 8px; cursor: pointer; border-radius: 6px; border: 1px solid #ddd; background: #fff; color: #555; font-size: 13px; }
-  button.secondary:hover { background: #f5f5f5; }
-  button:disabled { background: #ccc !important; cursor: not-allowed; color: #666 !important; }
-
-  /* === 登革熱專用樣式 === */
-  .dengue-option { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; cursor: pointer; font-weight: bold; color: #555; }
-  .dengue-option input { width: auto; margin: 0; transform: scale(1.2); }
-  .gray-dot-marker { width: 14px; height: 14px; background: #7f8c8d; border: 2px solid #fff; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.4); }
-
-  /* === 地圖控制項 === */
-  .map-floating-controls { position: absolute; top: 20px; right: 20px; z-index: 1000; display: flex; flex-direction: column; gap: 10px; }
-  .float-btn { width: 40px; height: 40px; border-radius: 50%; background: #fff; border: none; color: #444; box-shadow: 0 2px 8px rgba(0,0,0,0.2); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; position: relative; }
-  .float-btn:hover { background: #f0f0f0; color: var(--primary-color); transform: scale(1.1); }
-  .float-btn.active { background: var(--accent-color); color: #000; }
-  .float-btn::after { content: attr(data-title); position: absolute; right: 50px; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.7); color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 12px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
-  .float-btn:hover::after { opacity: 1; }
-
-  /* 定位套件樣式覆寫 */
-  .leaflet-control-locate { border: none !important; box-shadow: none !important; margin: 0 !important; }
-  .leaflet-control-locate a { width: 40px !important; height: 40px !important; border-radius: 50% !important; background: #fff !important; color: #444 !important; font-size: 16px !important; line-height: 40px !important; display: flex !important; align-items: center !important; justify-content: center !important; box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important; cursor: pointer !important; }
-  .leaflet-control-locate a:hover { background: #f0f0f0 !important; color: #004080 !important; transform: scale(1.1); }
-  .leaflet-control-locate.active a { color: #2074b6 !important; background: #fff !important; }
-  .leaflet-control-locate.following a { color: #e65100 !important; border: 2px solid #e65100 !important; }
-  .leaflet-control-locate a .leaflet-control-locate-location-arrow { display: none; }
-
-  /* 聚合圖標 */
-  .marker-cluster-custom { background-color: rgba(46, 204, 113, 0.6); border-radius: 50%; }
-  .marker-cluster-custom div { width: 30px; height: 30px; margin-left: 5px; margin-top: 5px; text-align: center; border-radius: 50%; color: white; font-weight: bold; background-color: rgba(39, 174, 96, 0.9); line-height: 30px; font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-
-  /* 聚合控制面板 */
-  #clusterControlPanel {
-    position: absolute; bottom: 220px; left: 360px; z-index: 1000;
-    background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(5px);
-    padding: 15px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-    width: 220px; border: 1px solid rgba(255,255,255,0.2);
-    display: none; transition: left 0.3s ease;
-  }
-  body.collapsed #clusterControlPanel { left: 20px; } 
-
-  .cluster-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
-  .cluster-title { font-size:14px; font-weight:bold; color:var(--primary-color); display:flex; align-items:center; gap:6px; }
-  .cluster-value-badge { background: var(--accent-color); color:#fff; padding:2px 6px; border-radius:4px; font-size:12px; }
-  input[type=range].custom-range { -webkit-appearance: none; width: 100%; background: transparent; }
-  input[type=range].custom-range::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: var(--primary-color); cursor: pointer; margin-top: -6px; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
-  input[type=range].custom-range::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: #ddd; border-radius: 2px; }
-
-  /* === 6. 底部時間軸面板 === */
-  #bottomPanel { 
-      position: absolute; bottom: 0; left: var(--sidebar-width); right: 0; 
-      height: 280px; background: rgba(255, 255, 255, 0.98); 
-      box-shadow: 0 -4px 16px rgba(0,0,0,0.1); z-index: 1400; 
-      display: flex; flex-direction: column; transform: translateY(100%); 
-      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), height 0.3s ease; 
-      border-top: 1px solid #e0e0e0; overflow: hidden; 
-  }
-  body.collapsed #bottomPanel { left: 0; } 
-  #bottomPanel.open { transform: translateY(0); }
-  #bottomPanel.minimized { height: auto !important; transform: translateY(0) !important; }
-  #bottomPanel.minimized #timelineFilterBar, #bottomPanel.minimized #timelineContainer { display: none !important; }
-
-  #bottomPanelHeader { padding: 8px 20px; min-height: 50px; height: auto; background: var(--primary-color); color: white; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
-  .header-left { display: flex; flex-direction: column; gap: 2px; justify-content: center; overflow: hidden; }
-  #panelTitle { font-size: 15px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  #timelineStats { font-size: 13px; color: #ffeb3b; font-weight: normal; opacity: 1; white-space: normal; line-height: 1.5; margin-top: 2px; }
-  @media (max-width: 768px) { #timelineStats { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.6; } .stat-divider { display: none; } }
-  .header-right { display: flex; gap: 15px; align-items: center; flex-shrink: 0;}
-  .control-btn { background:none; border:none; color:#fff; font-size:16px; cursor:pointer; padding: 5px; transition: color 0.2s; }
-  .control-btn:hover { color: #ffeb3b; }
-
-  #timelineFilterBar { 
-      background: #f1f5f9; padding: 8px 10px; 
-      border-bottom: 1px solid #e0e0e0; 
-      display: flex; gap: 6px; 
-      align-items: center; flex-shrink: 0; 
-      height: auto; min-height: 50px; box-sizing: border-box; 
-      flex-wrap: nowrap; 
-      overflow-x: auto; 
-  }
-  #timelineFilterBar::-webkit-scrollbar { height: 0px; background: transparent; }
-  
-  .filter-label { font-size: 12px; color: #333; font-weight: bold; white-space: nowrap; display: flex; align-items: center; gap: 4px; margin-right: 2px; flex-shrink: 0; }
-  
-  .timeline-select-pill {
-      padding: 4px 8px; border: 1px solid #cbd5e1; border-radius: 20px; background-color: #fff;
-      font-size: 12px; font-weight: bold; color: #334155; cursor: pointer; outline: none; transition: all 0.2s;
-      min-width: auto; max-width: 180px; flex-shrink: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-      background-image: linear-gradient(to bottom, #fff, #f8fafc);
-  }
-  .timeline-select-pill:hover { border-color: var(--primary-color); color: var(--primary-color); }
-  .timeline-select-pill:focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(0, 64, 128, 0.1); }
-  
-  #timelineContainer { flex: 1; overflow-x: auto; padding: 15px 20px; display: flex; align-items: flex-start; gap: 0; }
-  .h-item { width: 160px; text-align: center; cursor: pointer; position: relative; transition: transform 0.2s; }
-  .h-item:hover { transform: translateY(-5px); }
-  .h-date { font-size: 13px; font-weight: bold; color: #333; margin-bottom: 8px; }
-  .h-line-container { position: relative; height: 24px; display: flex; align-items: center; justify-content: center; }
-  .h-line-container::before { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 3px; background: #ddd; z-index: 0; }
-  .h-item.alert-right .h-line-container::after { content: ''; position: absolute; left: 50%; right: -50%; top: 50%; height: 4px; background: repeating-linear-gradient(45deg, #d32f2f, #d32f2f 5px, #ffcdd2 5px, #ffcdd2 10px); z-index: 0; animation: alertPulse 1.5s infinite; }
-  @keyframes alertPulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
-  .h-dot { background: var(--primary-color); border: 2px solid #fff; border-radius: 50%; z-index: 1; position: relative; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
-  .h-item:hover .h-dot { transform: scale(1.3); background: var(--accent-color); border-color: #fff; }
-  .dot-sm { width: 12px; height: 12px; }
-  .dot-md { width: 16px; height: 16px; }
-  .dot-lg { width: 22px; height: 22px; box-shadow: 0 0 0 3px rgba(0, 64, 128, 0.3); }
-  .h-badge { margin-top: 8px; display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; color: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.2); white-space: nowrap; position: relative; z-index: 2; }
-  .badge-normal { background-color: var(--primary-color); border: 1px solid #fff; }
-  .badge-urgent { background-color: #d32f2f; border: 1px solid #fff; }
-
-  /* === 7. 右鍵選單 === */
-  #contextMenu { display: none; position: fixed; z-index: 5000; background: #fff; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); overflow: hidden; min-width: 160px; border: 1px solid #ddd; top: 0; left: 0; }
-  .ctx-item { padding: 10px 15px; cursor: pointer; font-size: 14px; color: #333; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #f0f0f0; }
-  .ctx-item:hover { background: #f5faff; color: var(--primary-color); }
-  .ctx-item i { width: 20px; text-align: center; }
-
-  /* === 關鍵修改：3欄式 Popup CSS (v.0109-3Column) + 手機版優化 === */
+  /* === 4. Popup 視覺樣式核心 === */
   .custom-popup .leaflet-popup-content-wrapper { padding: 0 !important; border-radius: 20px !important; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.15) !important; border: 2px solid var(--popup-border) !important; background: rgba(242, 252, 245, 0.95) !important; backdrop-filter: blur(5px); }
   .custom-popup .leaflet-popup-content { margin: 0 !important; width: 960px !important; max-width: 90vw !important; }
   .custom-popup .leaflet-popup-tip { background: var(--popup-border) !important; }
 
   .popup-card { display: flex; flex-direction: row; min-height: 320px; }
   .popup-deco-strip { width: 8px; background: var(--popup-text-sub); flex-shrink: 0; }
-  
-  /* 左欄：資訊區 */
   .popup-col-info { width: 280px; padding: 20px; display: flex; flex-direction: column; justify-content: space-between; border-right: 1px solid #e0e0e0; flex-shrink: 0; background: rgba(255,255,255,0.6); }
-  
-  /* 照片區 */
   .popup-col-photo { flex: 1; padding: 15px; display: flex; flex-direction: column; gap: 10px; border-right: 1px solid #e0e0e0; background: #fff; min-width: 0; }
   .popup-col-photo:last-child { border-right: none; }
 
-  /* 資訊元件 */
-  /* Remove OLD Status Pill for Desktop, keep for Mobile header if needed */
-  .status-pill { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 900; letter-spacing: 0.5px; color: #fff; align-self: flex-start; margin-bottom: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-  .pill-working { background: #10b981; } .pill-done { background: #64748b; } .pill-urgent { background: #f59e0b; }  
-  
-  /* 字體放大優化區域 */
-  .case-id { font-size: 26px; font-weight: 900; color: #000; line-height: 1.2; letter-spacing: -0.5px; margin-bottom: 6px; }
-  .case-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; color: #3d5a80; margin-bottom: 10px; }
-  .file-tag { background: #ecfdf5; padding: 2px 6px; border-radius: 4px; font-family: monospace; letter-spacing: -0.5px; opacity: 0.8; }
-  
-  /* V0129 新增：多類型標籤樣式 */
-  .type-tag-group { display: inline-flex; gap: 4px; align-items: center; flex-wrap: wrap; }
-  .type-pill { background: rgba(16, 185, 129, 0.1); color: var(--popup-text-sub); padding: 2px 6px; border-radius: 4px; font-size: 11px; white-space: nowrap; }
-  .type-pill-more { background: #e0f2fe; color: #0284c7; cursor: pointer; font-weight: bold; border-radius: 4px; padding: 2px 6px; font-size: 11px; transition: all 0.2s; }
-  .type-pill-more:hover { background: #bae6fd; transform: scale(1.05); }
-
-  .price-block { margin: 10px 0; border-bottom: 1px dashed #ccc; padding-bottom: 10px; }
-  .price-label { font-size: 10px; color: var(--popup-text-sub); font-weight: 900; letter-spacing: 1px; text-transform: uppercase; }
-  .price-val { font-size: 30px; font-weight: 900; color: #064e3b; font-style: italic; letter-spacing: -0.5px; line-height: 1.2; }
-
-  .compact-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; }
-  .compact-item { font-size: 13px; line-height: 1.4; color: #334155; }
-  .compact-label { font-weight: 900; color: #047857; background: #d1fae5; padding: 2px 6px; border-radius: 4px; font-size: 12px; display: inline-block; margin-bottom: 2px; }
-  .compact-val { font-weight: bold; font-size: 15px; color: #1f2937; word-break: break-word; }
-  .compact-row { display: flex; gap: 10px; }
-  .popup-tags { display: flex; gap: 6px; margin-bottom: 15px; flex-wrap: wrap; }
-  .tag-pill { padding: 3px 10px; border-radius: 8px; font-size: 11px; font-weight: bold; box-shadow: 0 1px 2px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 4px; }
-  .tag-dark { background: var(--popup-text-sub); color: white; }
-  .tag-light { background: white; border: 1px solid var(--popup-border); color: var(--popup-text-main); }
-
-  /* ===========================================
-     ★ 關鍵修正：泡泡窗按鈕配置 ★
-     ===========================================
-  */
-  /* 💻 電腦版：強制 2x2 Grid 排版 */
-  .popup-btns.view-desktop { 
-      display: grid !important; 
-      grid-template-columns: 1fr 1fr; /* 強制兩欄 */
-      gap: 10px; /* 增加間距 */
-      margin-top: auto; 
-      padding-top: 10px;
-  }
-  
-  /* 📱 手機版：強制 1x4 Grid 排版 (由左至右單行) */
-  .popup-btns.view-mobile {
-      display: grid !important;
-      grid-template-columns: repeat(4, 1fr); /* 強制四欄 */
-      gap: 5px;
-      margin-top: 10px;
-  }
-
-  .popup-btn-new { 
-      background: white; 
-      color: #065f46; /* 深綠色文字 */
-      border: 1.5px solid #6ee7b7; /* 淺綠色邊框 */
-      padding: 12px 0; /* 增加按鈕高度 */
-      border-radius: 30px; /* 膠囊狀圓角 Pill Shape */
-      font-size: 14px; 
-      font-weight: bold; 
-      display: flex; 
-      align-items: center; 
-      justify-content: center; 
-      gap: 6px; 
-      text-decoration: none; 
-      transition: all 0.2s; 
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
-      white-space: nowrap;
-  }
-  
-  /* 手機版按鈕微調，適應狹窄空間 */
-  .popup-btns.view-mobile .popup-btn-new {
-      padding: 8px 0;
-      font-size: 12px;
-      gap: 4px;
-      flex-direction: column; /* 空間不足時，圖示與文字垂直排列，若需水平可移除此行 */
-  }
-  .popup-btns.view-mobile .popup-btn-new i {
-      font-size: 14px;
-      margin-bottom: 2px;
-  }
-  
-  .popup-btn-new:hover { 
-      background: #f0fdf4; 
-      transform: translateY(-2px);
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      border-color: #10b981;
-      color: #047857;
-  }
-  
-  .popup-btn-new i { font-size: 16px; }
-
-  /* Reset old styles just in case */
-  .btn-full { grid-column: auto; }
-
-  /* 0116V2 Added: Sibling Dot Navigation Style */
-  .sibling-nav-container { display: flex; gap: 5px; margin-bottom: 5px; flex-wrap: wrap; align-items: center; }
-  .sibling-nav-container.mobile { justify-content: center; margin-bottom: 5px; margin-top: -2px; }
-  .sibling-dot {
-      width: 20px; height: 20px; border-radius: 50%;
-      background: #fff; border: 1px solid #6f42c1;
-      color: #6f42c1; font-size: 10px; font-weight: bold;
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer; transition: all 0.2s; user-select: none;
-  }
-  .sibling-dot:hover { background: #f3e5f5; transform: scale(1.1); }
-  .sibling-dot.active {
-      background: #6f42c1; color: white;
-      box-shadow: 0 0 0 2px rgba(111, 66, 193, 0.3);
-      cursor: default; transform: scale(1.05);
-  }
-
-  /* 照片輪播 */
-  .photo-section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
-  .photo-title { font-size: 11px; font-weight: 900; color: var(--popup-text-main); display: flex; align-items: center; gap: 5px; }
-  .photo-viewer { flex: 1; position: relative; border-radius: 8px; border: 1px solid var(--popup-border); background: #f1f5f9; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-  .photo-viewer img { 
-      width: 100%; height: 100%; object-fit: cover; display: none;
-      /* V13V5 Added: 照片防下載保護 */
-      -webkit-user-drag: none;
-      user-select: none;
-      -webkit-touch-callout: none;
-  }
-  .photo-viewer img.active { display: block; }
-  .photo-viewer .no-photo { color: #666; font-size: 24px; display: flex; flex-direction: column; align-items: center; gap:5px; background: #f0fdf4; width:100%; height:100%; justify-content:center; }
-  .photo-viewer .no-photo span { font-size: 10px; font-weight: bold; }
-  .carousel-dots { display: flex; justify-content: center; gap: 8px; margin-top: 10px; height: 22px; }
-  .dot { width: 22px; height: 22px; border-radius: 50%; background: #e2e8f0; color: #64748b; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 900; border: 1px solid #cbd5e1; user-select: none; }
-  .dot:hover { background: #cbd5e1; }
-  .dot.active { background: var(--accent-color); color: #fff; border-color: var(--accent-color); transform: scale(1.1); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-
-  /* === Progress Bar Styles (0206V3-Progress) === */
-  .progress-container { 
-      display: flex; justify-content: space-between; align-items: center; 
-      position: relative; margin: 12px 0 15px 0; padding: 0 5px; /* 增加間距避免重疊 */
-  }
+  /* 進度條 */
+  .progress-container { display: flex; justify-content: space-between; align-items: center; position: relative; margin: 12px 0 15px 0; padding: 0 5px; }
   .progress-track { position: absolute; top: 12px; left: 10px; right: 10px; height: 4px; background: #e0e0e0; z-index: 0; border-radius: 2px; }
   .progress-fill { position: absolute; top: 12px; left: 10px; height: 4px; background: var(--popup-accent); z-index: 0; border-radius: 2px; transition: width 0.3s ease; }
   .progress-step { z-index: 1; text-align: center; width: 33%; position: relative; display: flex; flex-direction: column; align-items: center; }
-  .step-circle { width: 24px; height: 24px; background: #e0e0e0; border-radius: 50%; margin-bottom: 4px; border: 2px solid #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #fff; font-weight: bold; transition: background 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+  .step-circle { width: 24px; height: 24px; background: #e0e0e0; border-radius: 50%; margin-bottom: 4px; border: 2px solid #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #fff; font-weight: bold; }
   .progress-step.active .step-circle { background: var(--popup-accent); }
   .step-label { font-size: 11px; color: #666; font-weight: bold; margin-bottom: 2px; }
   .step-date { font-size: 10px; color: #999; font-family: monospace; }
   .progress-step.active .step-label { color: var(--popup-text-main); }
   .progress-step.active .step-date { color: #555; }
 
-  /* === AI 風險預測專用樣式 (Added in v.0206V1-AI-Plus) === */
-  .ai-pulse-marker {
-    width: 24px; height: 24px;
-    background: rgba(155, 89, 182, 0.9); /* 紫色系 */
-    border: 2px solid #fff;
-    border-radius: 50%;
-    box-shadow: 0 0 0 0 rgba(155, 89, 182, 0.7);
-    animation: pulse-purple 2s infinite;
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    color: white; font-size: 12px; font-weight: bold; z-index: 5000;
-  }
-  .ai-marker-med {
-      background: rgba(230, 126, 34, 0.9); /* 橘色 */
-      box-shadow: 0 0 0 0 rgba(230, 126, 34, 0.7);
-      animation: pulse-orange 2s infinite;
-  }
+  /* 資訊文字 */
+  .status-pill { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 900; letter-spacing: 0.5px; color: #fff; margin-bottom: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+  .pill-working { background: #10b981; } .pill-done { background: #64748b; } .pill-urgent { background: #f59e0b; }
+  .case-id { font-size: 26px; font-weight: 900; color: #000; line-height: 1.2; letter-spacing: -0.5px; margin-bottom: 6px; }
+  .case-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; color: #3d5a80; margin-bottom: 10px; }
+  .file-tag { background: #ecfdf5; padding: 2px 6px; border-radius: 4px; font-family: monospace; opacity: 0.8; }
   
-  @keyframes pulse-purple {
-    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(155, 89, 182, 0.7); }
-    70% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(155, 89, 182, 0); }
-    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(155, 89, 182, 0); }
-  }
-  @keyframes pulse-orange {
-    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(230, 126, 34, 0.7); }
-    70% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(230, 126, 34, 0); }
-    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(230, 126, 34, 0); }
-  }
+  .price-block { margin: 10px 0; border-bottom: 1px dashed #ccc; padding-bottom: 10px; }
+  .price-label { font-size: 10px; color: var(--popup-text-sub); font-weight: 900; letter-spacing: 1px; text-transform: uppercase; }
+  .price-val { font-size: 30px; font-weight: 900; color: #064e3b; font-style: italic; letter-spacing: -0.5px; line-height: 1.2; }
 
-  /* AI Dashboard Styles */
-  #aiDashboard { margin-top: 10px; display: none; animation: fadeIn 0.3s; }
-  .ai-dash-filters { display: flex; gap: 5px; overflow-x: auto; margin-bottom: 10px; padding-bottom: 5px; }
-  .ai-filter-btn { 
-      padding: 4px 8px; border-radius: 12px; border: 1px solid #ddd; background: #fff; 
-      font-size: 11px; white-space: nowrap; cursor: pointer; color: #555;
-  }
-  .ai-filter-btn.active { background: #9b59b6; color: white; border-color: #9b59b6; }
-  .ai-list-item { 
-      padding: 8px; border-bottom: 1px dashed #eee; font-size: 12px; cursor: pointer; 
-      display: flex; justify-content: space-between; align-items: center; transition: background 0.2s;
-  }
-  .ai-list-item:hover { background: #fdf2fe; }
-  .ai-score-badge { font-weight: bold; color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 10px; }
-  .badge-high { background: #9b59b6; }
-  .badge-med { background: #e67e22; }
+  /* 詳細資訊列表 */
+  .compact-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; }
+  .compact-item { font-size: 13px; line-height: 1.4; color: #334155; }
+  .compact-label { font-weight: 900; color: #047857; background: #d1fae5; padding: 2px 6px; border-radius: 4px; font-size: 12px; display: inline-block; margin-bottom: 2px; }
+  .compact-val { font-weight: bold; font-size: 15px; color: #1f2937; word-break: break-word; }
+  .compact-row { display: flex; gap: 10px; }
+  
+  .type-pill { background: rgba(16, 185, 129, 0.1); color: var(--popup-text-sub); padding: 2px 6px; border-radius: 4px; font-size: 11px; white-space: nowrap; }
+  
+  /* 按鈕排版 (Desktop 2x2, Mobile 1x4) */
+  .popup-btns { margin-top: auto; padding-top: 10px; }
+  .popup-btns.view-desktop { display: grid !important; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .popup-btns.view-mobile { display: grid !important; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-top: 5px; }
 
-  /* AI Popup 樣式優化 */
-  .ai-report-header {
-      background: linear-gradient(135deg, #8e44ad, #9b59b6);
-      color: white; padding: 12px; font-weight: bold; font-size: 14px;
-      display: flex; align-items: center; gap: 8px;
-      border-radius: 8px 8px 0 0;
-  }
-  .ai-report-body { padding: 15px; font-size: 13px; color: #333; line-height: 1.6; }
-  .ai-stat-row { display: flex; justify-content: space-between; border-bottom: 1px dashed #eee; padding: 5px 0; }
-  .ai-stat-val { font-weight: bold; color: #8e44ad; }
-  .ai-advice-box { 
-      background: #fdf2fe; border-left: 4px solid #9b59b6; 
-      padding: 10px; margin-top: 10px; font-size: 12px; color: #555; 
-  }
+  .popup-btn-new { background: white; color: #065f46; border: 1.5px solid #6ee7b7; padding: 12px 0; border-radius: 30px; font-size: 14px; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.05); white-space: nowrap; }
+  .popup-btns.view-mobile .popup-btn-new { padding: 8px 0; font-size: 12px; gap: 2px; } /* 手機版按鈕緊湊 */
+  .popup-btn-new:hover { background: #f0fdf4; border-color: #10b981; color: #047857; }
 
-  /* 0112V2 選單優化 (V3美化版) */
-  .multi-select-popup .info-header {
-      background: #004080; color: white; padding: 8px 12px; font-weight: bold; font-size: 14px;
-      display: flex; justify-content: space-between; align-items: center;
-  }
-  .multi-select-item {
-      padding: 10px; border-bottom: 1px solid #eee; cursor: pointer; transition: background 0.2s;
-  }
-  .multi-select-item:hover { background: #f0f7ff; }
-  .multi-select-item:last-child { border-bottom: none; }
-  .multi-select-title { font-size: 13px; font-weight: bold; color: #004080; margin-bottom: 3px; }
-  .multi-select-meta { font-size: 11px; color: #666; display: flex; gap: 8px; align-items: center; }
-  .badge-type { background: #e0f7fa; color: #006064; padding: 1px 5px; border-radius: 3px; font-size: 10px; border: 1px solid #b2ebf2; display: inline-block; margin-left: 5px;}
+  /* 照片輪播與切換 */
+  .photo-section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+  .photo-viewer { flex: 1; position: relative; border-radius: 8px; border: 1px solid var(--popup-border); background: #f1f5f9; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+  .photo-viewer img { width: 100%; height: 100%; object-fit: cover; display: none; }
+  .photo-viewer img.active { display: block; }
+  
+  /* 手機版照片 Tab */
+  .mobile-photo-tabs { display: flex; gap: 5px; margin-bottom: 5px; margin-top: 5px; }
+  .m-tab { flex: 1; padding: 8px; text-align: center; background: #e2e8f0; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; transition: all 0.2s; }
+  .m-tab.active { background: var(--primary-color); color: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
 
-  #floatingCoords { position:absolute; pointer-events:none; background:rgba(255,255,255,0.9); border:1px solid #ccc; border-radius:4px; padding:4px 8px; font-size:11px; display:none; z-index:1300; bottom: 10px; right: 10px; }
+  /* 摺疊按鈕 */
+  .mobile-details-toggle { width: 100%; padding: 10px; text-align: center; font-size: 13px; color: var(--primary-color); font-weight: bold; cursor: pointer; border-top: 1px dashed #ccc; margin-top: 10px; background: #f8fafc; border-radius: 0 0 8px 8px; }
+  .mobile-details-toggle:hover { background: #eef2f6; }
 
-  /* 0205V1 Photo Source Modal Animation */
-  @keyframes popIn {
-      0% { transform: scale(0.9); opacity: 0; }
-      100% { transform: scale(1); opacity: 1; }
-  }
-
-  /* 強制隱藏機制 */
+  /* 顯示控制 */
   .view-desktop { display: block !important; }
   .view-mobile { display: none !important; }
-  .info-details-block { display: block; } /* Desktop Default */
-  
+  .info-details-block { display: block; }
+
   @media (max-width: 768px) {
     #sidebar { position: absolute; bottom: 0; left: 0; width: 100%; height: 60%; top: auto; border-radius: 20px 20px 0 0; border-right: none; transform: translateY(100%); margin-left: 0; }
     body.sidebar-open #sidebar { transform: translateY(0); }
     #overlay-mask { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 1400; }
     body.sidebar-open #overlay-mask { display: block; }
-    #toggleSidebarBtn { left: 10px; top: 10px; }
-    #bottomPanel { left: 0; height: 300px; z-index: 2100; }
-    .map-floating-controls { top: 70px; right: 10px; }
-    #clusterControlPanel { bottom: 200px; left: 15px; right: 15px; width: auto; }
-    #map { width: 100% !important; }
-
-    /* 手機版強制反轉 */
+    
+    .popup-card { flex-direction: column; }
+    .popup-col-info { width: auto; border-right: none; border-bottom: 1px solid #eee; padding: 15px; }
+    
     .view-desktop { display: none !important; }
     .view-mobile { display: block !important; }
-    .info-details-block { display: none; } /* Mobile Default Hidden */
-    .info-details-block.open { display: block; } /* Toggle */
     
-    /* Mobile Photo Tabs - Specific Handling */
-    .mobile-photo-tabs.view-mobile { display: flex !important; }
+    .info-details-block { display: none; padding-top: 10px; border-top: 1px dashed #ccc; margin-top: 10px; } /* 預設隱藏詳細資訊 */
+    .info-details-block.open { display: block; }
     
-    /* Mobile Header Layout */
-    .mobile-compact-header { order: 1; padding: 8px 12px; background: #fff; border-bottom: 1px dashed #eee; position: relative; }
-    .m-row-1 { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; margin-bottom: 6px; gap: 4px; }
-    .m-row-1 .status-pill { margin: 0; font-size: 10px; padding: 2px 8px; }
-    .m-row-1 .case-id { font-size: 15px; font-weight: bold; color: #333; margin: 0; text-align: left; width: 100%; word-break: break-all; }
-    .m-row-2 { display: flex; align-items: baseline; gap: 8px; }
-    .m-row-2 .price-val { font-size: 16px; font-weight: 900; color: #d35400; flex-shrink: 0; }
-    .m-tags-line { flex: 1; display: flex; gap: 5px; overflow: hidden; font-size: 11px; color: #555; align-items: center; min-width: 0; }
+    /* 照片顯示控制 (預設顯示 After) */
+    .photo-col-before { display: none !important; }
+    .photo-col-after { display: flex !important; min-height: 250px; } /* 手機版照片高度 */
+    
+    .photo-col-before.active-view { display: flex !important; min-height: 250px; }
+    .photo-col-after.active-view { display: flex !important; }
+    .photo-col-after:not(.active-view) { display: none !important; }
+    
+    .popup-col-photo { border-right: none; padding: 0 15px 15px 15px; }
   }
 </style>
 </head>
 <body>
 
 <div id="overlay-mask"></div>
-<button id="toggleSidebarBtn" title="切換選單"><i class="fas fa-bars"></i></button>
+<button id="toggleSidebarBtn"><i class="fas fa-bars"></i></button>
 
 <div id="container">
   <div id="sidebar">
@@ -559,7 +219,6 @@
 
         <div class="card-section">
             <div class="card-title"><i class="fas fa-calculator"></i> 里別維修統計</div>
-            <div class="small" style="margin-bottom:5px; color:#666;">系統將自動排除同案件重複計算</div>
             <select id="statsVillageSelect" style="margin-bottom:10px;">
                 <option value="">(讀取中...)</option>
             </select>
@@ -586,13 +245,10 @@
         </div>
         <div class="card-section">
             <div class="card-title"><i class="fas fa-search-plus"></i> 案件進階搜尋</div>
-            <div class="search-block-label"><i class="fas fa-map-marked-alt"></i> 依里別快篩</div>
             <select id="villageSelect" style="margin-bottom:10px;">
-                <option value="">-- 請選擇行政區 (載入中...) --</option>
+                <option value="">-- 請選擇行政區 --</option>
             </select>
-            <div style="text-align:center; font-size:12px; color:#999; margin:5px 0;">- 或 -</div>
-            <div class="search-block-label"><i class="fas fa-filter"></i> 依廠商快篩</div>
-            <select id="contractorSelect" style="margin-bottom:10px;"><option value="">(讀取系統資料中...)</option></select>
+            <select id="contractorSelect" style="margin-bottom:10px;"><option value="">-- 請選擇廠商 --</option></select>
             <div id="contractorStatsResult" style="display:none; margin-top:10px;">
                 <div class="stats-columns">
                     <div class="stats-col col-general">
@@ -604,16 +260,13 @@
                         <div id="contractorEmgList"></div>
                     </div>
                 </div>
-                <button class="secondary" id="clearContractorStatsBtn" style="margin-top:10px;"><i class="fas fa-eraser"></i> 清除所有顯示</button>
+                <button class="secondary" id="clearContractorStatsBtn" style="margin-top:10px;">清除</button>
             </div>
-            <div style="text-align:center; font-size:12px; color:#999; margin:5px 0;">- 或 -</div>
             
-            <div class="search-block-label"><i class="fas fa-clock"></i> 依派工時機快篩</div>
             <select id="timingSelect" style="margin-bottom:10px;">
-                <option value="">(讀取系統資料中...)</option>
+                <option value="">-- 請選擇派工時機 --</option>
             </select>
             
-            <div class="search-block-label"><i class="fas fa-tools"></i> 依維修類型快篩 (多選)</div>
             <div class="multiselect-group" id="typeFilterContainer">
                 <div class="multiselect-header" onclick="toggleTypeFilter()">
                     <span id="typeFilterLabel">請選擇維修類型 (未選)</span>
@@ -627,8 +280,6 @@
                 </div>
             </div>
 
-            <div style="text-align:center; font-size:12px; color:#999; margin:5px 0;">- 或 -</div>
-            
             <div class="search-block-label"><i class="fas fa-keyboard"></i> 關鍵字搜尋</div>
             <input type="text" id="keywordInput" placeholder="例如：案件編號(113001) 案件名稱 廠商名稱">
             <button id="searchBtn" class="primary"><i class="fas fa-search"></i> 開始搜尋</button>
@@ -640,7 +291,6 @@
     <div id="tab-tools" class="tab-content-container tab-pane">
         <div class="card-section">
             <div class="card-title"><i class="fas fa-map-marker-alt"></i> 座標查詢工具</div>
-            <div class="small" style="margin-bottom:5px;">輸入 TWD97 座標 (X,Y)，每行一組</div>
             <textarea id="coordsInput" rows="4" placeholder="例如：181924,2555825"></textarea>
             <div style="display:flex; gap:5px; margin-top:5px;">
               <button id="plotBtn" class="primary" style="margin-top:0;">顯示點位</button>
@@ -1314,6 +964,35 @@ function createPopup(data) {
         ? `<a href="${procurementUrl}" target="_blank" class="popup-btn-new"><i class="fas fa-file-alt"></i><span>決標</span></a>` 
         : `<span class="popup-btn-new" style="opacity:0.5;cursor:not-allowed;"><i class="fas fa-file-alt"></i><span>無公告</span></span>`;
 
+    // 0208V3: 定義詳細資訊區塊 (共用於桌面展開與手機收合)
+    const infoDetails = `
+        <div class="compact-list">
+            <div class="compact-item" style="border-bottom:1px dashed #eee; padding-bottom:5px; margin-bottom:5px;">
+                <span class="compact-label" style="color:#047857;background:#d1fae5;">案情描述</span>
+                <div class="compact-val" style="font-weight:normal;">${description}</div>
+            </div>
+            <div class="compact-item"><span class="compact-label">施工廠商</span><div class="compact-val">${contractor}</div></div>
+            <div class="compact-row">
+                <div class="compact-item" style="flex:1"><span class="compact-label">監造廠商</span><div class="compact-val">${supervisor}</div></div>
+                <div class="compact-item" style="flex:1"><span class="compact-label">WGS84</span><div class="compact-val">${lat.toFixed(6)}, ${lng.toFixed(6)}</div></div>
+            </div>
+            <div class="compact-row">
+                <div class="compact-item" style="flex:1"><span class="compact-label">完工日期</span><div class="compact-val">${date}</div></div>
+                <div class="compact-item" style="flex:1"><span class="compact-label">TWD97</span><div class="compact-val">${twd.x}, ${twd.y}</div></div>
+            </div>
+        </div>
+    `;
+
+    // 0208V3: 定義 1x4 按鈕組 (用於手機版)
+    const mobileBtns = `
+        <div class="popup-btns view-mobile">
+            ${tenderBtn}
+            <a href="https://maps.nlsc.gov.tw/go/${lng}/${lat}" target="_blank" class="popup-btn-new"><i class="fas fa-map"></i><span>地籍</span></a>
+            <a href="https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${lat},${lng}" target="_blank" class="popup-btn-new"><i class="fas fa-camera"></i><span>街景</span></a>
+            <a href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}" target="_blank" class="popup-btn-new"><i class="fas fa-location-arrow"></i><span>導航</span></a>
+        </div>
+    `;
+
     return `
     <div class="popup-card">
         <div class="popup-deco-strip"></div>
@@ -1339,31 +1018,17 @@ function createPopup(data) {
                 <div class="m-tab active" onclick="switchMobilePhotoTab(this, 'after')">施工後</div>
             </div>
             
-            <div class="popup-btns view-mobile">
-                ${tenderBtn}
-                <a href="https://maps.nlsc.gov.tw/go/${lng}/${lat}" target="_blank" class="popup-btn-new"><i class="fas fa-map"></i><span>地籍</span></a>
-                <a href="https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${lat},${lng}" target="_blank" class="popup-btn-new"><i class="fas fa-camera"></i><span>街景</span></a>
-                <a href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}" target="_blank" class="popup-btn-new"><i class="fas fa-location-arrow"></i><span>導航</span></a>
+            <div class="view-mobile">
+                <div class="popup-col-photo photo-col-before">${generatePhotoSection('現場照片', arrBefore, 'before')}</div>
+                <div class="popup-col-photo photo-col-after active-view">${generatePhotoSection('施工後', arrAfter, 'after')}</div>
             </div>
+
+            ${mobileBtns}
 
             <div class="mobile-details-toggle view-mobile" onclick="toggleMobileDetails(this)">▼ 查看詳細資訊 (廠商、座標、日期)</div>
 
             <div class="info-details-block">
-                <div class="compact-list">
-                    <div class="compact-item" style="border-bottom:1px dashed #eee; padding-bottom:5px; margin-bottom:5px;">
-                        <span class="compact-label" style="color:#047857;background:#d1fae5;">案情描述</span>
-                        <div class="compact-val" style="font-weight:normal;">${description}</div>
-                    </div>
-                    <div class="compact-item"><span class="compact-label">施工廠商</span><div class="compact-val">${contractor}</div></div>
-                    <div class="compact-row">
-                        <div class="compact-item" style="flex:1"><span class="compact-label">監造廠商</span><div class="compact-val">${supervisor}</div></div>
-                        <div class="compact-item" style="flex:1"><span class="compact-label">WGS84</span><div class="compact-val">${lat.toFixed(6)}, ${lng.toFixed(6)}</div></div>
-                    </div>
-                    <div class="compact-row">
-                        <div class="compact-item" style="flex:1"><span class="compact-label">完工日期</span><div class="compact-val">${date}</div></div>
-                        <div class="compact-item" style="flex:1"><span class="compact-label">TWD97</span><div class="compact-val">${twd.x}, ${twd.y}</div></div>
-                    </div>
-                </div>
+                ${infoDetails}
             </div>
             
             <div class="desktop-only view-desktop">
@@ -1378,6 +1043,8 @@ function createPopup(data) {
                     <div class="tag-pill tag-light"><i class="fas fa-map-marker-alt" style="color:#10b981;"></i> 距路線 ${distText}</div>
                 </div>
                 <div class="price-block"><div class="price-label">決標金額</div><div class="price-val">${price}</div></div>
+                
+                ${infoDetails}
             </div>
             
             <div class="popup-btns view-desktop">
@@ -1387,15 +1054,17 @@ function createPopup(data) {
                 <a href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}" target="_blank" class="popup-btn-new"><i class="fas fa-location-arrow"></i><span>導航</span></a>
             </div>
         </div>
-        <div class="popup-col-photo photo-col-before active-view-desktop">${generatePhotoSection('現場照片', arrBefore, 'before')}</div>
-        <div class="popup-col-photo photo-col-after active-view-mobile">${generatePhotoSection('施工後', arrAfter, 'after')}</div>
+        <div class="popup-col-photo photo-col-before active-view-desktop view-desktop">${generatePhotoSection('現場照片', arrBefore, 'before')}</div>
+        <div class="popup-col-photo photo-col-after active-view-desktop view-desktop">${generatePhotoSection('施工後', arrAfter, 'after')}</div>
         
         <style>
             @media (max-width: 768px) {
                 .photo-col-before { display: none !important; }
                 .photo-col-before.active-view { display: flex !important; }
-                .photo-col-after { display: flex !important; } /* Default Active on Mobile */
-                .photo-col-after:not(.active-view) { display: none !important; }
+                .photo-col-after { display: none !important; }
+                .photo-col-after.active-view { display: flex !important; }
+                /* 確保手機版照片區塊可見 */
+                .view-mobile .popup-col-photo { padding: 0 15px 15px 15px; }
             }
             @media (min-width: 769px) {
                 .photo-col-before, .photo-col-after { display: flex !important; } /* Desktop always show both */

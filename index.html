@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0209V2)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0209V2-Fix)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -262,10 +262,10 @@
   .pill-urgent { background: #f59e0b; }
   
   .pill-rating { 
-      background: #bdc3c7; /* 預設 0 星灰色 */
+      background: #f39c12; /* 改為金色系 */
       color: #fff; cursor: pointer; transition: transform 0.2s; 
   }
-  .pill-rating:hover { transform: scale(1.05); background: #95a5a6; }
+  .pill-rating:hover { transform: scale(1.05); filter: brightness(1.1); }
 
   .pill-timing { background: #3498db; } /* 藍色 */
   .pill-type { background: #9b59b6; cursor: pointer; } /* 紫色 */
@@ -892,6 +892,7 @@
 <script src="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol/dist/L.Control.Locate.min.js"></script>
 
 <script>
+// !!! 請務必將此網址替換為您 GAS0209V3 部署後的 Web App URL !!!
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwb88r-ifPxx9bBcD1sF0tLVxOIjw60RoLWWJZXk8T82TP3GhSV8bb3dTNEGcgggwr5/exec";
 
 const map = L.map('map', { zoomControl:false, doubleClickZoom: false }).setView([23.1025,120.3538], 13);
@@ -1004,6 +1005,17 @@ function getPhotosFromProps(props) {
     return combinedStr.split(/[;\n\r]+/).map(u => getDirectDriveUrl(u)).filter(u => u.length > 0);
 }
 
+// 修正功能：金額格式化 (萬 + 補零)
+function formatMoneyWan(val) {
+    val = parseInt(val) || 0;
+    if (val < 10000) return val.toLocaleString() + " 元";
+    let w = Math.floor(val / 10000);
+    let r = val % 10000;
+    // 不足萬位數的補零邏輯：120000 -> 12萬0000元; 146384 -> 14萬6,384元
+    let rStr = r === 0 ? "0000" : r.toLocaleString('en-US');
+    return `${w}萬${rStr}元`;
+}
+
 /* === 新版 Bubble Window JS 邏輯 === */
 
 // 手機版切換照片 Tab 邏輯
@@ -1037,33 +1049,101 @@ window.toggleDetails = function(el) {
     }
 };
 
-// 開啟意見回饋 Modal (0209V2 預設不顯示假評論)
-window.openCommentModal = function(caseId) {
+// 修正功能：展開更多維修類型
+window.expandTypePill = function(uid, fullText) {
+    const pill = document.getElementById(`type-pill-${uid}`);
+    if(pill) {
+        pill.innerHTML = `<i class="fas fa-wrench"></i> ${fullText}`;
+        pill.title = fullText;
+    }
+}
+
+// 開啟意見回饋 Modal (對接 GAS 資料)
+window.openCommentModal = function(caseId, commentsJsonStr) {
     const modal = document.getElementById('commentModal');
     const list = document.getElementById('commentList');
-    list.innerHTML = `<div style="text-align:center;color:#666;padding:20px;">載入中...</div>`;
     modal.style.display = 'flex';
     
-    setTimeout(() => {
-        // 0209V2: 預設顯示無評論
-        let html = `<div style="text-align:center;color:#666;padding:20px;">目前尚無評論</div>`;
-        
-        // 輸入框 (保留功能)
-        html = `
-        <div style="margin-bottom:15px; background:#f8f9fa; padding:10px; border-radius:8px;">
-            <div style="font-weight:bold; margin-bottom:5px; font-size:13px;">新增留言：</div>
-            <textarea style="width:100%; height:60px; border:1px solid #ddd; border-radius:4px; padding:5px; font-size:13px;" placeholder="寫下您的意見..."></textarea>
-            <div style="display:flex; justify-content:space-between; margin-top:5px; align-items:center;">
-                <div style="color:#f39c12;">
-                    <i class="far fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i>
-                </div>
-                <button style="background:var(--primary-color); color:white; border:none; padding:4px 12px; border-radius:4px; cursor:pointer;">送出</button>
+    // 解析 GAS 傳來的 JSON
+    let comments = [];
+    try {
+        comments = JSON.parse(commentsJsonStr || "[]");
+    } catch(e) { comments = []; }
+
+    // 渲染輸入框
+    let html = `
+    <div style="margin-bottom:15px; background:#f8f9fa; padding:10px; border-radius:8px;">
+        <div style="font-weight:bold; margin-bottom:5px; font-size:13px;">新增留言：</div>
+        <textarea id="newCommentText" style="width:100%; height:60px; border:1px solid #ddd; border-radius:4px; padding:5px; font-size:13px;" placeholder="寫下您的意見..."></textarea>
+        <div style="display:flex; justify-content:space-between; margin-top:5px; align-items:center;">
+            <div style="color:#ccc; font-size:16px;" id="starRatingInput">
+                <i class="far fa-star" onclick="setStar(1)" data-val="1"></i>
+                <i class="far fa-star" onclick="setStar(2)" data-val="2"></i>
+                <i class="far fa-star" onclick="setStar(3)" data-val="3"></i>
+                <i class="far fa-star" onclick="setStar(4)" data-val="4"></i>
+                <i class="far fa-star" onclick="setStar(5)" data-val="5"></i>
             </div>
-        </div>` + html;
-        
-        list.innerHTML = html;
-    }, 100);
+            <button onclick="submitComment('${caseId}')" style="background:var(--primary-color); color:white; border:none; padding:4px 12px; border-radius:4px; cursor:pointer;">送出</button>
+        </div>
+        <input type="hidden" id="currentStarVal" value="0">
+    </div>
+    <div style="border-top:1px dashed #eee; margin:10px 0;"></div>
+    `;
+
+    if(comments.length === 0) {
+        html += `<div style="text-align:center;color:#666;padding:20px;">目前尚無評論</div>`;
+    } else {
+        comments.forEach(c => {
+            const stars = '<i class="fas fa-star"></i>'.repeat(c.star) + '<i class="far fa-star"></i>'.repeat(5 - c.star);
+            html += `
+            <div class="comment-item">
+                <div class="star-row">${stars}</div>
+                <div class="comment-text">${c.text}</div>
+                <div class="comment-date">${c.date}</div>
+            </div>`;
+        });
+    }
+    list.innerHTML = html;
 };
+
+window.setStar = function(val) {
+    document.getElementById('currentStarVal').value = val;
+    const stars = document.getElementById('starRatingInput').querySelectorAll('i');
+    stars.forEach(s => {
+        const v = parseInt(s.getAttribute('data-val'));
+        if(v <= val) { s.classList.remove('far'); s.classList.add('fas'); s.style.color = '#f39c12'; }
+        else { s.classList.remove('fas'); s.classList.add('far'); s.style.color = '#ccc'; }
+    });
+}
+
+window.submitComment = async function(caseId) {
+    if (GOOGLE_SCRIPT_URL.includes("您的SCRIPT_ID")) { alert("請先設定 Google Apps Script URL！"); return; }
+    const text = document.getElementById('newCommentText').value;
+    const star = document.getElementById('currentStarVal').value;
+    if(star == 0) { alert("請點選星等評分！"); return; }
+    
+    const btn = event.target; 
+    btn.disabled = true; btn.innerText = "...";
+
+    try {
+        const payload = {
+            action: "comment",
+            caseId: caseId,
+            star: parseInt(star),
+            comment: text,
+            appKey: "TainanMap2026_SecureKey_v1", // 需與 GAS 對應
+            siteUrl: window.location.href
+        };
+        await fetch(GOOGLE_SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) });
+        alert("評論已送出！感謝您的回饋。");
+        closeCommentModal();
+        // 重新讀取該案件資料或重新整理頁面可更新顯示，此處暫不強制重整
+    } catch(e) {
+        alert("送出失敗，請稍後再試。");
+    } finally {
+        btn.disabled = false; btn.innerText = "送出";
+    }
+}
 
 function closeCommentModal() {
     document.getElementById('commentModal').style.display = 'none';
@@ -1078,8 +1158,13 @@ function createPopup(data) {
     const status = props['案件狀態'] || '已完工';
     const contractor = props['施工廠商'] || '-';
     const supervisor = props['監造廠商'] || '-'; // V2 新增
+    // 修正功能：完工日期邏輯 (若無資料顯示 "-")
     const date = props['完工日期'] || '-';
-    const price = props['決標金額'] || '0';
+    
+    // 修正功能：金額格式化
+    const priceRaw = props['決標金額'] || '0';
+    const priceDisplay = formatMoneyWan(priceRaw);
+
     const desc = props['案情描述'] || '無';
     
     // 0209V2: Header Pills 邏輯
@@ -1090,35 +1175,43 @@ function createPopup(data) {
     // 派工時機
     const timing = props['派工時機'] || '未知時機';
     
-    // 搶修類型 (+N 邏輯)
+    // 修正功能：搶修類型 (+N 展開邏輯)
     let typeStr = props['搶修類型'] || '';
     let types = typeStr.split(/[,，]/).filter(t => t.trim() !== '');
-    let typeDisplay = '';
+    let typeDisplay = '未分類';
+    let typeClickAttr = '';
+    
     if(types.length > 1) {
         typeDisplay = `${types[0]}... +${types.length - 1}`;
+        // 加入展開事件
+        typeClickAttr = `id="type-pill-${uid}" onclick="expandTypePill('${uid}', '${typeStr.replace(/'/g, "\\'")}')"`;
     } else if (types.length === 1) {
         typeDisplay = types[0];
-    } else {
-        typeDisplay = '未分類';
     }
     
-    // 距離 (如果有計算才顯示)
+    // 修正功能：距離無條件進位
     let distDisplay = '';
     if(dist !== undefined && dist !== null && !isNaN(dist)) {
-        distDisplay = `<div class="info-pill pill-dist"><i class="fas fa-route"></i> 距路線 ${dist}m</div>`;
+        const distCeil = Math.ceil(dist);
+        distDisplay = `<div class="info-pill pill-dist"><i class="fas fa-route"></i> 距路線 ${distCeil}m</div>`;
     }
 
-    // 0209V2: 預設 0 星
-    const commentCount = 0;
+    // 修正功能：星星與評論數 (讀取 GAS 資料)
+    const avgStar = props['平均星等'] || 0;
+    const commentCount = props['評論數'] || 0;
+    // 將評論 JSON 轉為字串並跳脫引號以放入 onclick
+    const commentJsonRaw = props['評論內容'] || "[]";
+    const safeCommentJson = commentJsonRaw.replace(/"/g, '&quot;');
     
-    // 進度條邏輯
+    // 修正功能：進度條日期邏輯
+    // 若無日期，顯示 "-"
     let step = 3; 
     if(status.includes('待處理')) step = 1;
     else if(status.includes('派工') || status.includes('施工')) step = 2;
     
-    const date1 = props['通報日期'] || props['完工日期'] || '1140101';
-    const date2 = step >= 2 ? (props['派工日期'] || props['完工日期'] || '1140105') : '';
-    const date3 = step >= 3 ? (props['完工日期'] || '1140110') : '';
+    const date1 = props['通報日期'] || '-';
+    const date2 = props['派工日期'] || '-';
+    const date3 = props['完工日期'] || '-'; // 若無完工日期，顯示 -
 
     // 照片
     const processPhotoStr = (str) => {
@@ -1139,11 +1232,11 @@ function createPopup(data) {
             <div class="case-id-row"><div class="case-id">${caseId}</div></div>
             <div class="popup-tags-row">
                 <div class="info-pill ${pillClass}">${status}</div>
-                <div class="info-pill pill-rating" onclick="openCommentModal('${caseId}')">
-                    <i class="fas fa-star" style="color:#f39c12;"></i> 0 (0)
+                <div class="info-pill pill-rating" onclick="openCommentModal('${caseId}', '${safeCommentJson}')">
+                    <i class="fas fa-star"></i> ${avgStar} (${commentCount})
                 </div>
                 <div class="info-pill pill-timing"><i class="far fa-clock"></i> ${timing}</div>
-                <div class="info-pill pill-type" title="${typeStr}"><i class="fas fa-wrench"></i> ${typeDisplay}</div>
+                <div class="info-pill pill-type" ${typeClickAttr} title="${typeStr}"><i class="fas fa-wrench"></i> ${typeDisplay}</div>
                 ${distDisplay}
                 <div class="info-pill pill-source"><i class="fas fa-file-contract"></i> ${fileName || '來源未知'}</div>
             </div>
@@ -1199,7 +1292,7 @@ function createPopup(data) {
             <div class="details-grid">
                 <div class="grid-item">
                     <span class="grid-label">決標金額</span>
-                    <span class="grid-val">${price} 元</span>
+                    <span class="grid-val">${priceDisplay}</span>
                 </div>
                 <div class="grid-item">
                     <span class="grid-label">完工日期</span>
@@ -1235,6 +1328,12 @@ function createPopup(data) {
 async function toggleRealtimeLayer(checkbox) {
     realtimeLayer.clearLayers();
     if(!checkbox.checked) return;
+
+    if (GOOGLE_SCRIPT_URL.includes("您的SCRIPT_ID")) { 
+        alert("請先設定 Google Apps Script URL，才能讀取即時看板與評論資料！"); 
+        checkbox.checked = false;
+        return; 
+    }
 
     document.body.style.cursor = 'wait';
 

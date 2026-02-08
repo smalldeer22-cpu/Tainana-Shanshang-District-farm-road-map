@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0206V2)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0206V3)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -1007,20 +1007,30 @@ function preloadImages(urls) {
     });
 }
 
-// 0206V2 Added: 獨立的 Drive 連結轉換器 (供即時通報使用)
+// 0206V3 Modified: 強力修復版 - 網址轉換器
 function getDirectDriveUrl(url) {
     if (!url) return '';
-    const trimmed = url.trim();
-    // 偵測是否為 Google Drive 檢視連結
-    if (trimmed.indexOf('drive.google.com') > -1) {
-        // 嘗試提取 FILE_ID
-        const match = trimmed.match(/\/d\/([a-zA-Z0-9_-]+)/);
-        if (match && match[1]) {
-            // 轉換為直連格式 (lh3.googleusercontent.com 比較快且穩定)
-            return `https://lh3.googleusercontent.com/d/$${match[1]}`;
-        }
+    let cleanUrl = url.trim();
+    
+    // 嘗試抓取 ID
+    let id = '';
+    
+    // Pattern 1: .../file/d/ID/...
+    let match1 = cleanUrl.match(/\/d\/([a-zA-Z0-9_-]+)/);
+    if (match1) id = match1[1];
+    
+    // Pattern 2: ...id=ID...
+    if (!id) {
+        let match2 = cleanUrl.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+        if (match2) id = match2[1];
     }
-    return trimmed;
+
+    if (id) {
+        // 使用 lh3.googleusercontent.com 直連 (最穩定)
+        return `https://lh3.googleusercontent.com/d/${id}`;
+    }
+    
+    return cleanUrl;
 }
 
 // 0205V7 Fix: 自動轉換 Google Drive View Link 為 Direct Link

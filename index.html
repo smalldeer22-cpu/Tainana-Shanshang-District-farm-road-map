@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0209-Final)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0209V2)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -234,28 +234,43 @@
   .ctx-item:hover { background: #f5faff; color: var(--primary-color); }
   .ctx-item i { width: 20px; text-align: center; }
 
-  /* === 新版泡泡窗 CSS (v.0209-Final) === */
+  /* === 新版泡泡窗 CSS (v.0209V2) === */
   .custom-popup .leaflet-popup-content-wrapper { padding: 0 !important; border-radius: 12px !important; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.15) !important; border: 2px solid var(--popup-border) !important; background: rgba(250, 253, 255, 0.98) !important; backdrop-filter: blur(5px); }
   .custom-popup .leaflet-popup-content { margin: 0 !important; width: 600px !important; max-width: 90vw !important; }
   .custom-popup .leaflet-popup-tip { background: var(--popup-border) !important; }
 
   .popup-card { display: flex; flex-direction: column; width: 100%; box-sizing: border-box; }
   
-  /* 頂部 Header */
-  .popup-header { display: flex; align-items: center; gap: 8px; padding: 10px 15px; border-bottom: 1px dashed #e0e0e0; background: #fff; flex-wrap: wrap; }
-  .status-pill { padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; color: #fff; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
-  .pill-working { background: #10b981; } .pill-done { background: #64748b; } .pill-urgent { background: #f59e0b; }  
-  .case-id { font-size: 16px; font-weight: 900; color: #1e293b; letter-spacing: -0.5px; }
+  /* 0209V2 Header 調整 */
+  .popup-header { display: flex; flex-direction: column; padding: 12px 15px; border-bottom: 1px dashed #e0e0e0; background: #fff; }
+  .case-id-row { margin-bottom: 8px; }
+  .case-id { font-size: 20px; font-weight: 900; color: #1e293b; letter-spacing: -0.5px; }
 
-  /* 五星評分 Pill */
-  .rating-pill { 
-      display: inline-flex; align-items: center; gap: 4px; 
-      background: #f8f9fa; color: #333; 
+  /* Pill Tags Container */
+  .popup-tags-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  
+  /* Pill 樣式 (V2) */
+  .info-pill { 
       padding: 3px 10px; border-radius: 20px; 
-      font-size: 12px; font-weight: bold; cursor: pointer; 
-      border: 1px solid #e2e8f0; transition: all 0.2s;
+      font-size: 11px; font-weight: bold; color: #fff; 
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1); 
+      display: flex; align-items: center; gap: 4px;
+      white-space: nowrap;
   }
-  .rating-pill:hover { background: #fff3cd; border-color: #ffeeba; color: #856404; transform: scale(1.05); }
+  .pill-status { background: #64748b; }
+  .pill-working { background: #10b981; }
+  .pill-urgent { background: #f59e0b; }
+  
+  .pill-rating { 
+      background: #bdc3c7; /* 預設 0 星灰色 */
+      color: #fff; cursor: pointer; transition: transform 0.2s; 
+  }
+  .pill-rating:hover { transform: scale(1.05); background: #95a5a6; }
+
+  .pill-timing { background: #3498db; } /* 藍色 */
+  .pill-type { background: #9b59b6; cursor: pointer; } /* 紫色 */
+  .pill-dist { background: #27ae60; } /* 綠色 */
+  .pill-source { background: #17a2b8; } /* 青色/Teal */
 
   /* 進度條 (Progress Bar) */
   .progress-container { display: flex; justify-content: space-between; position: relative; margin: 15px 20px 5px 20px; padding: 0; }
@@ -277,18 +292,18 @@
       background: #f0f9ff; border: 1px solid #bae6fd; color: #0284c7;
       display: flex; align-items: center; justify-content: center; 
       font-size: 16px; cursor: pointer; transition: all 0.2s; text-decoration: none;
-      max-width: 80px; /* 限制最大寬度避免過大 */
+      max-width: 80px; 
   }
   .icon-only-btn:hover { background: #0284c7; color: white; transform: translateY(-2px); border-color: #0284c7; }
 
-  /* 照片顯示區 - Desktop (並列) */
+  /* 照片顯示區 - Desktop */
   .desktop-photo-row { display: flex; gap: 5px; height: 200px; padding: 0 15px; margin-bottom: 10px; }
   .photo-half { flex: 1; position: relative; border-radius: 6px; overflow: hidden; border: 1px solid #e2e8f0; background: #f1f5f9; }
   .photo-half img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; cursor: pointer; }
   .photo-half img:hover { transform: scale(1.05); }
   .photo-label { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.6); color: #fff; font-size: 10px; padding: 3px; text-align: center; font-weight: bold; }
   
-  /* 照片顯示區 - Mobile (Tabs) */
+  /* 照片顯示區 - Mobile */
   .mobile-photo-tabs { display: none; padding: 0 15px; gap: 5px; margin-bottom: 5px; }
   .m-photo-tab { flex: 1; padding: 6px; text-align: center; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; }
   .m-photo-tab.active { background: var(--primary-color); color: white; border-color: var(--primary-color); }
@@ -297,7 +312,7 @@
   .mobile-photo-view.active { display: block; }
   .mobile-photo-view img { width: 100%; height: 100%; object-fit: cover; }
 
-  /* 詳細資訊收合區 */
+  /* 詳細資訊收合區 (V2 Grid Layout) */
   .details-toggle { 
       padding: 8px; text-align: center; font-size: 11px; font-weight: bold; color: #666; 
       cursor: pointer; border-top: 1px solid #eee; background: #fafafa; transition: all 0.2s;
@@ -305,11 +320,24 @@
   .details-toggle:hover { background: #f0f0f0; color: var(--primary-color); }
   .details-content { display: none; padding: 15px; background: #fff; border-top: 1px dashed #eee; font-size: 12px; line-height: 1.6; color: #333; }
   .details-content.open { display: block; animation: slideDown 0.3s; }
-  
-  /* 詳細資訊表格 */
-  .info-table { width: 100%; border-collapse: collapse; }
-  .info-table td { padding: 4px; vertical-align: top; }
-  .info-label { color: #888; font-weight: bold; white-space: nowrap; width: 60px; }
+
+  /* 0209V2 Grid Table Structure */
+  .details-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr; /* 雙欄 */
+      gap: 8px 15px;
+  }
+  .grid-item {
+      border-bottom: 1px solid #f0f0f0;
+      padding-bottom: 4px;
+      display: flex; flex-direction: column;
+  }
+  .grid-item-full {
+      grid-column: 1 / -1; /* 跨兩欄 */
+  }
+  .grid-label { color: #888; font-weight: bold; font-size: 11px; margin-bottom: 2px; }
+  .grid-val { color: #333; font-weight: bold; font-size: 13px; word-break: break-all; }
+  .desc-box { background: #f9f9f9; padding: 8px; border-radius: 4px; border: 1px solid #eee; margin-top: 2px; }
 
   /* Mobile RWD 調整 */
   @media (max-width: 768px) {
@@ -326,6 +354,8 @@
       .mobile-photo-area { order: 5; }
       .details-toggle { order: 6; }
       .details-content { order: 7; }
+      /* 手機版 Grid 若空間太小可改為單欄，但此處維持雙欄緊湊排列 */
+      .details-grid { grid-template-columns: 1fr 1fr; gap: 8px; } 
   }
   
   /* === 評論 Modal === */
@@ -1007,37 +1037,18 @@ window.toggleDetails = function(el) {
     }
 };
 
-// 開啟意見回饋 Modal
+// 開啟意見回饋 Modal (0209V2 預設不顯示假評論)
 window.openCommentModal = function(caseId) {
     const modal = document.getElementById('commentModal');
     const list = document.getElementById('commentList');
     list.innerHTML = `<div style="text-align:center;color:#666;padding:20px;">載入中...</div>`;
     modal.style.display = 'flex';
     
-    // 模擬載入資料 (實際應串接 Google Sheet)
     setTimeout(() => {
-        list.innerHTML = '';
-        const mockComments = [
-            { star: 5, text: "修補效率很快，謝謝！", date: "2025/02/08" },
-            { star: 4, text: "路面平整，但標線有點模糊。", date: "2025/02/07" },
-            { star: 5, text: "辛苦了！", date: "2025/02/05" }
-        ];
+        // 0209V2: 預設顯示無評論
+        let html = `<div style="text-align:center;color:#666;padding:20px;">目前尚無評論</div>`;
         
-        let html = '';
-        mockComments.forEach(c => {
-            let stars = '';
-            for(let i=0; i<5; i++) {
-                stars += `<i class="fas fa-star" style="color:${i<c.star?'#f39c12':'#ddd'};"></i>`;
-            }
-            html += `
-            <div class="comment-item">
-                <div class="star-row">${stars}</div>
-                <div class="comment-text">${c.text}</div>
-                <div class="comment-date">${c.date}</div>
-            </div>`;
-        });
-        
-        // 輸入框
+        // 輸入框 (保留功能)
         html = `
         <div style="margin-bottom:15px; background:#f8f9fa; padding:10px; border-radius:8px;">
             <div style="font-weight:bold; margin-bottom:5px; font-size:13px;">新增留言：</div>
@@ -1051,7 +1062,7 @@ window.openCommentModal = function(caseId) {
         </div>` + html;
         
         list.innerHTML = html;
-    }, 500);
+    }, 100);
 };
 
 function closeCommentModal() {
@@ -1059,57 +1070,82 @@ function closeCommentModal() {
 }
 
 function createPopup(data) {
-    const { fileName, props, lat, lng } = data;
+    const { fileName, props, lat, lng, dist } = data; // dist 可能 undefined
     const twd = twd97FromWgs84(lat, lng);
     const uid = Math.random().toString(36).substr(2, 9);
     
     const caseId = props['案件編號'] || '無編號';
     const status = props['案件狀態'] || '已完工';
     const contractor = props['施工廠商'] || '-';
+    const supervisor = props['監造廠商'] || '-'; // V2 新增
     const date = props['完工日期'] || '-';
+    const price = props['決標金額'] || '0';
+    const desc = props['案情描述'] || '無';
     
-    // 燈號邏輯
-    let step = 3; // 預設完工
+    // 0209V2: Header Pills 邏輯
+    let pillClass = 'pill-status';
+    if(status.includes('施工') || status.includes('派工')) pillClass = 'pill-working';
+    else if(status.includes('搶修')) pillClass = 'pill-urgent';
+    
+    // 派工時機
+    const timing = props['派工時機'] || '未知時機';
+    
+    // 搶修類型 (+N 邏輯)
+    let typeStr = props['搶修類型'] || '';
+    let types = typeStr.split(/[,，]/).filter(t => t.trim() !== '');
+    let typeDisplay = '';
+    if(types.length > 1) {
+        typeDisplay = `${types[0]}... +${types.length - 1}`;
+    } else if (types.length === 1) {
+        typeDisplay = types[0];
+    } else {
+        typeDisplay = '未分類';
+    }
+    
+    // 距離 (如果有計算才顯示)
+    let distDisplay = '';
+    if(dist !== undefined && dist !== null && !isNaN(dist)) {
+        distDisplay = `<div class="info-pill pill-dist"><i class="fas fa-route"></i> 距路線 ${dist}m</div>`;
+    }
+
+    // 0209V2: 預設 0 星
+    const commentCount = 0;
+    
+    // 進度條邏輯
+    let step = 3; 
     if(status.includes('待處理')) step = 1;
     else if(status.includes('派工') || status.includes('施工')) step = 2;
     
-    const date1 = props['通報日期'] || props['完工日期'] || '1140101'; // 模擬日期
+    const date1 = props['通報日期'] || props['完工日期'] || '1140101';
     const date2 = step >= 2 ? (props['派工日期'] || props['完工日期'] || '1140105') : '';
     const date3 = step >= 3 ? (props['完工日期'] || '1140110') : '';
 
-    let pillClass = 'pill-done';
-    if(status.includes('施工') || status.includes('派工')) pillClass = 'pill-working';
-    else if(status.includes('搶修')) pillClass = 'pill-urgent';
-
-    // 隨機生成留言數
-    const commentCount = Math.floor(Math.random() * 10);
-    
-    // 處理照片 (支援 Google Drive 直連)
+    // 照片
     const processPhotoStr = (str) => {
         if (!str) return [];
         return str.split(/[;\n\r]+/).map(u => getDirectDriveUrl(u)).filter(u => u.length > 0);
     };
-
     let arrBefore = processPhotoStr(props['施工前照片']);
     let arrAfter = processPhotoStr(props['施工後照片']);
-    
-    // 若無特定欄位，嘗試通用欄位
     if(arrBefore.length === 0 && props.photoUrl) arrBefore.push(getDirectDriveUrl(props.photoUrl));
-    
     const imgBefore = arrBefore.length > 0 ? arrBefore[0] : '';
     const imgAfter = arrAfter.length > 0 ? arrAfter[0] : '';
-    
-    // 無圖替換
     const noImgHtml = '<div style="width:100%;height:100%;background:#f1f5f9;display:flex;align-items:center;justify-content:center;color:#999;font-size:12px;">無影像</div>';
     const renderImg = (src) => src ? `<img src="${src}" onclick="window.open('${src}')">` : noImgHtml;
 
     return `
     <div class="popup-card">
         <div class="popup-header">
-            <div class="case-id">${caseId}</div>
-            <div class="status-pill ${pillClass}">${status}</div>
-            <div class="rating-pill" onclick="openCommentModal('${caseId}')">
-                <i class="fas fa-star" style="color:#f39c12;"></i> 5 (${commentCount})
+            <div class="case-id-row"><div class="case-id">${caseId}</div></div>
+            <div class="popup-tags-row">
+                <div class="info-pill ${pillClass}">${status}</div>
+                <div class="info-pill pill-rating" onclick="openCommentModal('${caseId}')">
+                    <i class="fas fa-star" style="color:#f39c12;"></i> 0 (0)
+                </div>
+                <div class="info-pill pill-timing"><i class="far fa-clock"></i> ${timing}</div>
+                <div class="info-pill pill-type" title="${typeStr}"><i class="fas fa-wrench"></i> ${typeDisplay}</div>
+                ${distDisplay}
+                <div class="info-pill pill-source"><i class="fas fa-file-contract"></i> ${fileName || '來源未知'}</div>
             </div>
         </div>
 
@@ -1160,13 +1196,36 @@ function createPopup(data) {
 
         <div class="details-toggle" onclick="toggleDetails(this)">▼ 查看詳細資訊</div>
         <div class="details-content">
-            <table class="info-table">
-                <tr><td class="info-label">案情描述</td><td>${props['案情描述']||'無'}</td></tr>
-                <tr><td class="info-label">施工廠商</td><td>${contractor}</td></tr>
-                <tr><td class="info-label">決標金額</td><td>${props['決標金額']||'0'} 元</td></tr>
-                <tr><td class="info-label">完工日期</td><td>${date}</td></tr>
-                <tr><td class="info-label">TWD97</td><td>${twd.x}, ${twd.y}</td></tr>
-            </table>
+            <div class="details-grid">
+                <div class="grid-item">
+                    <span class="grid-label">決標金額</span>
+                    <span class="grid-val">${price} 元</span>
+                </div>
+                <div class="grid-item">
+                    <span class="grid-label">完工日期</span>
+                    <span class="grid-val">${date}</span>
+                </div>
+                <div class="grid-item">
+                    <span class="grid-label">施工廠商</span>
+                    <span class="grid-val">${contractor}</span>
+                </div>
+                <div class="grid-item">
+                    <span class="grid-label">監造廠商</span>
+                    <span class="grid-val">${supervisor}</span>
+                </div>
+                <div class="grid-item">
+                    <span class="grid-label">TWD97</span>
+                    <span class="grid-val">${twd.x}, ${twd.y}</span>
+                </div>
+                <div class="grid-item">
+                    <span class="grid-label">WGS84</span>
+                    <span class="grid-val">${lat.toFixed(6)}, ${lng.toFixed(6)}</span>
+                </div>
+                <div class="grid-item grid-item-full">
+                    <span class="grid-label">案情描述</span>
+                    <div class="desc-box">${desc}</div>
+                </div>
+            </div>
         </div>
     </div>
     `;

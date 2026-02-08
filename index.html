@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0209V2-Fix)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0209V5)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -892,8 +892,8 @@
 <script src="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol/dist/L.Control.Locate.min.js"></script>
 
 <script>
-// !!! 請務必將此網址替換為您 GAS0209V3 部署後的 Web App URL !!!
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwb88r-ifPxx9bBcD1sF0tLVxOIjw60RoLWWJZXk8T82TP3GhSV8bb3dTNEGcgggwr5/exec";
+// !!! 請務必將此網址替換為您 GAS 部署後的 Web App URL !!!
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/您的SCRIPT_ID/exec";
 
 const map = L.map('map', { zoomControl:false, doubleClickZoom: false }).setView([23.1025,120.3538], 13);
 const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
@@ -1011,7 +1011,6 @@ function formatMoneyWan(val) {
     if (val < 10000) return val.toLocaleString() + " 元";
     let w = Math.floor(val / 10000);
     let r = val % 10000;
-    // 不足萬位數的補零邏輯：120000 -> 12萬0000元; 146384 -> 14萬6,384元
     let rStr = r === 0 ? "0000" : r.toLocaleString('en-US');
     return `${w}萬${rStr}元`;
 }
@@ -1158,8 +1157,6 @@ function createPopup(data) {
     const status = props['案件狀態'] || '已完工';
     const contractor = props['施工廠商'] || '-';
     const supervisor = props['監造廠商'] || '-'; // V2 新增
-    // 修正功能：完工日期邏輯 (若無資料顯示 "-")
-    const date = props['完工日期'] || '-';
     
     // 修正功能：金額格式化
     const priceRaw = props['決標金額'] || '0';
@@ -1201,17 +1198,23 @@ function createPopup(data) {
     const commentCount = props['評論數'] || 0;
     // 將評論 JSON 轉為字串並跳脫引號以放入 onclick
     const commentJsonRaw = props['評論內容'] || "[]";
-    const safeCommentJson = commentJsonRaw.replace(/"/g, '&quot;');
+    const safeCommentJson = commentJsonRaw.replace(/"/g, '"');
     
-    // 修正功能：進度條日期邏輯
-    // 若無日期，顯示 "-"
+    // V5 Update: 進度條與日期邏輯修正 (直接讀取對應欄位)
     let step = 3; 
     if(status.includes('待處理')) step = 1;
     else if(status.includes('派工') || status.includes('施工')) step = 2;
     
-    const date1 = props['通報日期'] || '-';
-    const date2 = props['派工日期'] || '-';
-    const date3 = props['完工日期'] || '-'; // 若無完工日期，顯示 -
+    // 直接讀取 A欄(通報日期) 與 P欄(派工日期)
+    let date1 = props['通報日期'] || '-';
+    // 若 GAS 回傳的是 ISO 格式 (例如 2026-02-09T...), 只取前面日期部分
+    if(date1 && date1.includes('T')) date1 = date1.split('T')[0];
+
+    let date2 = props['派工日期'] || '-';
+    if(date2 && date2.includes('T')) date2 = date2.split('T')[0];
+
+    let date3 = props['完工日期'] || '-';
+    if(date3 && date3.includes('T')) date3 = date3.split('T')[0];
 
     // 照片
     const processPhotoStr = (str) => {
@@ -1296,7 +1299,7 @@ function createPopup(data) {
                 </div>
                 <div class="grid-item">
                     <span class="grid-label">完工日期</span>
-                    <span class="grid-val">${date}</span>
+                    <span class="grid-val">${date3}</span>
                 </div>
                 <div class="grid-item">
                     <span class="grid-label">施工廠商</span>

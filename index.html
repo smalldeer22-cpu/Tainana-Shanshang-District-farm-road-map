@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0209V9)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0209V9_UI_Fixed)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -82,9 +82,98 @@
       white-space: normal; 
   }
 
-  /* 卡片區塊樣式 */
+  /* 卡片區塊樣式 (通用) */
   .card-section { background: #fff; border-radius: 12px; padding: 12px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: 1px solid #f0f0f0; }
   .card-title { font-size: 14px; font-weight: bold; color: var(--primary-color); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 2px solid #f0f0f0; }
+  
+  /* === [修正] 搜尋分頁專用樣式 (仿 App 質感) === */
+  /* 優化 .search-card 以達到圖二的效果 */
+  .search-card {
+      background: #fff;
+      border-radius: 16px; /* 更圓潤 */
+      padding: 15px;
+      margin-bottom: 15px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05); /* 輕柔陰影 */
+      border: 1px solid #eef2f6;
+  }
+  .search-card .card-title {
+      border-bottom: none; /* 移除舊的分隔線 */
+      margin-bottom: 15px;
+      color: var(--primary-color);
+      font-size: 15px;
+      display: flex; align-items: center; gap: 8px;
+  }
+  
+  /* 搜尋區塊標籤 */
+  .search-block-label {
+      font-size: 14px; 
+      color: #333; 
+      font-weight: bold; 
+      margin-bottom: 8px; 
+      display: flex; 
+      align-items: center; 
+      gap: 6px;
+  }
+  .search-block-label i { color: #555; width: 16px; text-align: center; }
+
+  /* 搜尋輸入框與下拉選單美化 */
+  .search-card select, 
+  .search-card input[type="text"] {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px; /* 圓角矩形 */
+      background-color: #fff;
+      font-size: 14px;
+      color: #333;
+      outline: none;
+      box-sizing: border-box; /* 確保內距不撐大寬度 */
+      appearance: none; /* 移除預設樣式 */
+      -webkit-appearance: none;
+      transition: all 0.2s;
+      background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23333%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px top 50%;
+      background-size: 10px auto;
+  }
+  .search-card input[type="text"] {
+      background-image: none; /* 輸入框不需要箭頭 */
+  }
+  .search-card select:focus, 
+  .search-card input:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(0, 64, 128, 0.1);
+  }
+  
+  /* 分隔線美化 */
+  .search-divider {
+      text-align: center;
+      font-size: 12px;
+      color: #aaa;
+      margin: 12px 0;
+      position: relative;
+  }
+  .search-divider::before, 
+  .search-divider::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      width: 40%;
+      height: 1px;
+      background: #eee;
+  }
+  .search-divider::before { left: 0; }
+  .search-divider::after { right: 0; }
+
+  /* 搜尋按鈕美化 */
+  #searchBtn {
+      background: var(--primary-color);
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 15px;
+      margin-top: 15px;
+      box-shadow: 0 4px 6px rgba(0,64,128,0.2);
+  }
   
   /* 年度摺疊選單 */
   .year-group { margin-bottom: 8px; border: 1px solid #eee; border-radius: 6px; overflow: hidden; }
@@ -99,28 +188,29 @@
   .checkbox-item input { margin: 0; accent-color: var(--primary-color); }
 
   /* 多選摺疊樣式 */
-  .multiselect-group { border: 1px solid #ddd; border-radius: 6px; margin-bottom: 10px; background: #fff; }
+  .multiselect-group { border: 1px solid #cbd5e1; border-radius: 8px; margin-bottom: 10px; background: #fff; }
   .multiselect-header { 
-      padding: 10px; cursor: pointer; background: #fff; color: #555; font-size: 14px; 
-      display: flex; justify-content: space-between; align-items: center; border-radius: 6px;
+      padding: 10px 12px; cursor: pointer; background: #fff; color: #555; font-size: 14px; 
+      display: flex; justify-content: space-between; align-items: center; border-radius: 8px;
       transition: background 0.2s;
   }
   .multiselect-header:hover { background: #f5f5f5; }
   .multiselect-header i { transition: transform 0.2s; font-size: 12px; color: #999; }
-  .multiselect-group.open .multiselect-header { background: #f0f7ff; border-radius: 6px 6px 0 0; color: var(--primary-color); font-weight: bold; border-bottom: 1px solid #e0e0e0; }
+  .multiselect-group.open .multiselect-header { background: #f0f7ff; border-radius: 8px 8px 0 0; color: var(--primary-color); font-weight: bold; border-bottom: 1px solid #e0e0e0; }
   .multiselect-group.open .multiselect-header i { transform: rotate(180deg); color: var(--primary-color); }
-  .multiselect-content { display: none; padding: 10px; max-height: 250px; overflow-y: auto; background: #fafafa; border-radius: 0 0 6px 6px; }
+  .multiselect-content { display: none; padding: 10px; max-height: 250px; overflow-y: auto; background: #fafafa; border-radius: 0 0 8px 8px; }
   .multiselect-group.open .multiselect-content { display: block; }
   .select-all-row { border-bottom: 1px dashed #ddd; padding-bottom: 5px; margin-bottom: 5px; font-weight: bold; color: #004080; }
 
-  /* 輸入框與語音按鈕容器 */
+  /* 輸入框與語音按鈕容器 (一般通用) */
   .input-with-voice { position: relative; width: 100%; display: flex; align-items: center; }
   .input-with-voice input, .input-with-voice textarea { width: 100%; padding-right: 35px; box-sizing: border-box; }
+  /* 語音按鈕樣式 */
   .voice-btn {
       position: absolute; right: 5px; top: 50%; transform: translateY(-50%);
       background: none; border: none; cursor: pointer; color: #999; font-size: 16px;
       width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;
-      border-radius: 50%; transition: all 0.2s;
+      border-radius: 50%; transition: all 0.2s; z-index: 10;
   }
   .voice-btn:hover { background: #f0f0f0; color: #555; }
   .voice-btn.listening { color: #d32f2f; animation: pulse-red 1.5s infinite; background: #ffebee; }
@@ -372,7 +462,7 @@
       .details-grid { grid-template-columns: 1fr 1fr; gap: 8px; } 
   }
   
-  /* === V8 聊天室留言樣式 === */
+  /* === V8 聊天室留言樣式 (修正錯位版) === */
   #commentModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 20000; align-items: center; justify-content: center; }
   .comment-box { 
       background: #fff; width: 90%; max-width: 450px; height: 80vh; 
@@ -391,16 +481,58 @@
   .chat-star { color: #f39c12; font-size: 11px; margin-top: 4px; display: block; }
   .chat-time { font-size: 10px; color: #999; margin-top: 4px; text-align: right; }
 
-  /* 底部輸入區 (V9新增語音樣式) */
-  .chat-input-area { background: #fff; padding: 10px; border-top: 1px solid #ddd; flex-shrink: 0; display: flex; flex-direction: column; gap: 8px; }
-  .chat-nickname-row { display: flex; gap: 5px; align-items: center; position:relative; }
-  .chat-nickname-input { width: 120px; padding: 5px; padding-right: 30px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px; background: #f9f9f9; }
-  .chat-star-select { color: #ccc; cursor: pointer; font-size: 16px; margin-left: auto; }
+  /* 底部輸入區 (V9_Fixed: 語音位置修正) */
+  .chat-input-area { 
+      background: #fff; padding: 10px; border-top: 1px solid #ddd; 
+      flex-shrink: 0; display: flex; flex-direction: column; gap: 10px; 
+  }
+  .chat-nickname-row { 
+      display: flex; gap: 8px; align-items: center; justify-content: space-between;
+  }
+  
+  /* [修正] 輸入框包覆層，確保麥克風與 input 綁定且不擋其他元素 */
+  .input-group-inner {
+      position: relative;
+      flex: 1;
+      display: flex;
+      align-items: center;
+  }
+  .input-group-inner input {
+      width: 100%;
+      padding: 8px 12px;
+      padding-right: 38px; /* 留給麥克風的空間 */
+      border: 1px solid #ddd;
+      border-radius: 20px;
+      font-size: 13px;
+      background: #f9f9f9;
+      outline: none;
+  }
+  .input-group-inner input:focus {
+      border-color: var(--primary-color);
+      background: #fff;
+  }
+  /* 限制麥克風在 input 內部最右邊 */
+  .input-group-inner .voice-btn {
+      position: absolute;
+      right: 4px; /* 貼右對齊 */
+      top: 50%;
+      transform: translateY(-50%);
+      width: 30px; 
+      height: 30px;
+      margin: 0;
+  }
+
+  .chat-star-select { color: #ccc; cursor: pointer; font-size: 18px; margin-left: 5px; white-space: nowrap; }
   .chat-star-select i.active { color: #f39c12; }
-  .chat-msg-row { display: flex; gap: 8px; position: relative; }
-  .chat-msg-input { flex: 1; height: 36px; border: 1px solid #ddd; border-radius: 18px; padding: 0 12px; padding-right: 35px; font-size: 13px; outline: none; transition: border 0.2s; }
-  .chat-msg-input:focus { border-color: var(--primary-color); }
-  .chat-send-btn { width: 36px; height: 36px; border-radius: 50%; background: var(--primary-color); color: #fff; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.1s; }
+  
+  .chat-msg-row { display: flex; gap: 8px; align-items: center; }
+  
+  .chat-send-btn { 
+      width: 40px; height: 40px; border-radius: 50%; 
+      background: var(--primary-color); color: #fff; border: none; 
+      cursor: pointer; display: flex; align-items: center; justify-content: center; 
+      transition: transform 0.1s; flex-shrink: 0;
+  }
   .chat-send-btn:active { transform: scale(0.9); }
   
   /* 動畫 */
@@ -582,12 +714,13 @@
             <span><i class="fas fa-comments"></i> 案件留言板</span>
             <button onclick="closeCommentModal()" style="background:none; border:none; color:white; font-size:18px; cursor:pointer;"><i class="fas fa-times"></i></button>
         </div>
-        <div class="comment-body" id="commentList">
-            </div>
+        <div class="comment-body" id="commentList"></div>
         <div class="chat-input-area">
-            <div class="chat-nickname-row input-with-voice">
-                <input type="text" id="chatNickname" class="chat-nickname-input" placeholder="您的暱稱" onchange="saveNickname(this.value)">
-                <button class="voice-btn" id="voiceBtnChatNick"><i class="fas fa-microphone"></i></button>
+            <div class="chat-nickname-row">
+                <div class="input-group-inner">
+                    <input type="text" id="chatNickname" placeholder="您的暱稱" onchange="saveNickname(this.value)">
+                    <button class="voice-btn" id="voiceBtnChatNick"><i class="fas fa-microphone"></i></button>
+                </div>
                 <div class="chat-star-select" id="chatStarSelect">
                     <i class="far fa-star" onclick="setChatStar(1)" data-val="1"></i>
                     <i class="far fa-star" onclick="setChatStar(2)" data-val="2"></i>
@@ -597,9 +730,12 @@
                 </div>
                 <input type="hidden" id="chatCurrentStar" value="0">
             </div>
-            <div class="chat-msg-row input-with-voice">
-                <input type="text" id="chatMessage" class="chat-msg-input" placeholder="輸入留言...">
-                <button class="voice-btn" id="voiceBtnChatMsg"><i class="fas fa-microphone"></i></button>
+            
+            <div class="chat-msg-row">
+                <div class="input-group-inner">
+                    <input type="text" id="chatMessage" placeholder="輸入留言...">
+                    <button class="voice-btn" id="voiceBtnChatMsg"><i class="fas fa-microphone"></i></button>
+                </div>
                 <button class="chat-send-btn" onclick="submitChatComment()"><i class="fas fa-paper-plane"></i></button>
             </div>
         </div>
@@ -768,19 +904,23 @@
   </div>
 
   <div id="tab-search" class="tab-content-container tab-pane">
-      <div class="card-section">
+      <div class="search-card">
           <div class="card-title"><i class="fas fa-route"></i> 公眾通行道路圖資查詢</div>
           <select id="roadSelect"><option>載入中...</option></select>
       </div>
-      <div class="card-section">
+
+      <div class="search-card">
           <div class="card-title"><i class="fas fa-search-plus"></i> 案件進階搜尋</div>
+          
           <div class="search-block-label"><i class="fas fa-map-marked-alt"></i> 依里別快篩</div>
-          <select id="villageSelect" style="margin-bottom:10px;">
+          <select id="villageSelect">
               <option value="">-- 請選擇行政區 (載入中...) --</option>
           </select>
-          <div style="text-align:center; font-size:12px; color:#999; margin:5px 0;">- 或 -</div>
+          
+          <div class="search-divider">- 或 -</div>
+          
           <div class="search-block-label"><i class="fas fa-filter"></i> 依廠商快篩</div>
-          <select id="contractorSelect" style="margin-bottom:10px;"><option value="">(讀取系統資料中...)</option></select>
+          <select id="contractorSelect"><option value="">(讀取系統資料中...)</option></select>
           <div id="contractorStatsResult" style="display:none; margin-top:10px;">
               <div class="stats-columns">
                   <div class="stats-col col-general">
@@ -794,13 +934,16 @@
               </div>
               <button class="secondary" id="clearContractorStatsBtn" style="margin-top:10px;"><i class="fas fa-eraser"></i> 清除所有顯示</button>
           </div>
-          <div style="text-align:center; font-size:12px; color:#999; margin:5px 0;">- 或 -</div>
+          
+          <div class="search-divider">- 或 -</div>
           
           <div class="search-block-label"><i class="fas fa-clock"></i> 依派工時機快篩</div>
-          <select id="timingSelect" style="margin-bottom:10px;">
+          <select id="timingSelect">
               <option value="">(讀取系統資料中...)</option>
           </select>
           
+          <div class="search-divider">- 或 -</div>
+
           <div class="search-block-label"><i class="fas fa-tools"></i> 依維修類型快篩 (多選)</div>
           <div class="multiselect-group" id="typeFilterContainer">
               <div class="multiselect-header" onclick="toggleTypeFilter()">
@@ -815,14 +958,14 @@
               </div>
           </div>
 
-          <div style="text-align:center; font-size:12px; color:#999; margin:5px 0;">- 或 -</div>
+          <div class="search-divider">- 或 -</div>
           
           <div class="search-block-label"><i class="fas fa-keyboard"></i> 關鍵字搜尋</div>
           <div class="input-with-voice">
               <input type="text" id="keywordInput" placeholder="例如：案件編號(113001) 案件名稱 廠商名稱">
               <button class="voice-btn" id="voiceBtnKeyword"><i class="fas fa-microphone"></i></button>
           </div>
-          <button id="searchBtn" class="primary"><i class="fas fa-search"></i> 開始搜尋</button>
+          <button id="searchBtn"><i class="fas fa-search"></i> 開始搜尋</button>
           <button id="clearSearchBtn" class="secondary" style="display:none; background:#ffebee; border-color:#ffcdd2; color:#d32f2f;"><i class="fas fa-times"></i> 清除結果</button>
           <div id="searchStatus" class="small" style="margin-top:8px; color:#004080; font-weight:bold;"></div>
       </div>
@@ -1565,8 +1708,6 @@ window.addEventListener('load', () => {
     setupVoiceInput('voiceBtnChatNick', 'chatNickname');
     setupVoiceInput('voiceBtnChatMsg', 'chatMessage');
 });
-
-// ... (以下維持不變的函式: reportOverlay, initReportData, checkNearbyHistory, showReportDetail, closeReportDetailModal, triggerCamera, selectSource, closeSourceModal, previewImage, compressImage, deletePhoto, resetReportForm, getUserID, submitReport, dupClearBtn, focusDupMarker, showDupDetailPopup, showMapDetailPopup, autoDupCheckToggle, performAutoDuplicateCheck, dupCheckBtn, switchTab, sidebar logic, region loading, marker logic, etc.) ...
 
 const reportOverlay = document.getElementById('reportOverlay');
 const openReportBtn = document.getElementById('openReportBtn');

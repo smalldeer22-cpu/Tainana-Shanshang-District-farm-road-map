@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0209V8)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0209V9)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -113,8 +113,22 @@
   .multiselect-group.open .multiselect-content { display: block; }
   .select-all-row { border-bottom: 1px dashed #ddd; padding-bottom: 5px; margin-bottom: 5px; font-weight: bold; color: #004080; }
 
-  select, textarea, input[type="text"] { width: 100%; padding: 10px; margin-top: 5px; font-size: 14px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+  /* 輸入框與語音按鈕容器 */
+  .input-with-voice { position: relative; width: 100%; display: flex; align-items: center; }
+  .input-with-voice input, .input-with-voice textarea { width: 100%; padding-right: 35px; box-sizing: border-box; }
+  .voice-btn {
+      position: absolute; right: 5px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer; color: #999; font-size: 16px;
+      width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;
+      border-radius: 50%; transition: all 0.2s;
+  }
+  .voice-btn:hover { background: #f0f0f0; color: #555; }
+  .voice-btn.listening { color: #d32f2f; animation: pulse-red 1.5s infinite; background: #ffebee; }
   
+  textarea + .voice-btn { top: 15px; transform: none; } /* 針對 textarea 調整位置 */
+
+  @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(211, 47, 47, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(211, 47, 47, 0); } 100% { box-shadow: 0 0 0 0 rgba(211, 47, 47, 0); } }
+
   button.primary { width: 100%; padding: 10px; margin-top: 8px; cursor: pointer; border-radius: 6px; border: none; background: var(--primary-color); color: #fff; font-size: 14px; font-weight: bold; }
   button.primary:hover { background: #003366; }
   button.secondary { width: 100%; padding: 8px; margin-top: 8px; cursor: pointer; border-radius: 6px; border: 1px solid #ddd; background: #fff; color: #555; font-size: 13px; }
@@ -377,14 +391,14 @@
   .chat-star { color: #f39c12; font-size: 11px; margin-top: 4px; display: block; }
   .chat-time { font-size: 10px; color: #999; margin-top: 4px; text-align: right; }
 
-  /* 底部輸入區 */
+  /* 底部輸入區 (V9新增語音樣式) */
   .chat-input-area { background: #fff; padding: 10px; border-top: 1px solid #ddd; flex-shrink: 0; display: flex; flex-direction: column; gap: 8px; }
-  .chat-nickname-row { display: flex; gap: 5px; align-items: center; }
-  .chat-nickname-input { width: 120px; padding: 5px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px; background: #f9f9f9; }
+  .chat-nickname-row { display: flex; gap: 5px; align-items: center; position:relative; }
+  .chat-nickname-input { width: 120px; padding: 5px; padding-right: 30px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px; background: #f9f9f9; }
   .chat-star-select { color: #ccc; cursor: pointer; font-size: 16px; margin-left: auto; }
   .chat-star-select i.active { color: #f39c12; }
-  .chat-msg-row { display: flex; gap: 8px; }
-  .chat-msg-input { flex: 1; height: 36px; border: 1px solid #ddd; border-radius: 18px; padding: 0 12px; font-size: 13px; outline: none; transition: border 0.2s; }
+  .chat-msg-row { display: flex; gap: 8px; position: relative; }
+  .chat-msg-input { flex: 1; height: 36px; border: 1px solid #ddd; border-radius: 18px; padding: 0 12px; padding-right: 35px; font-size: 13px; outline: none; transition: border 0.2s; }
   .chat-msg-input:focus { border-color: var(--primary-color); }
   .chat-send-btn { width: 36px; height: 36px; border-radius: 50%; background: var(--primary-color); color: #fff; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.1s; }
   .chat-send-btn:active { transform: scale(0.9); }
@@ -428,7 +442,7 @@
   .report-col { flex: 1; display: flex; flex-direction: column; gap: 8px; justify-content: flex-start; }
   .report-item { font-size: 14px; color: #333; }
   .report-label { font-weight: bold; color: #555; margin-right: 5px; }
-  .report-textarea { width: 100%; height: 100%; min-height: 60px; resize: none; border: 1px solid #ccc; border-radius: 4px; padding: 8px; font-size: 14px; box-sizing: border-box; }
+  .report-textarea { width: 100%; height: 100%; min-height: 60px; resize: none; border: 1px solid #ccc; border-radius: 4px; padding: 8px; padding-right: 35px; font-size: 14px; box-sizing: border-box; }
   @media (max-width: 768px) { .report-grid { flex-direction: column; gap: 15px; } .report-textarea { height: 80px; } }
   .photo-upload-container { display: flex; gap: 10px; margin-top: 15px; height: 200px; }
   .photo-box-upload { flex: 1; border: 2px dashed #ccc; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #fff; position: relative; overflow: hidden; }
@@ -571,8 +585,9 @@
         <div class="comment-body" id="commentList">
             </div>
         <div class="chat-input-area">
-            <div class="chat-nickname-row">
+            <div class="chat-nickname-row input-with-voice">
                 <input type="text" id="chatNickname" class="chat-nickname-input" placeholder="您的暱稱" onchange="saveNickname(this.value)">
+                <button class="voice-btn" id="voiceBtnChatNick"><i class="fas fa-microphone"></i></button>
                 <div class="chat-star-select" id="chatStarSelect">
                     <i class="far fa-star" onclick="setChatStar(1)" data-val="1"></i>
                     <i class="far fa-star" onclick="setChatStar(2)" data-val="2"></i>
@@ -582,8 +597,9 @@
                 </div>
                 <input type="hidden" id="chatCurrentStar" value="0">
             </div>
-            <div class="chat-msg-row">
+            <div class="chat-msg-row input-with-voice">
                 <input type="text" id="chatMessage" class="chat-msg-input" placeholder="輸入留言...">
+                <button class="voice-btn" id="voiceBtnChatMsg"><i class="fas fa-microphone"></i></button>
                 <button class="chat-send-btn" onclick="submitChatComment()"><i class="fas fa-paper-plane"></i></button>
             </div>
         </div>
@@ -607,7 +623,10 @@
             </div>
             <div class="report-col">
                 <div class="report-item"><span class="report-label">簡述案情：</span></div>
-                <textarea id="reportDesc" class="report-textarea" placeholder="請描述損壞情形 (例如：路面坑洞)"></textarea>
+                <div class="input-with-voice" style="height:100%;">
+                    <textarea id="reportDesc" class="report-textarea" placeholder="請描述損壞情形 (例如：路面坑洞)"></textarea>
+                    <button class="voice-btn" id="voiceBtnReport"><i class="fas fa-microphone"></i></button>
+                </div>
             </div>
         </div>
 
@@ -799,7 +818,10 @@
           <div style="text-align:center; font-size:12px; color:#999; margin:5px 0;">- 或 -</div>
           
           <div class="search-block-label"><i class="fas fa-keyboard"></i> 關鍵字搜尋</div>
-          <input type="text" id="keywordInput" placeholder="例如：案件編號(113001) 案件名稱 廠商名稱">
+          <div class="input-with-voice">
+              <input type="text" id="keywordInput" placeholder="例如：案件編號(113001) 案件名稱 廠商名稱">
+              <button class="voice-btn" id="voiceBtnKeyword"><i class="fas fa-microphone"></i></button>
+          </div>
           <button id="searchBtn" class="primary"><i class="fas fa-search"></i> 開始搜尋</button>
           <button id="clearSearchBtn" class="secondary" style="display:none; background:#ffebee; border-color:#ffcdd2; color:#d32f2f;"><i class="fas fa-times"></i> 清除結果</button>
           <div id="searchStatus" class="small" style="margin-top:8px; color:#004080; font-weight:bold;"></div>
@@ -932,7 +954,7 @@
 // !!! 請務必將此網址替換為您 GAS 部署後的 Web App URL !!!
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwb88r-ifPxx9bBcD1sF0tLVxOIjw60RoLWWJZXk8T82TP3GhSV8bb3dTNEGcgggwr5/exec";
 
-// V8: 全域快取
+// V8+V9: 全域快取
 const CASE_DATA_CACHE = {};
 
 const map = L.map('map', { zoomControl:false, doubleClickZoom: false }).setView([23.1025,120.3538], 13);
@@ -1095,7 +1117,7 @@ window.expandTypePill = function(uid, fullText) {
 }
 
 // V8 修正: 開啟留言 Modal
-let currentActiveStoreId = ""; // 使用 storeId 以對應快取
+let currentActiveStoreId = ""; 
 window.openCommentModal = function(storeId) {
     currentActiveStoreId = storeId;
     const props = CASE_DATA_CACHE[storeId];
@@ -1221,12 +1243,10 @@ window.submitChatComment = async function() {
             siteUrl: window.location.href
         };
         
-        // 背景送出，不阻擋使用者操作
         await fetch(GOOGLE_SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) });
         
     } catch(e) {
         console.error("Comment submit failed", e);
-        // 失敗時可在這裡做 rollback，但通常沒必要那麼嚴格
     } finally {
         btn.disabled = false; btn.innerHTML = originalIcon;
     }
@@ -1241,10 +1261,12 @@ function createPopup(data) {
     const twd = twd97FromWgs84(lat, lng);
     const uid = Math.random().toString(36).substr(2, 9);
     
-    // 建立快取鍵值
-    const caseId = props['案件編號'] || '無編號';
-    // 用一個比較乾淨的 ID 當 key
-    const storeId = (caseId === '無編號' ? 'TMP_' : '') + caseId.replace(/[^a-zA-Z0-9]/g, '') + "_" + uid;
+    // V9 修正: 使用更穩定的 ID 生成機制
+    let caseId = '未知編號';
+    try { caseId = props['案件編號'] || '無編號'; } catch(e) {}
+    
+    const cleanCaseId = String(caseId).replace(/[^a-zA-Z0-9]/g, '');
+    const storeId = (cleanCaseId === '' ? 'TMP_' : cleanCaseId) + "_" + uid;
     
     // 存入快取
     CASE_DATA_CACHE[storeId] = props;
@@ -1283,22 +1305,20 @@ function createPopup(data) {
     const avgStar = props['平均星等'] || 0;
     const commentCount = props['評論數'] || 0;
     
-    // V8 修正: 強力日期防呆 (解決歷史案件崩潰問題)
+    // V9: 強力日期防呆
     const safeDate = (d) => {
         if (d === undefined || d === null || d === '') return '-';
-        // 強制轉字串
-        const s = String(d).trim();
-        // 如果是標準 ISO 格式 (GAS)
-        if (s.includes('T')) return s.split('T')[0];
-        // 如果是歷史案件的數字或民國年，直接回傳
-        return s;
+        try {
+            const s = String(d).trim();
+            if (s.includes('T')) return s.split('T')[0];
+            return s;
+        } catch(e) { return '-'; }
     };
 
     let step = 3; 
     if(status.includes('待處理')) step = 1;
     else if(status.includes('派工') || status.includes('施工')) step = 2;
     
-    // 優先讀取對應欄位
     let date1 = safeDate(props['通報日期']);
     let date2 = safeDate(props['派工日期']);
     let date3 = safeDate(props['完工日期']);
@@ -1453,9 +1473,21 @@ async function toggleRealtimeLayer(checkbox) {
                     fillOpacity: 0.9
                 });
 
+                // V9 Fix: 在這裡也要預先生成 ID 存入快取，避免點擊時找不到
+                const uid = Math.random().toString(36).substr(2, 9);
+                let caseId = '未知編號';
+                try { caseId = props['案件編號'] || '無編號'; } catch(e) {}
+                const cleanCaseId = String(caseId).replace(/[^a-zA-Z0-9]/g, '');
+                const storeId = (cleanCaseId === '' ? 'TMP_' : cleanCaseId) + "_" + uid;
+                
+                // 存入快取
+                CASE_DATA_CACHE[storeId] = props;
+
+                // 將 storeId 綁在 customData 上
                 marker.customData = {
-                    configLabel: "民眾通報-" + props['案件編號'], 
-                    props: props
+                    configLabel: "民眾通報-" + caseId, 
+                    props: props,
+                    storeId: storeId // 傳遞給 click handler
                 };
 
                 marker.on('click', (e) => {
@@ -1477,6 +1509,64 @@ async function toggleRealtimeLayer(checkbox) {
         document.body.style.cursor = 'default';
     }
 }
+
+// V9 Added: 語音輸入功能
+function setupVoiceInput(triggerId, targetId) {
+    const trigger = document.getElementById(triggerId);
+    const target = document.getElementById(targetId);
+    
+    if(!trigger || !target) return;
+
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        trigger.style.display = 'none'; // 不支援則隱藏按鈕
+        return;
+    }
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    
+    recognition.lang = 'zh-TW'; // 設定為中文
+    recognition.continuous = false; // 講完一句自動停止
+    recognition.interimResults = false;
+
+    trigger.onclick = () => {
+        if (trigger.classList.contains('listening')) {
+            recognition.stop();
+        } else {
+            recognition.start();
+        }
+    };
+
+    recognition.onstart = () => {
+        trigger.classList.add('listening');
+    };
+
+    recognition.onend = () => {
+        trigger.classList.remove('listening');
+    };
+
+    recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        // 將文字附加到輸入框 (若原本有字則加空格)
+        const currentVal = target.value;
+        target.value = currentVal + (currentVal ? " " : "") + transcript;
+    };
+    
+    recognition.onerror = (event) => {
+        console.error("Speech recognition error", event.error);
+        trigger.classList.remove('listening');
+    };
+}
+
+// 綁定所有語音輸入
+window.addEventListener('load', () => {
+    setupVoiceInput('voiceBtnKeyword', 'keywordInput');
+    setupVoiceInput('voiceBtnReport', 'reportDesc');
+    setupVoiceInput('voiceBtnChatNick', 'chatNickname');
+    setupVoiceInput('voiceBtnChatMsg', 'chatMessage');
+});
+
+// ... (以下維持不變的函式: reportOverlay, initReportData, checkNearbyHistory, showReportDetail, closeReportDetailModal, triggerCamera, selectSource, closeSourceModal, previewImage, compressImage, deletePhoto, resetReportForm, getUserID, submitReport, dupClearBtn, focusDupMarker, showDupDetailPopup, showMapDetailPopup, autoDupCheckToggle, performAutoDuplicateCheck, dupCheckBtn, switchTab, sidebar logic, region loading, marker logic, etc.) ...
 
 const reportOverlay = document.getElementById('reportOverlay');
 const openReportBtn = document.getElementById('openReportBtn');

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0209V5)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0209V8)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -98,7 +98,7 @@
   .checkbox-item { margin-bottom: 6px; display: flex; align-items: center; gap: 6px; font-size: 13px; }
   .checkbox-item input { margin: 0; accent-color: var(--primary-color); }
 
-  /* V3 Added: 多選摺疊樣式 */
+  /* 多選摺疊樣式 */
   .multiselect-group { border: 1px solid #ddd; border-radius: 6px; margin-bottom: 10px; background: #fff; }
   .multiselect-header { 
       padding: 10px; cursor: pointer; background: #fff; color: #555; font-size: 14px; 
@@ -358,16 +358,36 @@
       .details-grid { grid-template-columns: 1fr 1fr; gap: 8px; } 
   }
   
-  /* === 評論 Modal === */
+  /* === V8 聊天室留言樣式 === */
   #commentModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 20000; align-items: center; justify-content: center; }
-  .comment-box { background: #fff; width: 90%; max-width: 400px; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.3); animation: popIn 0.3s; display: flex; flex-direction: column; max-height: 80vh; }
-  .comment-header { padding: 15px; background: var(--primary-color); color: white; display: flex; justify-content: space-between; align-items: center; font-weight: bold; }
-  .comment-body { padding: 15px; overflow-y: auto; flex: 1; }
-  .comment-item { border-bottom: 1px solid #eee; padding: 10px 0; }
-  .comment-item:last-child { border-bottom: none; }
-  .star-row { color: #f39c12; font-size: 12px; margin-bottom: 4px; }
-  .comment-text { font-size: 13px; color: #333; line-height: 1.4; }
-  .comment-date { font-size: 11px; color: #999; text-align: right; margin-top: 4px; }
+  .comment-box { 
+      background: #fff; width: 90%; max-width: 450px; height: 80vh; 
+      border-radius: 12px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.3); 
+      animation: popIn 0.3s; display: flex; flex-direction: column; 
+  }
+  .comment-header { padding: 15px; background: var(--primary-color); color: white; display: flex; justify-content: space-between; align-items: center; font-weight: bold; flex-shrink: 0; }
+  .comment-body { padding: 15px; overflow-y: auto; flex: 1; background: #eef2f6; display: flex; flex-direction: column; gap: 10px; }
+  
+  /* 聊天氣泡 */
+  .chat-bubble { display: flex; gap: 10px; align-items: flex-start; animation: fadeIn 0.2s; }
+  .chat-avatar { width: 36px; height: 36px; border-radius: 50%; background: #ddd; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #555; font-size: 14px; flex-shrink: 0; border: 2px solid #fff; }
+  .chat-content { max-width: 80%; }
+  .chat-meta { font-size: 11px; color: #666; margin-bottom: 2px; display: flex; align-items: center; gap: 5px; }
+  .chat-box { background: #fff; padding: 8px 12px; border-radius: 0 12px 12px 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); font-size: 13px; line-height: 1.4; color: #333; position: relative; }
+  .chat-star { color: #f39c12; font-size: 11px; margin-top: 4px; display: block; }
+  .chat-time { font-size: 10px; color: #999; margin-top: 4px; text-align: right; }
+
+  /* 底部輸入區 */
+  .chat-input-area { background: #fff; padding: 10px; border-top: 1px solid #ddd; flex-shrink: 0; display: flex; flex-direction: column; gap: 8px; }
+  .chat-nickname-row { display: flex; gap: 5px; align-items: center; }
+  .chat-nickname-input { width: 120px; padding: 5px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px; background: #f9f9f9; }
+  .chat-star-select { color: #ccc; cursor: pointer; font-size: 16px; margin-left: auto; }
+  .chat-star-select i.active { color: #f39c12; }
+  .chat-msg-row { display: flex; gap: 8px; }
+  .chat-msg-input { flex: 1; height: 36px; border: 1px solid #ddd; border-radius: 18px; padding: 0 12px; font-size: 13px; outline: none; transition: border 0.2s; }
+  .chat-msg-input:focus { border-color: var(--primary-color); }
+  .chat-send-btn { width: 36px; height: 36px; border-radius: 50%; background: var(--primary-color); color: #fff; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.1s; }
+  .chat-send-btn:active { transform: scale(0.9); }
   
   /* 動畫 */
   @keyframes slideDown { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:translateY(0); } }
@@ -545,11 +565,28 @@
 <div id="commentModal">
     <div class="comment-box">
         <div class="comment-header">
-            <span><i class="fas fa-comments"></i> 意見回饋</span>
+            <span><i class="fas fa-comments"></i> 案件留言板</span>
             <button onclick="closeCommentModal()" style="background:none; border:none; color:white; font-size:18px; cursor:pointer;"><i class="fas fa-times"></i></button>
         </div>
         <div class="comment-body" id="commentList">
             </div>
+        <div class="chat-input-area">
+            <div class="chat-nickname-row">
+                <input type="text" id="chatNickname" class="chat-nickname-input" placeholder="您的暱稱" onchange="saveNickname(this.value)">
+                <div class="chat-star-select" id="chatStarSelect">
+                    <i class="far fa-star" onclick="setChatStar(1)" data-val="1"></i>
+                    <i class="far fa-star" onclick="setChatStar(2)" data-val="2"></i>
+                    <i class="far fa-star" onclick="setChatStar(3)" data-val="3"></i>
+                    <i class="far fa-star" onclick="setChatStar(4)" data-val="4"></i>
+                    <i class="far fa-star" onclick="setChatStar(5)" data-val="5"></i>
+                </div>
+                <input type="hidden" id="chatCurrentStar" value="0">
+            </div>
+            <div class="chat-msg-row">
+                <input type="text" id="chatMessage" class="chat-msg-input" placeholder="輸入留言...">
+                <button class="chat-send-btn" onclick="submitChatComment()"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -893,7 +930,10 @@
 
 <script>
 // !!! 請務必將此網址替換為您 GAS 部署後的 Web App URL !!!
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwb88r-ifPxx9bBcD1sF0tLVxOIjw60RoLWWJZXk8T82TP3GhSV8bb3dTNEGcgggwr5/exec";
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/您的SCRIPT_ID/exec";
+
+// V8: 全域快取
+const CASE_DATA_CACHE = {};
 
 const map = L.map('map', { zoomControl:false, doubleClickZoom: false }).setView([23.1025,120.3538], 13);
 const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
@@ -1005,7 +1045,6 @@ function getPhotosFromProps(props) {
     return combinedStr.split(/[;\n\r]+/).map(u => getDirectDriveUrl(u)).filter(u => u.length > 0);
 }
 
-// 修正功能：金額格式化 (萬 + 補零)
 function formatMoneyWan(val) {
     val = parseInt(val) || 0;
     if (val < 10000) return val.toLocaleString() + " 元";
@@ -1017,7 +1056,6 @@ function formatMoneyWan(val) {
 
 /* === 新版 Bubble Window JS 邏輯 === */
 
-// 手機版切換照片 Tab 邏輯
 window.switchMobilePhotoTab = function(el, type, uid) {
     const card = el.closest('.popup-card');
     const tabs = card.querySelectorAll('.m-photo-tab');
@@ -1048,7 +1086,6 @@ window.toggleDetails = function(el) {
     }
 };
 
-// 修正功能：展開更多維修類型
 window.expandTypePill = function(uid, fullText) {
     const pill = document.getElementById(`type-pill-${uid}`);
     if(pill) {
@@ -1057,90 +1094,141 @@ window.expandTypePill = function(uid, fullText) {
     }
 }
 
-// 開啟意見回饋 Modal (對接 GAS 資料)
-window.openCommentModal = function(caseId, commentsJsonStr) {
+// V8 修正: 開啟留言 Modal
+let currentActiveStoreId = ""; // 使用 storeId 以對應快取
+window.openCommentModal = function(storeId) {
+    currentActiveStoreId = storeId;
+    const props = CASE_DATA_CACHE[storeId];
+    
+    if(!props) { console.error("Data not found in cache for", storeId); return; }
+    
     const modal = document.getElementById('commentModal');
     const list = document.getElementById('commentList');
     modal.style.display = 'flex';
     
-    // 解析 GAS 傳來的 JSON
+    const savedName = localStorage.getItem("chatNickname") || "";
+    document.getElementById('chatNickname').value = savedName;
+    
+    // 解析留言
     let comments = [];
-    try {
-        comments = JSON.parse(commentsJsonStr || "[]");
-    } catch(e) { comments = []; }
+    try { 
+        // 歷史案件可能沒有這個欄位，給預設值
+        const raw = props['評論內容'] || "[]";
+        comments = JSON.parse(raw); 
+    } catch(e) {}
 
-    // 渲染輸入框
-    let html = `
-    <div style="margin-bottom:15px; background:#f8f9fa; padding:10px; border-radius:8px;">
-        <div style="font-weight:bold; margin-bottom:5px; font-size:13px;">新增留言：</div>
-        <textarea id="newCommentText" style="width:100%; height:60px; border:1px solid #ddd; border-radius:4px; padding:5px; font-size:13px;" placeholder="寫下您的意見..."></textarea>
-        <div style="display:flex; justify-content:space-between; margin-top:5px; align-items:center;">
-            <div style="color:#ccc; font-size:16px;" id="starRatingInput">
-                <i class="far fa-star" onclick="setStar(1)" data-val="1"></i>
-                <i class="far fa-star" onclick="setStar(2)" data-val="2"></i>
-                <i class="far fa-star" onclick="setStar(3)" data-val="3"></i>
-                <i class="far fa-star" onclick="setStar(4)" data-val="4"></i>
-                <i class="far fa-star" onclick="setStar(5)" data-val="5"></i>
-            </div>
-            <button onclick="submitComment('${caseId}')" style="background:var(--primary-color); color:white; border:none; padding:4px 12px; border-radius:4px; cursor:pointer;">送出</button>
-        </div>
-        <input type="hidden" id="currentStarVal" value="0">
-    </div>
-    <div style="border-top:1px dashed #eee; margin:10px 0;"></div>
-    `;
-
-    if(comments.length === 0) {
-        html += `<div style="text-align:center;color:#666;padding:20px;">目前尚無評論</div>`;
-    } else {
-        comments.forEach(c => {
-            const stars = '<i class="fas fa-star"></i>'.repeat(c.star) + '<i class="far fa-star"></i>'.repeat(5 - c.star);
-            html += `
-            <div class="comment-item">
-                <div class="star-row">${stars}</div>
-                <div class="comment-text">${c.text}</div>
-                <div class="comment-date">${c.date}</div>
-            </div>`;
-        });
-    }
-    list.innerHTML = html;
+    renderCommentList(list, comments);
+    
+    document.getElementById('chatMessage').value = "";
+    setChatStar(0);
 };
 
-window.setStar = function(val) {
-    document.getElementById('currentStarVal').value = val;
-    const stars = document.getElementById('starRatingInput').querySelectorAll('i');
+function renderCommentList(container, comments) {
+    if(comments.length === 0) {
+        container.innerHTML = `<div style="text-align:center;color:#999;padding:20px;font-size:13px;">成為第一個留言的人吧！</div>`;
+    } else {
+        let html = "";
+        comments.forEach(c => {
+            const starHtml = c.star > 0 ? `<span class="chat-star">${'<i class="fas fa-star"></i>'.repeat(c.star)}</span>` : "";
+            const user = c.user || "熱心民眾";
+            const avatarChar = user.charAt(0);
+            html += `
+            <div class="chat-bubble">
+                <div class="chat-avatar">${avatarChar}</div>
+                <div class="chat-content">
+                    <div class="chat-meta"><b>${user}</b></div>
+                    <div class="chat-box">
+                        ${c.text}
+                        ${starHtml}
+                    </div>
+                    <div class="chat-time">${c.date}</div>
+                </div>
+            </div>`;
+        });
+        container.innerHTML = html;
+        setTimeout(() => container.scrollTop = container.scrollHeight, 100);
+    }
+}
+
+window.setChatStar = function(val) {
+    document.getElementById('chatCurrentStar').value = val;
+    const stars = document.querySelectorAll('#chatStarSelect i');
     stars.forEach(s => {
         const v = parseInt(s.getAttribute('data-val'));
-        if(v <= val) { s.classList.remove('far'); s.classList.add('fas'); s.style.color = '#f39c12'; }
-        else { s.classList.remove('fas'); s.classList.add('far'); s.style.color = '#ccc'; }
+        if(v <= val) s.classList.add('active'); else s.classList.remove('active');
     });
 }
 
-window.submitComment = async function(caseId) {
+window.saveNickname = function(val) {
+    if(val) localStorage.setItem("chatNickname", val);
+}
+
+// V8: 送出留言 (包含前端快取更新)
+window.submitChatComment = async function() {
+    if (!currentActiveStoreId) return;
+    const props = CASE_DATA_CACHE[currentActiveStoreId];
+    if (!props) return;
+
     if (GOOGLE_SCRIPT_URL.includes("您的SCRIPT_ID")) { alert("請先設定 Google Apps Script URL！"); return; }
-    const text = document.getElementById('newCommentText').value;
-    const star = document.getElementById('currentStarVal').value;
-    if(star == 0) { alert("請點選星等評分！"); return; }
     
-    const btn = event.target; 
-    btn.disabled = true; btn.innerText = "...";
+    const text = document.getElementById('chatMessage').value.trim();
+    const star = parseInt(document.getElementById('chatCurrentStar').value);
+    let nickname = document.getElementById('chatNickname').value.trim();
+    
+    if(!nickname) { alert("請輸入暱稱！"); return; }
+    localStorage.setItem("chatNickname", nickname);
+    
+    if(!text && star == 0) { alert("請輸入留言或評分！"); return; }
+    
+    const btn = document.querySelector('.chat-send-btn');
+    const originalIcon = btn.innerHTML;
+    btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+    // 準備新留言物件
+    const now = new Date();
+    const timeStr = `${now.getFullYear()}/${('0'+(now.getMonth()+1)).slice(-2)}/${('0'+now.getDate()).slice(-2)} ${('0'+now.getHours()).slice(-2)}:${('0'+now.getMinutes()).slice(-2)}`;
+    
+    const newComment = {
+        star: star,
+        text: text,
+        date: timeStr,
+        user: nickname
+    };
+
+    // V8 Update: 立即更新本地快取 (Optimistic UI)
+    let currentComments = [];
+    try {
+        currentComments = JSON.parse(props['評論內容'] || "[]");
+    } catch(e) {}
+    
+    currentComments.push(newComment);
+    props['評論內容'] = JSON.stringify(currentComments);
+    props['評論數'] = (parseInt(props['評論數'] || 0) + 1);
+    
+    // 立即更新畫面
+    renderCommentList(document.getElementById('commentList'), currentComments);
+    document.getElementById('chatMessage').value = "";
+    setChatStar(0);
 
     try {
         const payload = {
             action: "comment",
-            caseId: caseId,
-            star: parseInt(star),
+            caseId: props['案件編號'] || currentActiveStoreId,
+            star: star,
             comment: text,
-            appKey: "TainanMap2026_SecureKey_v1", // 需與 GAS 對應
+            nickname: nickname,
+            appKey: "TainanMap2026_SecureKey_v1",
             siteUrl: window.location.href
         };
+        
+        // 背景送出，不阻擋使用者操作
         await fetch(GOOGLE_SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) });
-        alert("評論已送出！感謝您的回饋。");
-        closeCommentModal();
-        // 重新讀取該案件資料或重新整理頁面可更新顯示，此處暫不強制重整
+        
     } catch(e) {
-        alert("送出失敗，請稍後再試。");
+        console.error("Comment submit failed", e);
+        // 失敗時可在這裡做 rollback，但通常沒必要那麼嚴格
     } finally {
-        btn.disabled = false; btn.innerText = "送出";
+        btn.disabled = false; btn.innerHTML = originalIcon;
     }
 }
 
@@ -1149,77 +1237,76 @@ function closeCommentModal() {
 }
 
 function createPopup(data) {
-    const { fileName, props, lat, lng, dist } = data; // dist 可能 undefined
+    const { fileName, props, lat, lng, dist } = data; 
     const twd = twd97FromWgs84(lat, lng);
     const uid = Math.random().toString(36).substr(2, 9);
     
+    // 建立快取鍵值
     const caseId = props['案件編號'] || '無編號';
+    // 用一個比較乾淨的 ID 當 key
+    const storeId = (caseId === '無編號' ? 'TMP_' : '') + caseId.replace(/[^a-zA-Z0-9]/g, '') + "_" + uid;
+    
+    // 存入快取
+    CASE_DATA_CACHE[storeId] = props;
+
     const status = props['案件狀態'] || '已完工';
     const contractor = props['施工廠商'] || '-';
-    const supervisor = props['監造廠商'] || '-'; // V2 新增
-    
-    // 修正功能：金額格式化
+    const supervisor = props['監造廠商'] || '-'; 
     const priceRaw = props['決標金額'] || '0';
     const priceDisplay = formatMoneyWan(priceRaw);
-
     const desc = props['案情描述'] || '無';
     
-    // 0209V2: Header Pills 邏輯
     let pillClass = 'pill-status';
     if(status.includes('施工') || status.includes('派工')) pillClass = 'pill-working';
     else if(status.includes('搶修')) pillClass = 'pill-urgent';
     
-    // 派工時機
     const timing = props['派工時機'] || '未知時機';
     
-    // 修正功能：搶修類型 (+N 展開邏輯)
     let typeStr = props['搶修類型'] || '';
-    let types = typeStr.split(/[,，]/).filter(t => t.trim() !== '');
+    let types = String(typeStr).split(/[,，]/).filter(t => t.trim() !== '');
     let typeDisplay = '未分類';
     let typeClickAttr = '';
     
     if(types.length > 1) {
         typeDisplay = `${types[0]}... +${types.length - 1}`;
-        // 加入展開事件
-        typeClickAttr = `id="type-pill-${uid}" onclick="expandTypePill('${uid}', '${typeStr.replace(/'/g, "\\'")}')"`;
+        typeClickAttr = `id="type-pill-${uid}" onclick="expandTypePill('${uid}', '${String(typeStr).replace(/'/g, "\\'")}')"`;
     } else if (types.length === 1) {
         typeDisplay = types[0];
     }
     
-    // 修正功能：距離無條件進位
     let distDisplay = '';
     if(dist !== undefined && dist !== null && !isNaN(dist)) {
         const distCeil = Math.ceil(dist);
         distDisplay = `<div class="info-pill pill-dist"><i class="fas fa-route"></i> 距路線 ${distCeil}m</div>`;
     }
 
-    // 修正功能：星星與評論數 (讀取 GAS 資料)
     const avgStar = props['平均星等'] || 0;
     const commentCount = props['評論數'] || 0;
-    // 將評論 JSON 轉為字串並跳脫引號以放入 onclick
-    const commentJsonRaw = props['評論內容'] || "[]";
-    const safeCommentJson = commentJsonRaw.replace(/"/g, '"');
     
-    // V5 Update: 進度條與日期邏輯修正 (直接讀取對應欄位)
+    // V8 修正: 強力日期防呆 (解決歷史案件崩潰問題)
+    const safeDate = (d) => {
+        if (d === undefined || d === null || d === '') return '-';
+        // 強制轉字串
+        const s = String(d).trim();
+        // 如果是標準 ISO 格式 (GAS)
+        if (s.includes('T')) return s.split('T')[0];
+        // 如果是歷史案件的數字或民國年，直接回傳
+        return s;
+    };
+
     let step = 3; 
     if(status.includes('待處理')) step = 1;
     else if(status.includes('派工') || status.includes('施工')) step = 2;
     
-    // 直接讀取 A欄(通報日期) 與 P欄(派工日期)
-    let date1 = props['通報日期'] || '-';
-    // 若 GAS 回傳的是 ISO 格式 (例如 2026-02-09T...), 只取前面日期部分
-    if(date1 && date1.includes('T')) date1 = date1.split('T')[0];
-
-    let date2 = props['派工日期'] || '-';
-    if(date2 && date2.includes('T')) date2 = date2.split('T')[0];
-
-    let date3 = props['完工日期'] || '-';
-    if(date3 && date3.includes('T')) date3 = date3.split('T')[0];
+    // 優先讀取對應欄位
+    let date1 = safeDate(props['通報日期']);
+    let date2 = safeDate(props['派工日期']);
+    let date3 = safeDate(props['完工日期']);
 
     // 照片
     const processPhotoStr = (str) => {
         if (!str) return [];
-        return str.split(/[;\n\r]+/).map(u => getDirectDriveUrl(u)).filter(u => u.length > 0);
+        return String(str).split(/[;\n\r]+/).map(u => getDirectDriveUrl(u)).filter(u => u.length > 0);
     };
     let arrBefore = processPhotoStr(props['施工前照片']);
     let arrAfter = processPhotoStr(props['施工後照片']);
@@ -1235,8 +1322,8 @@ function createPopup(data) {
             <div class="case-id-row"><div class="case-id">${caseId}</div></div>
             <div class="popup-tags-row">
                 <div class="info-pill ${pillClass}">${status}</div>
-                <div class="info-pill pill-rating" onclick="openCommentModal('${caseId}', '${safeCommentJson}')">
-                    <i class="fas fa-star"></i> ${avgStar} (${commentCount})
+                <div class="info-pill pill-rating" onclick="openCommentModal('${storeId}')">
+                    <i class="fas fa-star" style="color:#f39c12;"></i> ${avgStar} (${commentCount})
                 </div>
                 <div class="info-pill pill-timing"><i class="far fa-clock"></i> ${timing}</div>
                 <div class="info-pill pill-type" ${typeClickAttr} title="${typeStr}"><i class="fas fa-wrench"></i> ${typeDisplay}</div>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0210V4_MobileUX)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0210V5_Interactive)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -262,7 +262,7 @@
   .pill-working { background: #10b981; }
   .pill-urgent { background: #f59e0b; }
   
-  /* [修正] 星等樣式 v4 */
+  /* [修正] 星等樣式 v4 (加入 ID 以便動態更新) */
   .pill-rating { background: #fff; border:1px solid #f39c12; color: #333; cursor: pointer; transition: transform 0.2s; font-size:12px; font-weight:normal; }
   .pill-rating:hover { transform: scale(1.05); background:#fffdeb; }
   .pill-rating .fa-star { color: #f39c12; margin-right: 2px; }
@@ -366,13 +366,32 @@
   .comment-box { background: #fff; width: 90%; max-width: 450px; height: 80vh; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.3); animation: popIn 0.3s; display: flex; flex-direction: column; }
   .comment-header { padding: 15px; background: var(--primary-color); color: white; display: flex; justify-content: space-between; align-items: center; font-weight: bold; flex-shrink: 0; }
   .comment-body { padding: 15px; overflow-y: auto; flex: 1; background: #eef2f6; display: flex; flex-direction: column; gap: 10px; }
+  
+  /* [V5 新增] 官方回覆樣式 (右側黃色) */
   .chat-bubble { display: flex; gap: 10px; align-items: flex-start; animation: fadeIn 0.2s; }
+  .chat-bubble.official { flex-direction: row-reverse; } /* 官方回覆靠右 */
+  
   .chat-avatar { width: 36px; height: 36px; border-radius: 50%; background: #ddd; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #555; font-size: 14px; flex-shrink: 0; border: 2px solid #fff; }
-  .chat-content { max-width: 80%; }
+  
+  .chat-bubble.official .chat-avatar { background: #004080; color: #fff; border-color: #004080; } /* 官方頭像顏色 */
+
+  .chat-content { max-width: 80%; display: flex; flex-direction: column; }
+  .chat-bubble.official .chat-content { align-items: flex-end; } /* 官方內容靠右對齊 */
+
   .chat-meta { font-size: 11px; color: #666; margin-bottom: 2px; display: flex; align-items: center; gap: 5px; }
+  
   .chat-box { background: #fff; padding: 8px 12px; border-radius: 0 12px 12px 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); font-size: 13px; line-height: 1.4; color: #333; position: relative; }
+  
+  /* 官方回覆氣泡顏色 (淡黃色) */
+  .chat-bubble.official .chat-box { 
+      background: #fff3cd; 
+      border: 1px solid #ffeeba; 
+      border-radius: 12px 0 12px 12px; 
+  }
+
   .chat-star { color: #f39c12; font-size: 11px; margin-top: 4px; display: block; }
   .chat-time { font-size: 10px; color: #999; margin-top: 4px; text-align: right; }
+  
   .chat-input-area { background: #fff; padding: 10px; border-top: 1px solid #ddd; flex-shrink: 0; display: flex; flex-direction: column; gap: 10px; }
   .chat-nickname-row { display: flex; gap: 8px; align-items: center; justify-content: space-between; }
   .input-group-inner { position: relative; flex: 1; display: flex; align-items: center; }
@@ -889,7 +908,7 @@
 // !!! 請務必將此網址替換為您 GAS 部署後的 Web App URL !!!
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwrS_ENVFM0kTvlHDwwTiIx3KzExZh-QhXdowFlHMYHXPajqBm1_g3tcpq1AQeUlL8i/exec";
 
-// V8+V9: 全域快取
+// V8+V9+V10: 全域快取
 const CASE_DATA_CACHE = {};
 
 const map = L.map('map', { zoomControl:false, doubleClickZoom: false }).setView([23.1025,120.3538], 13);
@@ -1154,6 +1173,7 @@ window.openCommentModal = function(storeId) {
     setChatStar(0);
 };
 
+// [修改] 顯示留言列表 (新增官方回覆支援)
 function renderCommentList(container, comments) {
     if(comments.length === 0) {
         container.innerHTML = `<div style="text-align:center;color:#999;padding:20px;font-size:13px;">成為第一個留言的人吧！</div>`;
@@ -1163,6 +1183,8 @@ function renderCommentList(container, comments) {
             const starHtml = c.star > 0 ? `<span class="chat-star">${'<i class="fas fa-star"></i>'.repeat(c.star)}</span>` : "";
             const user = c.user || "熱心民眾";
             const avatarChar = user.charAt(0);
+            
+            // 民眾留言
             html += `
             <div class="chat-bubble">
                 <div class="chat-avatar">${avatarChar}</div>
@@ -1175,6 +1197,20 @@ function renderCommentList(container, comments) {
                     <div class="chat-time">${c.date}</div>
                 </div>
             </div>`;
+
+            // [新增] 官方回覆 (如果有 reply 欄位)
+            if (c.reply && c.reply.trim() !== "") {
+                html += `
+                <div class="chat-bubble official">
+                    <div class="chat-avatar"><i class="fas fa-building"></i></div>
+                    <div class="chat-content">
+                        <div class="chat-meta"><b>公所回覆</b></div>
+                        <div class="chat-box">
+                            ${c.reply}
+                        </div>
+                    </div>
+                </div>`;
+            }
         });
         container.innerHTML = html;
         setTimeout(() => container.scrollTop = container.scrollHeight, 100);
@@ -1231,11 +1267,23 @@ window.submitChatComment = async function() {
     
     currentComments.push(newComment);
     props['評論內容'] = JSON.stringify(currentComments);
-    props['評論數'] = (parseInt(props['評論數'] || 0) + 1);
+    // 簡易前端更新 (真正完整的數據稍後可從後台拉)
+    const oldTotal = parseFloat(props['平均星等']||0) * parseInt(props['評論數']||0);
+    const newCount = parseInt(props['評論數']||0) + (star > 0 ? 1 : 0);
+    const newAvg = newCount > 0 ? ((oldTotal + star) / newCount).toFixed(1) : props['平均星等'];
+    
+    props['平均星等'] = newAvg;
+    if(star > 0) props['評論數'] = newCount;
     
     renderCommentList(document.getElementById('commentList'), currentComments);
     document.getElementById('chatMessage').value = "";
     setChatStar(0);
+
+    // [更新] 即時更新介面上的數字
+    const ratingText = document.getElementById(`rating-text-${currentActiveStoreId}`);
+    if(ratingText) {
+        ratingText.innerHTML = `${newAvg} <span class="rating-count">(${currentComments.length})</span>`;
+    }
 
     try {
         const payload = {
@@ -1259,6 +1307,54 @@ window.submitChatComment = async function() {
 
 function closeCommentModal() {
     document.getElementById('commentModal').style.display = 'none';
+}
+
+// [新增] 非同步讀取並更新留言 (V5關鍵)
+async function fetchAndRefreshComments(storeId, caseId) {
+    if (!caseId || caseId === "無編號") return;
+    if (GOOGLE_SCRIPT_URL.includes("您的SCRIPT_ID")) return;
+
+    // 顯示讀取中 (Optional UI hint)
+    const ratingText = document.getElementById(`rating-text-${storeId}`);
+    if(ratingText) ratingText.style.opacity = "0.5";
+
+    try {
+        const url = `${GOOGLE_SCRIPT_URL}?action=getComments&caseId=${caseId}`;
+        const res = await fetch(url);
+        const json = await res.json();
+
+        if (json.result === "success" && Array.isArray(json.data)) {
+            const comments = json.data;
+            const props = CASE_DATA_CACHE[storeId];
+            
+            // 計算新統計
+            let totalStars = 0;
+            let starCount = 0;
+            comments.forEach(c => {
+                if (c.star > 0) {
+                    totalStars += c.star;
+                    starCount++;
+                }
+            });
+            const avg = starCount > 0 ? (totalStars / starCount).toFixed(1) : 0;
+
+            // 更新 Cache
+            if (props) {
+                props['平均星等'] = avg;
+                props['評論數'] = comments.length; // 或 starCount, 看需求
+                props['評論內容'] = JSON.stringify(comments);
+            }
+
+            // 更新介面 UI
+            if(ratingText) {
+                ratingText.innerHTML = `${avg} <span class="rating-count">(${comments.length})</span>`;
+                ratingText.style.opacity = "1";
+            }
+        }
+    } catch (e) {
+        console.error("Failed to fetch comments for case " + caseId, e);
+        if(ratingText) ratingText.style.opacity = "1";
+    }
 }
 
 function createPopup(data) {
@@ -1371,7 +1467,7 @@ function createPopup(data) {
             <div class="popup-tags-row">
                 <div class="info-pill ${pillClass}">${status}</div>
                 <div class="info-pill pill-rating" onclick="openCommentModal('${storeId}')">
-                    <i class="fas fa-star"></i> <span class="rating-score">${avgStar}</span> <span class="rating-count">(${commentCount})</span>
+                    <i class="fas fa-star"></i> <span id="rating-text-${storeId}" class="rating-score">${avgStar} <span class="rating-count">(${commentCount})</span></span>
                 </div>
                 <div class="info-pill pill-timing"><i class="far fa-clock"></i> ${timing}</div>
                 <div class="info-pill pill-type" ${typeClickAttr} title="${typeStr}"><i class="fas fa-wrench"></i> ${typeDisplay}</div>
@@ -2248,6 +2344,11 @@ window.openDetailPopupFromMarker = function(marker) {
              lat: latlng.lat, lng: latlng.lng, content: content, zoom: map.getZoom()
         }));
         L.popup({className:'custom-popup', maxWidth:960}).setLatLng(marker.getLatLng()).setContent(content).openOn(map);
+
+        // [V5新增] 開啟即觸發動態留言更新
+        const storeId = data.storeId;
+        const caseId = data.props['案件編號'];
+        fetchAndRefreshComments(storeId, caseId);
     }
 };
 
@@ -2257,6 +2358,11 @@ window.openSingleGroupItem = function(index) {
         const dist = distToRoad(item.latlng, roadsLayer);
         const content = createPopup({ fileName: item.configLabel, props: item.feature.properties, lat: item.latlng.lat, lng: item.latlng.lng, dist: dist });
         L.popup({className:'custom-popup', maxWidth:960}).setLatLng(item.latlng).setContent(content).openOn(map);
+
+        // [V5新增] 群組開啟單項也觸發更新
+        const storeId = generateStoreId(item.feature.properties);
+        const caseId = item.feature.properties['案件編號'];
+        fetchAndRefreshComments(storeId, caseId);
     }
 };
 

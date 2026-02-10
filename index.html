@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0210V7_Fixed)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0210V8_Final)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -37,6 +37,65 @@
       overflow:hidden; 
       position: relative; 
       background: var(--bg-light); 
+  }
+
+  /* === [V8 新增] 入口模式選擇視窗 === */
+  #entryModal {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      z-index: 99999;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(8px);
+      display: flex; align-items: center; justify-content: center;
+      animation: fadeIn 0.3s;
+  }
+  .entry-card {
+      background: #fff; width: 90%; max-width: 400px;
+      border-radius: 20px; padding: 30px 20px;
+      text-align: center;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+      animation: popIn 0.4s;
+  }
+  .entry-header h2 { margin: 0 0 10px 0; color: var(--primary-color); font-size: 22px; }
+  .entry-header p { color: #666; margin: 0 0 25px 0; font-size: 14px; }
+  .entry-actions { display: flex; flex-direction: column; gap: 15px; }
+  .entry-btn {
+      padding: 15px; border: none; border-radius: 12px;
+      cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 15px;
+      transition: transform 0.2s, box-shadow 0.2s;
+      text-align: left;
+  }
+  .entry-btn:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.15); }
+  .entry-btn i { font-size: 24px; width: 30px; text-align: center; }
+  .entry-btn span { font-size: 18px; font-weight: bold; line-height: 1.2; display:flex; flex-direction:column; }
+  .entry-btn small { font-size: 12px; font-weight: normal; opacity: 0.8; }
+  
+  .entry-btn.lite { background: linear-gradient(135deg, #ff9800, #f57c00); color: white; }
+  .entry-btn.full { background: linear-gradient(135deg, #004080, #003366); color: white; }
+  .entry-footer { margin-top: 20px; font-size: 11px; color: #999; }
+
+  /* === [V8 新增] 輕量版模式樣式覆寫 === */
+  /* 隱藏側邊欄、漢堡按鈕、底部面板 */
+  body.lite-mode #sidebar,
+  body.lite-mode #toggleSidebarBtn,
+  body.lite-mode #bottomPanel {
+      display: none !important;
+  }
+  /* 顯示切換按鈕 */
+  body.lite-mode #switchModeBtn {
+      display: flex !important;
+  }
+
+  /* 切換回完整版的小按鈕 */
+  #switchModeBtn {
+      display: none; /* 預設隱藏 */
+      position: absolute; top: 10px; left: 10px;
+      width: 40px; height: 40px;
+      background: rgba(255,255,255,0.9); border: 2px solid var(--primary-color);
+      color: var(--primary-color); border-radius: 8px;
+      z-index: 2000;
+      align-items: center; justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
   }
    
   /* === 2. 懸浮漢堡按鈕 === */
@@ -502,6 +561,26 @@
 </head>
 <body>
 
+<div id="entryModal">
+    <div class="entry-card">
+        <div class="entry-header">
+            <h2>臺南市山上區<br>公眾通行道路圖資系統</h2>
+            <p>請選擇您的使用模式</p>
+        </div>
+        <div class="entry-actions">
+            <button class="entry-btn lite" onclick="selectMode('lite')">
+                <i class="fas fa-camera"></i>
+                <span>案件通報<br><small>(輕量版)</small></span>
+            </button>
+            <button class="entry-btn full" onclick="selectMode('full')">
+                <i class="fas fa-search-location"></i>
+                <span>公開查詢<br><small>(完整版)</small></span>
+            </button>
+        </div>
+        <div class="entry-footer">v.0210V8</div>
+    </div>
+</div>
+
 <div id="voiceOverlay">
     <div class="voice-box">
         <div class="voice-icon-large"><i class="fas fa-microphone"></i></div>
@@ -511,6 +590,7 @@
 
 <div id="overlay-mask"></div>
 <button id="toggleSidebarBtn" title="切換選單"><i class="fas fa-bars"></i></button>
+<button id="switchModeBtn" onclick="openEntryModal()" title="切換模式"><i class="fas fa-exchange-alt"></i></button>
 
 <div class="map-floating-controls">
     <button class="float-btn" id="toggleMapBtn" data-title="切換衛星/地圖"><i class="fas fa-layer-group"></i></button>
@@ -905,6 +985,22 @@
 <script src="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol/dist/L.Control.Locate.min.js"></script>
 
 <script>
+// [V8 新增] 模式選擇功能邏輯
+function selectMode(mode) {
+    if (mode === 'lite') {
+        document.body.classList.add('lite-mode');
+        // 可選：預設開啟定位
+        if(lc) lc.start();
+    } else {
+        document.body.classList.remove('lite-mode');
+    }
+    document.getElementById('entryModal').style.display = 'none';
+}
+
+function openEntryModal() {
+    document.getElementById('entryModal').style.display = 'flex';
+}
+
 // !!! 請務必將此網址替換為您 GAS 部署後的 Web App URL !!!
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwrS_ENVFM0kTvlHDwwTiIx3KzExZh-QhXdowFlHMYHXPajqBm1_g3tcpq1AQeUlL8i/exec";
 
@@ -2582,6 +2678,20 @@ function handleMapClickSelection(idx, isInteractive) {
     if(idx==="" || idx===null) return; if(roadsLayer) roadsLayer.eachLayer(l => l.setStyle({color: DEEP_BLUE, weight:3}));
     const target = roadLayersArray[idx];
     if(target) {
+        // [V8 修改] 輕量版檢查
+        if (document.body.classList.contains('lite-mode')) {
+            target.setStyle({ color: 'red', weight: 6 });
+            map.fitBounds(target.getBounds());
+            
+            // 輕量版只顯示簡單資訊，不開啟面板
+            const name = target.feature.properties.name || "道路";
+            L.popup()
+                .setLatLng(target.getBounds().getCenter())
+                .setContent(`<div style="text-align:center;"><b>${name}</b><br><span style="font-size:12px;color:#666;">公眾通行道路範圍。<br>如需查詢歷史維修紀錄，請切換至「公開查詢版」。</span></div>`)
+                .openOn(map);
+            return;
+        }
+
         target.setStyle({ color: 'red', weight: 6 }); map.fitBounds(target.getBounds()); target.openPopup();
         if (isInteractive) { document.getElementById('panelTitle').innerHTML = `<i class="fas fa-history"></i> ${target.feature.properties.name}`; bottomPanel.classList.remove('minimized'); panelIcon.classList.replace('fa-chevron-down', 'fa-chevron-up'); bottomPanel.classList.add('open'); showTimeline(target); } 
         else { bottomPanel.classList.remove('open'); routeMatchLayer.clearLayers(); }

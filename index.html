@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0210V3_Final)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0210V4_MobileUX)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -49,7 +49,7 @@
   #toggleSidebarBtn:hover { background: #f4f4f4; }
   body.collapsed #toggleSidebarBtn { left: 10px; }
 
-  /* === 3. 側邊欄樣式 === */
+  /* === 3. 側邊欄樣式 (桌機預設) === */
   #sidebar {
     width: var(--sidebar-width); min-width: var(--sidebar-width); background: #fff; border-right: 1px solid #eee;
     display: flex; flex-direction: column; z-index: 1500; box-shadow: 2px 0 10px rgba(0,0,0,0.05);
@@ -152,7 +152,7 @@
   textarea + .voice-btn { top: 15px; transform: none; } 
   @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(211, 47, 47, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(211, 47, 47, 0); } 100% { box-shadow: 0 0 0 0 rgba(211, 47, 47, 0); } }
 
-  /* [修正] 語音輸入提示遮罩 */
+  /* 語音輸入提示遮罩 */
   #voiceOverlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:99999; justify-content:center; align-items:center; flex-direction:column; backdrop-filter: blur(2px); animation: fadeIn 0.3s; }
   .voice-box { background:white; padding:25px 40px; border-radius:20px; display:flex; flex-direction:column; align-items:center; gap:15px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); transform: scale(1); animation: popIn 0.3s; }
   .voice-icon-large { font-size: 40px; color: #d32f2f; animation: pulse-red 1.5s infinite; }
@@ -164,7 +164,6 @@
   button.secondary:hover { background: #f5f5f5; }
   button:disabled { background: #ccc !important; cursor: not-allowed; color: #666 !important; }
 
-  /* 登革熱專用 */
   .dengue-option { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; cursor: pointer; font-weight: bold; color: #555; }
   .dengue-option input { width: auto; margin: 0; transform: scale(1.2); }
   .gray-dot-marker { width: 14px; height: 14px; background: #7f8c8d; border: 2px solid #fff; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.4); }
@@ -240,7 +239,7 @@
   .ctx-item:hover { background: #f5faff; color: var(--primary-color); }
   .ctx-item i { width: 20px; text-align: center; }
 
-  /* === 新版泡泡窗 CSS (v.0210V3) === */
+  /* === 新版泡泡窗 CSS (v.0210V4) === */
   .custom-popup .leaflet-popup-content-wrapper { padding: 0 !important; border-radius: 12px !important; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.15) !important; border: 2px solid var(--popup-border) !important; background: rgba(250, 253, 255, 0.98) !important; backdrop-filter: blur(5px); }
   .custom-popup .leaflet-popup-content { margin: 0 !important; width: 600px !important; max-width: 90vw !important; }
   .custom-popup .leaflet-popup-tip { background: var(--popup-border) !important; }
@@ -262,45 +261,26 @@
   .pill-status { background: #64748b; }
   .pill-working { background: #10b981; }
   .pill-urgent { background: #f59e0b; }
-  .pill-rating { background: #f39c12; color: #fff; cursor: pointer; transition: transform 0.2s; }
-  .pill-rating:hover { transform: scale(1.05); filter: brightness(1.1); }
+  
+  /* [修正] 星等樣式 v4 */
+  .pill-rating { background: #fff; border:1px solid #f39c12; color: #333; cursor: pointer; transition: transform 0.2s; font-size:12px; font-weight:normal; }
+  .pill-rating:hover { transform: scale(1.05); background:#fffdeb; }
+  .pill-rating .fa-star { color: #f39c12; margin-right: 2px; }
+  .pill-rating .rating-score { color: #e65100; font-weight: 900; font-size: 13px; margin-right:2px; }
+  .pill-rating .rating-count { color: #7f8c8d; font-size: 11px; }
+
   .pill-timing { background: #3498db; }
   .pill-type { background: #9b59b6; cursor: pointer; }
   .pill-dist { background: #27ae60; }
   .pill-source { background: #17a2b8; }
 
-  /* [修正] 進度條樣式 V3 */
+  /* 進度條 V3 */
   .progress-container { display: flex; justify-content: space-between; position: relative; margin: 15px 20px 5px 20px; padding: 0; }
   .progress-container::before { content: ''; position: absolute; top: 12px; left: 15px; right: 15px; height: 3px; background: #e2e8f0; z-index: 0; }
   .progress-step { position: relative; z-index: 1; text-align: center; display: flex; flex-direction: column; align-items: center; width: 33%; }
-  
-  /* 未完成狀態 (灰色) */
-  .step-circle { 
-      width: 24px; height: 24px; /* 變大以容納打勾 */
-      background: #e2e8f0; 
-      border: 2px solid #cbd5e1; 
-      border-radius: 50%; 
-      transition: all 0.3s; 
-      box-sizing: border-box; 
-      display: flex; align-items: center; justify-content: center;
-      color: white;
-      font-size: 14px;
-      font-weight: bold;
-  }
-  
-  /* 已完成/進行中狀態 (黃色+打勾) */
-  .progress-step.active .step-circle { 
-      border-color: #f1c40f; /* 黃色邊框 */
-      background: #f1c40f;   /* 黃色底 */
-      box-shadow: 0 0 0 3px rgba(241, 196, 15, 0.3); 
-  }
-  
-  /* 打勾圖示 (使用偽元素) */
-  .progress-step.active .step-circle::after {
-      content: '✓'; 
-      color: #fff;
-  }
-
+  .step-circle { width: 24px; height: 24px; background: #e2e8f0; border: 2px solid #cbd5e1; border-radius: 50%; transition: all 0.3s; box-sizing: border-box; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; font-weight: bold; }
+  .progress-step.active .step-circle { border-color: #f1c40f; background: #f1c40f; box-shadow: 0 0 0 3px rgba(241, 196, 15, 0.3); }
+  .progress-step.active .step-circle::after { content: '✓'; color: #fff; }
   .step-date { font-size: 10px; color: #94a3b8; margin-top: 4px; white-space: nowrap; font-family: monospace; }
   .step-label { font-size: 11px; font-weight: bold; color: #94a3b8; margin-bottom: 2px; }
   .progress-step.active .step-label { color: var(--popup-text-main); }
@@ -337,6 +317,7 @@
   .grid-val { color: #333; font-weight: bold; font-size: 13px; word-break: break-all; }
   .desc-box { background: #f9f9f9; padding: 8px; border-radius: 4px; border: 1px solid #eee; margin-top: 2px; }
 
+  /* [修正] 手機版側邊欄 UX 大改版 v4 */
   @media (max-width: 768px) {
       .custom-popup .leaflet-popup-content { width: 320px !important; }
       .desktop-photo-row { display: none; }
@@ -350,7 +331,35 @@
       .mobile-photo-area { order: 5; }
       .details-toggle { order: 6; }
       .details-content { order: 7; }
-      .details-grid { grid-template-columns: 1fr 1fr; gap: 8px; } 
+      .details-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+      
+      /* Sidebar hidden on left by default */
+      #sidebar { 
+          position: fixed; 
+          top: 0; left: 0; 
+          width: 85%; max-width: 320px; 
+          height: 100%; 
+          border-right: 1px solid #ddd; 
+          border-radius: 0 16px 16px 0; 
+          transform: translateX(-100%); 
+          transition: transform 0.3s ease; 
+          z-index: 3000;
+          margin-left: 0; /* Reset desktop margin */
+      }
+      /* Slide in from left to right when open */
+      body.sidebar-open #sidebar { transform: translateX(0); }
+      
+      /* Hamburger button visible and fixed */
+      #toggleSidebarBtn { left: 10px; top: 10px; z-index: 3100; }
+      
+      /* Overlay mask logic */
+      #overlay-mask { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 2900; }
+      body.sidebar-open #overlay-mask { display: block; }
+      
+      /* Adjust other controls position */
+      .map-floating-controls { top: 60px; right: 10px; }
+      #clusterControlPanel { bottom: 200px; left: 15px; right: 15px; width: auto; }
+      #bottomPanel { left: 0; height: 300px; z-index: 2800; }
   }
   
   #commentModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 20000; align-items: center; justify-content: center; }
@@ -1076,7 +1085,7 @@ function findMarkersByCaseId(caseId) {
     return [...new Set(allMarkers)].sort((a,b) => b.getLatLng().lat - a.getLatLng().lat);
 }
 
-// [修正] 跳轉至同案不同地點 (V3自動開窗加強版)
+// [修正] 跳轉至同案不同地點 (V4自動開窗 BugFix)
 window.jumpToCaseSibling = function(targetStoreId) {
     let targetMarker = null;
     const searchInGroup = (group) => {
@@ -1089,21 +1098,34 @@ window.jumpToCaseSibling = function(targetStoreId) {
     searchInGroup(activeRepairLayers);
 
     if (targetMarker) {
+        // 先關閉目前的
         map.closePopup();
-        map.flyTo(targetMarker.getLatLng(), 18);
         
-        // 修正：使用 moveend 確保飛行結束後再開啟，並處理 cluster
-        map.once('moveend', function() {
-            setTimeout(() => {
-                if(markersClusterGroup && markersClusterGroup.hasLayer(targetMarker)) {
-                    markersClusterGroup.zoomToShowLayer(targetMarker, function() {
-                        targetMarker.openPopup();
-                    });
-                } else {
+        // 檢查是否被聚合收納
+        if (markersClusterGroup && markersClusterGroup.hasLayer(targetMarker)) {
+            // 如果是被聚合收起來的，必須先 ZoomToShow
+            if (markersClusterGroup.getVisibleParent(targetMarker) !== targetMarker) {
+                markersClusterGroup.zoomToShowLayer(targetMarker, function() {
                     targetMarker.openPopup();
-                }
-            }, 100);
-        });
+                });
+                return; // 結束，交給 callback 處理
+            }
+        }
+
+        // 如果是獨立點位，則飛行並開啟
+        map.flyTo(targetMarker.getLatLng(), 18, { duration: 1.0 });
+        
+        // 雙重保險：監聽移動結束 + 延遲執行
+        const onMoveEnd = function() {
+            map.off('moveend', onMoveEnd);
+            setTimeout(() => { targetMarker.openPopup(); }, 100);
+        };
+        map.on('moveend', onMoveEnd);
+        
+        // 防止 moveend 沒觸發 (例如距離太近)
+        setTimeout(() => {
+            if (!targetMarker.isPopupOpen()) targetMarker.openPopup();
+        }, 1200);
     }
 };
 
@@ -1349,7 +1371,7 @@ function createPopup(data) {
             <div class="popup-tags-row">
                 <div class="info-pill ${pillClass}">${status}</div>
                 <div class="info-pill pill-rating" onclick="openCommentModal('${storeId}')">
-                    <i class="fas fa-star" style="color:#f39c12;"></i> ${avgStar} <span style="font-size:0.9em;opacity:0.9">(${commentCount})</span>
+                    <i class="fas fa-star"></i> <span class="rating-score">${avgStar}</span> <span class="rating-count">(${commentCount})</span>
                 </div>
                 <div class="info-pill pill-timing"><i class="far fa-clock"></i> ${timing}</div>
                 <div class="info-pill pill-type" ${typeClickAttr} title="${typeStr}"><i class="fas fa-wrench"></i> ${typeDisplay}</div>
@@ -1516,20 +1538,20 @@ async function toggleRealtimeLayer(checkbox) {
 function setupVoiceInput(triggerId, targetId) {
     const trigger = document.getElementById(triggerId);
     const target = document.getElementById(targetId);
-    const overlay = document.getElementById('voiceOverlay'); // 取得提示框
+    const overlay = document.getElementById('voiceOverlay'); 
     
     if(!trigger || !target) return;
 
     if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-        trigger.style.display = 'none'; // 不支援則隱藏按鈕
+        trigger.style.display = 'none'; 
         return;
     }
 
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     const recognition = new SpeechRecognition();
     
-    recognition.lang = 'zh-TW'; // 設定為中文
-    recognition.continuous = false; // 講完一句自動停止
+    recognition.lang = 'zh-TW'; 
+    recognition.continuous = false; 
     recognition.interimResults = false;
 
     trigger.onclick = () => {
@@ -1542,17 +1564,16 @@ function setupVoiceInput(triggerId, targetId) {
 
     recognition.onstart = () => {
         trigger.classList.add('listening');
-        if(overlay) overlay.style.display = 'flex'; // 顯示提示框
+        if(overlay) overlay.style.display = 'flex'; 
     };
 
     recognition.onend = () => {
         trigger.classList.remove('listening');
-        if(overlay) overlay.style.display = 'none'; // 隱藏提示框
+        if(overlay) overlay.style.display = 'none'; 
     };
 
     recognition.onresult = (event) => {
         const transcript = event.results[0][0].transcript;
-        // 將文字附加到輸入框 (若原本有字則加空格)
         const currentVal = target.value;
         target.value = currentVal + (currentVal ? " " : "") + transcript;
     };
@@ -1560,7 +1581,7 @@ function setupVoiceInput(triggerId, targetId) {
     recognition.onerror = (event) => {
         console.error("Speech recognition error", event.error);
         trigger.classList.remove('listening');
-        if(overlay) overlay.style.display = 'none'; // 出錯也要隱藏
+        if(overlay) overlay.style.display = 'none'; 
     };
 }
 

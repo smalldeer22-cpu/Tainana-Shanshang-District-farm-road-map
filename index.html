@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0210V5_Interactive)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0210V7_Fixed)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -1104,7 +1104,7 @@ function findMarkersByCaseId(caseId) {
     return [...new Set(allMarkers)].sort((a,b) => b.getLatLng().lat - a.getLatLng().lat);
 }
 
-// [修正] 跳轉至同案不同地點 (V4自動開窗 BugFix)
+// [修正] 跳轉至同案不同地點 (v.0210V7 Fix)
 window.jumpToCaseSibling = function(targetStoreId) {
     let targetMarker = null;
     const searchInGroup = (group) => {
@@ -1117,34 +1117,38 @@ window.jumpToCaseSibling = function(targetStoreId) {
     searchInGroup(activeRepairLayers);
 
     if (targetMarker) {
-        // 先關閉目前的
-        map.closePopup();
-        
-        // 檢查是否被聚合收納
+        const openIt = () => {
+            if (typeof window.openDetailPopupFromMarker === 'function') {
+                window.openDetailPopupFromMarker(targetMarker);
+            } else {
+                targetMarker.openPopup();
+            }
+        };
+
         if (markersClusterGroup && markersClusterGroup.hasLayer(targetMarker)) {
-            // 如果是被聚合收起來的，必須先 ZoomToShow
             if (markersClusterGroup.getVisibleParent(targetMarker) !== targetMarker) {
                 markersClusterGroup.zoomToShowLayer(targetMarker, function() {
-                    targetMarker.openPopup();
+                    openIt();
                 });
-                return; // 結束，交給 callback 處理
+                return; 
             }
         }
 
-        // 如果是獨立點位，則飛行並開啟
-        map.flyTo(targetMarker.getLatLng(), 18, { duration: 1.0 });
-        
-        // 雙重保險：監聽移動結束 + 延遲執行
-        const onMoveEnd = function() {
-            map.off('moveend', onMoveEnd);
-            setTimeout(() => { targetMarker.openPopup(); }, 100);
-        };
-        map.on('moveend', onMoveEnd);
-        
-        // 防止 moveend 沒觸發 (例如距離太近)
-        setTimeout(() => {
-            if (!targetMarker.isPopupOpen()) targetMarker.openPopup();
-        }, 1200);
+        const currentLatLng = map.getCenter();
+        const targetLatLng = targetMarker.getLatLng();
+        const dist = currentLatLng.distanceTo(targetLatLng);
+
+        if(dist < 10) {
+             openIt();
+        } else {
+             map.flyTo(targetLatLng, 18, { duration: 0.8 });
+             map.once('moveend', function() {
+                 openIt();
+             });
+             setTimeout(() => {
+                 openIt();
+             }, 1000);
+        }
     }
 };
 

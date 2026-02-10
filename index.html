@@ -3,12 +3,17 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0210V8_Final)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0210V12_Secure)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol/dist/L.Control.Locate.min.css" />
+
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface"></script>
+
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
 
 <style>
   /* === 1. 全局設定 === */
@@ -39,7 +44,7 @@
       background: var(--bg-light); 
   }
 
-  /* === [V8 新增] 入口模式選擇視窗 === */
+  /* === [V8] 入口模式選擇視窗 === */
   #entryModal {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       z-index: 99999;
@@ -71,23 +76,19 @@
   
   .entry-btn.lite { background: linear-gradient(135deg, #ff9800, #f57c00); color: white; }
   .entry-btn.full { background: linear-gradient(135deg, #004080, #003366); color: white; }
-  .entry-footer { margin-top: 20px; font-size: 11px; color: #999; }
 
-  /* === [V8 新增] 輕量版模式樣式覆寫 === */
-  /* 隱藏側邊欄、漢堡按鈕、底部面板 */
+  /* === [V8] 輕量版模式樣式覆寫 === */
   body.lite-mode #sidebar,
   body.lite-mode #toggleSidebarBtn,
   body.lite-mode #bottomPanel {
       display: none !important;
   }
-  /* 顯示切換按鈕 */
   body.lite-mode #switchModeBtn {
       display: flex !important;
   }
 
-  /* 切換回完整版的小按鈕 */
   #switchModeBtn {
-      display: none; /* 預設隱藏 */
+      display: none; 
       position: absolute; top: 10px; left: 10px;
       width: 40px; height: 40px;
       background: rgba(255,255,255,0.9); border: 2px solid var(--primary-color);
@@ -108,7 +109,7 @@
   #toggleSidebarBtn:hover { background: #f4f4f4; }
   body.collapsed #toggleSidebarBtn { left: 10px; }
 
-  /* === 3. 側邊欄樣式 (桌機預設) === */
+  /* === 3. 側邊欄樣式 === */
   #sidebar {
     width: var(--sidebar-width); min-width: var(--sidebar-width); background: #fff; border-right: 1px solid #eee;
     display: flex; flex-direction: column; z-index: 1500; box-shadow: 2px 0 10px rgba(0,0,0,0.05);
@@ -119,7 +120,6 @@
   .sidebar-header { padding: 15px; background: var(--primary-color); color: white; text-align: center; flex-shrink: 0; }
   .sidebar-header h3 { margin: 0; font-size: 16px; font-weight: bold; line-height: 1.4; }
   
-  /* 分頁籤樣式 */
   .tabs-nav { display: flex; background: #eef2f6; padding: 5px 5px 0 5px; flex-shrink: 0; overflow-x: auto; }
   .tab-btn { flex: 1; padding: 10px 5px; border: none; background: transparent; cursor: pointer; font-size: 13px; font-weight: bold; color: #666; border-radius: 8px 8px 0 0; transition: all 0.2s; white-space: nowrap; }
   .tab-btn.active { background: #fff; color: var(--primary-color); box-shadow: 0 -2px 5px rgba(0,0,0,0.05); position: relative; top: 1px; }
@@ -142,11 +142,9 @@
       white-space: normal; 
   }
 
-  /* 卡片區塊樣式 */
   .card-section { background: #fff; border-radius: 12px; padding: 12px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: 1px solid #f0f0f0; }
   .card-title { font-size: 14px; font-weight: bold; color: var(--primary-color); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 2px solid #f0f0f0; }
   
-  /* === 搜尋分頁專用樣式 === */
   .search-card {
       background: #fff; border-radius: 16px; padding: 15px; margin-bottom: 15px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.05); border: 1px solid #eef2f6;
@@ -156,7 +154,6 @@
   .search-block-label { font-size: 14px; color: #333; font-weight: bold; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
   .search-block-label i { color: #555; width: 16px; text-align: center; }
 
-  /* 輸入框與下拉選單樣式 */
   .search-card select, .search-card input[type="text"], #statsVillageSelect,
   textarea#coordsInput, textarea#dengueCoordsInput, input#dupCheckInput {
       width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px;
@@ -179,7 +176,6 @@
   #searchBtn { width: 100%; background: #0056b3; color: #fff; border: none; border-radius: 8px; padding: 12px; font-size: 16px; font-weight: bold; margin-top: 15px; box-shadow: 0 4px 6px rgba(0,64,128,0.2); cursor: pointer; transition: background 0.2s; }
   #searchBtn:hover { background: #004494; }
   
-  /* 年度摺疊選單 */
   .year-group { margin-bottom: 8px; border: 1px solid #eee; border-radius: 6px; overflow: hidden; }
   .year-header { background: #f8fafc; padding: 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 13px; color: #475569; user-select: none; }
   .year-header:hover { background: #e2e8f0; }
@@ -191,7 +187,6 @@
   .checkbox-item { margin-bottom: 6px; display: flex; align-items: center; gap: 6px; font-size: 13px; }
   .checkbox-item input { margin: 0; accent-color: var(--primary-color); }
 
-  /* 多選摺疊樣式 */
   .multiselect-group { border: 1px solid #cbd5e1; border-radius: 8px; margin-bottom: 10px; background: #fff; }
   .multiselect-header { padding: 10px 12px; cursor: pointer; background: #fff; color: #555; font-size: 14px; display: flex; justify-content: space-between; align-items: center; border-radius: 8px; transition: background 0.2s; }
   .multiselect-header:hover { background: #f5f5f5; }
@@ -202,7 +197,6 @@
   .multiselect-group.open .multiselect-content { display: block; }
   .select-all-row { border-bottom: 1px dashed #ddd; padding-bottom: 5px; margin-bottom: 5px; font-weight: bold; color: #004080; }
 
-  /* 輸入框與語音按鈕容器 */
   .input-with-voice { position: relative; width: 100%; display: flex; align-items: center; }
   .input-with-voice input, .input-with-voice textarea { width: 100%; padding-right: 35px; box-sizing: border-box; }
   .voice-btn { position: absolute; right: 5px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #999; font-size: 16px; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: all 0.2s; z-index: 10; }
@@ -211,7 +205,6 @@
   textarea + .voice-btn { top: 15px; transform: none; } 
   @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(211, 47, 47, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(211, 47, 47, 0); } 100% { box-shadow: 0 0 0 0 rgba(211, 47, 47, 0); } }
 
-  /* 語音輸入提示遮罩 */
   #voiceOverlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:99999; justify-content:center; align-items:center; flex-direction:column; backdrop-filter: blur(2px); animation: fadeIn 0.3s; }
   .voice-box { background:white; padding:25px 40px; border-radius:20px; display:flex; flex-direction:column; align-items:center; gap:15px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); transform: scale(1); animation: popIn 0.3s; }
   .voice-icon-large { font-size: 40px; color: #d32f2f; animation: pulse-red 1.5s infinite; }
@@ -238,7 +231,7 @@
   .float-btn::after { content: attr(data-title); position: absolute; right: 50px; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.7); color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 12px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
   .float-btn:hover::after { opacity: 1; }
 
-  .leaflet-control-locate { border: none !important; box-shadow: none !important; margin: 0 !important; }
+  .leaflet-control-locate { border: none !important; box-shadow: none !important; margin: 0 !important; background: transparent !important; }
   .leaflet-control-locate a { width: 40px !important; height: 40px !important; border-radius: 50% !important; background: #fff !important; color: #444 !important; font-size: 16px !important; line-height: 40px !important; display: flex !important; align-items: center !important; justify-content: center !important; box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important; cursor: pointer !important; }
   .leaflet-control-locate a:hover { background: #f0f0f0 !important; color: #004080 !important; transform: scale(1.1); }
   .leaflet-control-locate.active a { color: #2074b6 !important; background: #fff !important; }
@@ -298,7 +291,7 @@
   .ctx-item:hover { background: #f5faff; color: var(--primary-color); }
   .ctx-item i { width: 20px; text-align: center; }
 
-  /* === 新版泡泡窗 CSS (v.0210V4) === */
+  /* === 新版泡泡窗 CSS === */
   .custom-popup .leaflet-popup-content-wrapper { padding: 0 !important; border-radius: 12px !important; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.15) !important; border: 2px solid var(--popup-border) !important; background: rgba(250, 253, 255, 0.98) !important; backdrop-filter: blur(5px); }
   .custom-popup .leaflet-popup-content { margin: 0 !important; width: 600px !important; max-width: 90vw !important; }
   .custom-popup .leaflet-popup-tip { background: var(--popup-border) !important; }
@@ -308,20 +301,17 @@
   .case-id-row { margin-bottom: 8px; }
   .case-id { font-size: 20px; font-weight: 900; color: #1e293b; letter-spacing: -0.5px; }
 
-  /* 案件輪播按鈕 */
   .case-pagination { display: flex; gap: 8px; justify-content: flex-start; margin-top: 5px; margin-bottom: 5px; flex-wrap: wrap; }
   .page-dot { width: 24px; height: 24px; border-radius: 50%; background: #fff; border: 1px solid var(--purple-theme); color: var(--purple-theme); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; cursor: pointer; transition: all 0.2s; }
   .page-dot:hover { background: #f3e5f5; }
   .page-dot.active { background: var(--purple-theme); color: #fff; border-color: var(--purple-theme); transform: scale(1.1); box-shadow: 0 2px 5px rgba(111, 66, 193, 0.3); }
 
-  /* Pill Tags */
   .popup-tags-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
   .info-pill { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; color: #fff; box-shadow: 0 1px 2px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 4px; white-space: nowrap; }
   .pill-status { background: #64748b; }
   .pill-working { background: #10b981; }
   .pill-urgent { background: #f59e0b; }
   
-  /* [修正] 星等樣式 v4 (加入 ID 以便動態更新) */
   .pill-rating { background: #fff; border:1px solid #f39c12; color: #333; cursor: pointer; transition: transform 0.2s; font-size:12px; font-weight:normal; }
   .pill-rating:hover { transform: scale(1.05); background:#fffdeb; }
   .pill-rating .fa-star { color: #f39c12; margin-right: 2px; }
@@ -333,7 +323,6 @@
   .pill-dist { background: #27ae60; }
   .pill-source { background: #17a2b8; }
 
-  /* 進度條 V3 */
   .progress-container { display: flex; justify-content: space-between; position: relative; margin: 15px 20px 5px 20px; padding: 0; }
   .progress-container::before { content: ''; position: absolute; top: 12px; left: 15px; right: 15px; height: 3px; background: #e2e8f0; z-index: 0; }
   .progress-step { position: relative; z-index: 1; text-align: center; display: flex; flex-direction: column; align-items: center; width: 33%; }
@@ -345,12 +334,10 @@
   .progress-step.active .step-label { color: var(--popup-text-main); }
   .progress-step.active .step-date { color: #333; font-weight: bold; }
 
-  /* Icon Buttons */
   .icon-btn-row { display: flex; gap: 10px; padding: 10px 15px; background: #fff; justify-content: center; }
   .icon-only-btn { flex: 1; height: 36px; border-radius: 8px; background: #f0f9ff; border: 1px solid #bae6fd; color: #0284c7; display: flex; align-items: center; justify-content: center; font-size: 16px; cursor: pointer; transition: all 0.2s; text-decoration: none; max-width: 80px; }
   .icon-only-btn:hover { background: #0284c7; color: white; transform: translateY(-2px); border-color: #0284c7; }
 
-  /* 照片顯示區 */
   .desktop-photo-row { display: flex; gap: 5px; height: 200px; padding: 0 15px; margin-bottom: 10px; }
   .photo-half { flex: 1; position: relative; border-radius: 6px; overflow: hidden; border: 1px solid #e2e8f0; background: #f1f5f9; }
   .photo-half img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; cursor: pointer; }
@@ -376,7 +363,7 @@
   .grid-val { color: #333; font-weight: bold; font-size: 13px; word-break: break-all; }
   .desc-box { background: #f9f9f9; padding: 8px; border-radius: 4px; border: 1px solid #eee; margin-top: 2px; }
 
-  /* [修正] 手機版側邊欄 UX 大改版 v4 */
+  /* [修正] 手機版側邊欄 UX 大改版 */
   @media (max-width: 768px) {
       .custom-popup .leaflet-popup-content { width: 320px !important; }
       .desktop-photo-row { display: none; }
@@ -392,7 +379,6 @@
       .details-content { order: 7; }
       .details-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
       
-      /* Sidebar hidden on left by default */
       #sidebar { 
           position: fixed; 
           top: 0; left: 0; 
@@ -403,19 +389,15 @@
           transform: translateX(-100%); 
           transition: transform 0.3s ease; 
           z-index: 3000;
-          margin-left: 0; /* Reset desktop margin */
+          margin-left: 0; 
       }
-      /* Slide in from left to right when open */
       body.sidebar-open #sidebar { transform: translateX(0); }
       
-      /* Hamburger button visible and fixed */
       #toggleSidebarBtn { left: 10px; top: 10px; z-index: 3100; }
       
-      /* Overlay mask logic */
       #overlay-mask { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 2900; }
       body.sidebar-open #overlay-mask { display: block; }
       
-      /* Adjust other controls position */
       .map-floating-controls { top: 60px; right: 10px; }
       #clusterControlPanel { bottom: 200px; left: 15px; right: 15px; width: auto; }
       #bottomPanel { left: 0; height: 300px; z-index: 2800; }
@@ -426,28 +408,15 @@
   .comment-header { padding: 15px; background: var(--primary-color); color: white; display: flex; justify-content: space-between; align-items: center; font-weight: bold; flex-shrink: 0; }
   .comment-body { padding: 15px; overflow-y: auto; flex: 1; background: #eef2f6; display: flex; flex-direction: column; gap: 10px; }
   
-  /* [V5 新增] 官方回覆樣式 (右側黃色) */
   .chat-bubble { display: flex; gap: 10px; align-items: flex-start; animation: fadeIn 0.2s; }
-  .chat-bubble.official { flex-direction: row-reverse; } /* 官方回覆靠右 */
-  
+  .chat-bubble.official { flex-direction: row-reverse; } 
   .chat-avatar { width: 36px; height: 36px; border-radius: 50%; background: #ddd; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #555; font-size: 14px; flex-shrink: 0; border: 2px solid #fff; }
-  
-  .chat-bubble.official .chat-avatar { background: #004080; color: #fff; border-color: #004080; } /* 官方頭像顏色 */
-
+  .chat-bubble.official .chat-avatar { background: #004080; color: #fff; border-color: #004080; } 
   .chat-content { max-width: 80%; display: flex; flex-direction: column; }
-  .chat-bubble.official .chat-content { align-items: flex-end; } /* 官方內容靠右對齊 */
-
+  .chat-bubble.official .chat-content { align-items: flex-end; } 
   .chat-meta { font-size: 11px; color: #666; margin-bottom: 2px; display: flex; align-items: center; gap: 5px; }
-  
   .chat-box { background: #fff; padding: 8px 12px; border-radius: 0 12px 12px 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); font-size: 13px; line-height: 1.4; color: #333; position: relative; }
-  
-  /* 官方回覆氣泡顏色 (淡黃色) */
-  .chat-bubble.official .chat-box { 
-      background: #fff3cd; 
-      border: 1px solid #ffeeba; 
-      border-radius: 12px 0 12px 12px; 
-  }
-
+  .chat-bubble.official .chat-box { background: #fff3cd; border: 1px solid #ffeeba; border-radius: 12px 0 12px 12px; }
   .chat-star { color: #f39c12; font-size: 11px; margin-top: 4px; display: block; }
   .chat-time { font-size: 10px; color: #999; margin-top: 4px; text-align: right; }
   
@@ -509,6 +478,26 @@
   .report-footer { padding: 15px; display: flex; justify-content: space-between; gap: 15px; background: #fff; border-top: 1px solid #eee; }
   .btn-cancel { flex: 1; padding: 12px; background: #7f8c8d; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; }
   .btn-submit { flex: 1; padding: 12px; background: var(--accent-color); color: black; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; }
+  
+  /* [V12] 隱私警語樣式 */
+  .privacy-warning {
+      color: #d32f2f;
+      font-weight: bold;
+      font-size: 12px;
+      margin-top: 8px;
+      text-align: center;
+      background: #ffebee;
+      padding: 5px;
+      border-radius: 4px;
+      border: 1px solid #ffcdd2;
+  }
+
+  /* [V12] reCAPTCHA 樣式調整 */
+  .g-recaptcha {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 10px;
+  }
 
   .nearby-item { padding:8px 6px; border-bottom:1px dashed #ccc; cursor:pointer; display:flex; justify-content:space-between; align-items:center; transition:background 0.2s; }
   .nearby-item:last-child { border-bottom:none; }
@@ -557,6 +546,37 @@
   .ai-stat-row { display: flex; justify-content: space-between; border-bottom: 1px dashed #eee; padding: 5px 0; }
   .ai-stat-val { font-weight: bold; color: #8e44ad; }
   .ai-advice-box { background: #fdf2fe; border-left: 4px solid #9b59b6; padding: 10px; margin-top: 10px; font-size: 12px; color: #555; }
+
+  /* === [V10] AI 隱私編輯器樣式 === */
+  #privacyEditorModal {
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: #000; z-index: 99999; flex-direction: column;
+  }
+  .pe-header {
+      height: 50px; background: #111; color: white; display: flex; 
+      justify-content: space-between; align-items: center; padding: 0 15px; font-weight: bold;
+  }
+  .pe-canvas-container {
+      flex: 1; position: relative; overflow: hidden; display: flex; 
+      align-items: center; justify-content: center; background: #222;
+  }
+  #peCanvas {
+      max-width: 100%; max-height: 100%; touch-action: none; 
+  }
+  .pe-tools {
+      height: 70px; background: #111; display: flex; justify-content: space-around; align-items: center;
+  }
+  .pe-btn {
+      background: none; border: none; color: #888; font-size: 12px; 
+      display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer;
+  }
+  .pe-btn.active { color: #ff9800; }
+  .pe-btn i { font-size: 20px; margin-bottom: 2px; }
+  .pe-loading {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      color: #ff9800; font-weight: bold; background: rgba(0,0,0,0.7); 
+      padding: 10px 20px; border-radius: 8px; display: none; pointer-events: none;
+  }
 </style>
 </head>
 <body>
@@ -577,8 +597,7 @@
                 <span>公開查詢<br><small>(完整版)</small></span>
             </button>
         </div>
-        <div class="entry-footer">v.0210V8</div>
-    </div>
+        </div>
 </div>
 
 <div id="voiceOverlay">
@@ -590,7 +609,7 @@
 
 <div id="overlay-mask"></div>
 <button id="toggleSidebarBtn" title="切換選單"><i class="fas fa-bars"></i></button>
-<button id="switchModeBtn" onclick="openEntryModal()" title="切換模式"><i class="fas fa-exchange-alt"></i></button>
+<button id="switchModeBtn" onclick="openEntryModal()" title="切換到公開查詢(完整版)"><i class="fas fa-exchange-alt"></i></button>
 
 <div class="map-floating-controls">
     <button class="float-btn" id="toggleMapBtn" data-title="切換衛星/地圖"><i class="fas fa-layer-group"></i></button>
@@ -609,7 +628,7 @@
         <div class="chat-input-area">
             <div class="chat-nickname-row">
                 <div class="input-group-inner">
-                    <input type="text" id="chatNickname" placeholder="您的暱稱" onchange="saveNickname(this.value)">
+                    <input type="text" id="chatNickname" maxlength="20" placeholder="您的暱稱 (最多20字)" onchange="saveNickname(this.value)">
                     <button class="voice-btn" id="voiceBtnChatNick"><i class="fas fa-microphone"></i></button>
                 </div>
                 <div class="chat-star-select" id="chatStarSelect">
@@ -624,11 +643,12 @@
             
             <div class="chat-msg-row">
                 <div class="input-group-inner">
-                    <input type="text" id="chatMessage" placeholder="輸入留言...">
+                    <input type="text" id="chatMessage" maxlength="100" placeholder="輸入留言... (最多100字)">
                     <button class="voice-btn" id="voiceBtnChatMsg"><i class="fas fa-microphone"></i></button>
                 </div>
                 <button class="chat-send-btn" onclick="submitChatComment()"><i class="fas fa-paper-plane"></i></button>
             </div>
+            <div class="g-recaptcha" data-sitekey="6Le7EGcsAAAAAADIeBF0dxCkmm65BGXGhCKT9_zb" id="recaptchaComment" style="margin-top:10px;"></div>
         </div>
     </div>
 </div>
@@ -651,7 +671,7 @@
             <div class="report-col">
                 <div class="report-item"><span class="report-label">簡述案情：</span></div>
                 <div class="input-with-voice" style="height:100%;">
-                    <textarea id="reportDesc" class="report-textarea" placeholder="請描述損壞情形 (例如：路面坑洞)"></textarea>
+                    <textarea id="reportDesc" class="report-textarea" maxlength="500" placeholder="請描述損壞情形 (例如：路面坑洞)。最多500字。"></textarea>
                     <button class="voice-btn" id="voiceBtnReport"><i class="fas fa-microphone"></i></button>
                 </div>
             </div>
@@ -683,7 +703,12 @@
                 <button class="delete-photo-btn" id="delBtn2" onclick="deletePhoto(2)">刪除</button>
             </div>
         </div>
-        <div style="margin-top:10px; font-size:12px; color:#666; text-align:center;">請點擊「+」拍攝兩張不同角度的照片</div>
+        <div class="privacy-warning">
+            <i class="fas fa-exclamation-triangle"></i> 上傳前請務必遮蔽他人隱私資訊，避免觸法
+        </div>
+        <div style="margin-top:5px; font-size:12px; color:#666; text-align:center;">支援 AI 隱私去識別化與手動遮蔽功能</div>
+        
+        <div class="g-recaptcha" data-sitekey="6Le7EGcsAAAAAADIeBF0dxCkmm65BGXGhCKT9_zb" id="recaptchaReport" style="margin-top:15px;"></div>
     </div>
     <div class="report-footer">
         <button class="btn-cancel" onclick="closeReport()">取消</button>
@@ -977,6 +1002,29 @@
     </div>
 </div>
 
+<div id="privacyEditorModal">
+    <div class="pe-header">
+        <button onclick="closePrivacyEditor()" style="background:none;border:none;color:white;font-size:16px;">取消</button>
+        <span>照片隱私處理</span>
+        <button onclick="savePrivacyImage()" style="background:none;border:none;color:#ff9800;font-size:16px;font-weight:bold;">完成</button>
+    </div>
+    <div class="pe-canvas-container">
+        <canvas id="peCanvas"></canvas>
+        <div id="peLoading" class="pe-loading"><i class="fas fa-spinner fa-spin"></i> AI 偵測中...</div>
+    </div>
+    <div class="pe-tools">
+        <button class="pe-btn" onclick="triggerAutoBlur()">
+            <i class="fas fa-robot"></i> AI 人臉馬賽克
+        </button>
+        <button class="pe-btn active" id="btnManualMode" onclick="setMode('manual')">
+            <i class="fas fa-hand-pointer"></i> 手動塗抹(車牌)
+        </button>
+        <button class="pe-btn" onclick="undoCanvas()">
+            <i class="fas fa-undo"></i> 復原
+        </button>
+    </div>
+</div>
+
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.9.0/proj4.js"></script>
 <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
@@ -985,11 +1033,34 @@
 <script src="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol/dist/L.Control.Locate.min.js"></script>
 
 <script>
-// [V8 新增] 模式選擇功能邏輯
+// === [V12 新增] 資安防護函式庫 ===
+
+// 1. HTML 跳脫 (防止 XSS)
+function escapeHtml(text) {
+    if (!text) return "";
+    return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+// 2. 輸入過濾 (防止 Excel 注入)
+function sanitizeInput(text) {
+    if (!text) return "";
+    // 如果字串開頭是 =, +, -, @，則在前面加單引號
+    if (/^[=+\-@]/.test(text)) {
+        return "'" + text;
+    }
+    return text;
+}
+
+// ===================================
+
 function selectMode(mode) {
     if (mode === 'lite') {
         document.body.classList.add('lite-mode');
-        // 可選：預設開啟定位
         if(lc) lc.start();
     } else {
         document.body.classList.remove('lite-mode');
@@ -1001,10 +1072,8 @@ function openEntryModal() {
     document.getElementById('entryModal').style.display = 'flex';
 }
 
-// !!! 請務必將此網址替換為您 GAS 部署後的 Web App URL !!!
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwrS_ENVFM0kTvlHDwwTiIx3KzExZh-QhXdowFlHMYHXPajqBm1_g3tcpq1AQeUlL8i/exec";
 
-// V8+V9+V10: 全域快取
 const CASE_DATA_CACHE = {};
 
 const map = L.map('map', { zoomControl:false, doubleClickZoom: false }).setView([23.1025,120.3538], 13);
@@ -1126,8 +1195,6 @@ function formatMoneyWan(val) {
     return `${w}萬${rStr}元`;
 }
 
-/* === 新版 Bubble Window JS 邏輯 === */
-
 window.switchMobilePhotoTab = function(el, type, uid) {
     const card = el.closest('.popup-card');
     const tabs = card.querySelectorAll('.m-photo-tab');
@@ -1166,18 +1233,16 @@ window.expandTypePill = function(uid, fullText) {
     }
 }
 
-// 產生 unique StoreId 的 helper
 function generateStoreId(props) {
     if (props.storeId) return props.storeId;
     const uid = Math.random().toString(36).substr(2, 9);
     let caseId = '未知編號'; try { caseId = props['案件編號'] || '無編號'; } catch(e) {}
     const cleanCaseId = String(caseId).replace(/[^a-zA-Z0-9]/g, '');
     const storeId = (cleanCaseId === '' ? 'TMP_' : cleanCaseId) + "_" + uid;
-    props.storeId = storeId; // 寫回 props 確保一致
+    props.storeId = storeId;
     return storeId;
 }
 
-// [修正] 找出所有同案號的標記點
 function findMarkersByCaseId(caseId) {
     if (!caseId || caseId === '無編號' || caseId === '未知編號') return [];
     let allMarkers = [];
@@ -1196,11 +1261,9 @@ function findMarkersByCaseId(caseId) {
             allMarkers.push(m);
         }
     });
-    // 去除重複 (同一 layer 可能被重複選取)
     return [...new Set(allMarkers)].sort((a,b) => b.getLatLng().lat - a.getLatLng().lat);
 }
 
-// [修正] 跳轉至同案不同地點 (v.0210V7 Fix)
 window.jumpToCaseSibling = function(targetStoreId) {
     let targetMarker = null;
     const searchInGroup = (group) => {
@@ -1271,9 +1334,11 @@ window.openCommentModal = function(storeId) {
     renderCommentList(list, comments);
     document.getElementById('chatMessage').value = "";
     setChatStar(0);
+    
+    // [V12] 重置 reCAPTCHA
+    try { if(grecaptcha) grecaptcha.reset(); } catch(e){}
 };
 
-// [修改] 顯示留言列表 (新增官方回覆支援)
 function renderCommentList(container, comments) {
     if(comments.length === 0) {
         container.innerHTML = `<div style="text-align:center;color:#999;padding:20px;font-size:13px;">成為第一個留言的人吧！</div>`;
@@ -1281,32 +1346,33 @@ function renderCommentList(container, comments) {
         let html = "";
         comments.forEach(c => {
             const starHtml = c.star > 0 ? `<span class="chat-star">${'<i class="fas fa-star"></i>'.repeat(c.star)}</span>` : "";
-            const user = c.user || "熱心民眾";
+            // [V12] 使用 escapeHtml 進行 XSS 防護
+            const user = escapeHtml(c.user || "熱心民眾");
             const avatarChar = user.charAt(0);
+            const safeText = escapeHtml(c.text);
+            const safeReply = c.reply ? escapeHtml(c.reply) : "";
             
-            // 民眾留言
             html += `
             <div class="chat-bubble">
                 <div class="chat-avatar">${avatarChar}</div>
                 <div class="chat-content">
                     <div class="chat-meta"><b>${user}</b></div>
                     <div class="chat-box">
-                        ${c.text}
+                        ${safeText}
                         ${starHtml}
                     </div>
                     <div class="chat-time">${c.date}</div>
                 </div>
             </div>`;
 
-            // [新增] 官方回覆 (如果有 reply 欄位)
-            if (c.reply && c.reply.trim() !== "") {
+            if (safeReply.trim() !== "") {
                 html += `
                 <div class="chat-bubble official">
                     <div class="chat-avatar"><i class="fas fa-building"></i></div>
                     <div class="chat-content">
                         <div class="chat-meta"><b>公所回覆</b></div>
                         <div class="chat-box">
-                            ${c.reply}
+                            ${safeReply}
                         </div>
                     </div>
                 </div>`;
@@ -1337,15 +1403,26 @@ window.submitChatComment = async function() {
 
     if (GOOGLE_SCRIPT_URL.includes("您的SCRIPT_ID")) { alert("請先設定 Google Apps Script URL！"); return; }
     
-    const text = document.getElementById('chatMessage').value.trim();
+    // [V12] reCAPTCHA 驗證 (Client-side)
+    const recaptchaResponse = grecaptcha.getResponse();
+    if(document.getElementById('recaptchaComment').innerHTML !== "" && recaptchaResponse.length === 0) {
+        alert("請勾選「我不是機器人」！");
+        return;
+    }
+
+    // [V12] 輸入過濾
+    const rawText = document.getElementById('chatMessage').value;
+    const rawNickname = document.getElementById('chatNickname').value;
+    
+    if(!rawText.trim() && document.getElementById('chatCurrentStar').value == 0) { alert("請輸入留言或評分！"); return; }
+    if(!rawNickname.trim()) { alert("請輸入暱稱！"); return; }
+    
+    const text = sanitizeInput(rawText.trim());
+    const nickname = sanitizeInput(rawNickname.trim());
     const star = parseInt(document.getElementById('chatCurrentStar').value);
-    let nickname = document.getElementById('chatNickname').value.trim();
     
-    if(!nickname) { alert("請輸入暱稱！"); return; }
     localStorage.setItem("chatNickname", nickname);
-    
-    if(!text && star == 0) { alert("請輸入留言或評分！"); return; }
-    
+
     const btn = document.querySelector('.chat-send-btn');
     const originalIcon = btn.innerHTML;
     btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
@@ -1367,7 +1444,6 @@ window.submitChatComment = async function() {
     
     currentComments.push(newComment);
     props['評論內容'] = JSON.stringify(currentComments);
-    // 簡易前端更新 (真正完整的數據稍後可從後台拉)
     const oldTotal = parseFloat(props['平均星等']||0) * parseInt(props['評論數']||0);
     const newCount = parseInt(props['評論數']||0) + (star > 0 ? 1 : 0);
     const newAvg = newCount > 0 ? ((oldTotal + star) / newCount).toFixed(1) : props['平均星等'];
@@ -1378,8 +1454,8 @@ window.submitChatComment = async function() {
     renderCommentList(document.getElementById('commentList'), currentComments);
     document.getElementById('chatMessage').value = "";
     setChatStar(0);
+    try { grecaptcha.reset(); } catch(e){} // Reset checkbox
 
-    // [更新] 即時更新介面上的數字
     const ratingText = document.getElementById(`rating-text-${currentActiveStoreId}`);
     if(ratingText) {
         ratingText.innerHTML = `${newAvg} <span class="rating-count">(${currentComments.length})</span>`;
@@ -1393,7 +1469,8 @@ window.submitChatComment = async function() {
             comment: text,
             nickname: nickname,
             appKey: "TainanMap2026_SecureKey_v1",
-            siteUrl: window.location.href
+            siteUrl: window.location.href,
+            // 實務上這裡應傳送 recaptchaResponse 給後端再次驗證
         };
         
         await fetch(GOOGLE_SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) });
@@ -1409,12 +1486,10 @@ function closeCommentModal() {
     document.getElementById('commentModal').style.display = 'none';
 }
 
-// [新增] 非同步讀取並更新留言 (V5關鍵)
 async function fetchAndRefreshComments(storeId, caseId) {
     if (!caseId || caseId === "無編號") return;
     if (GOOGLE_SCRIPT_URL.includes("您的SCRIPT_ID")) return;
 
-    // 顯示讀取中 (Optional UI hint)
     const ratingText = document.getElementById(`rating-text-${storeId}`);
     if(ratingText) ratingText.style.opacity = "0.5";
 
@@ -1427,7 +1502,6 @@ async function fetchAndRefreshComments(storeId, caseId) {
             const comments = json.data;
             const props = CASE_DATA_CACHE[storeId];
             
-            // 計算新統計
             let totalStars = 0;
             let starCount = 0;
             comments.forEach(c => {
@@ -1438,14 +1512,12 @@ async function fetchAndRefreshComments(storeId, caseId) {
             });
             const avg = starCount > 0 ? (totalStars / starCount).toFixed(1) : 0;
 
-            // 更新 Cache
             if (props) {
                 props['平均星等'] = avg;
-                props['評論數'] = comments.length; // 或 starCount, 看需求
+                props['評論數'] = comments.length;
                 props['評論內容'] = JSON.stringify(comments);
             }
 
-            // 更新介面 UI
             if(ratingText) {
                 ratingText.innerHTML = `${avg} <span class="rating-count">(${comments.length})</span>`;
                 ratingText.style.opacity = "1";
@@ -1468,7 +1540,6 @@ function createPopup(data) {
     
     CASE_DATA_CACHE[storeId] = props;
 
-    // [修正] 檢查同案號兄弟節點
     const siblings = findMarkersByCaseId(caseId);
     let paginationHtml = '';
     if (siblings.length > 1) {
@@ -1546,7 +1617,6 @@ function createPopup(data) {
     let displayDate2 = toRocDate(date2);
     let displayDate3 = toRocDate(date3);
 
-    // 照片
     const processPhotoStr = (str) => {
         if (!str) return [];
         return String(str).split(/[;\n\r]+/).map(u => getDirectDriveUrl(u)).filter(u => u.length > 0);
@@ -1658,7 +1728,6 @@ function createPopup(data) {
     `;
 }
 
-// 0205V4 Added: 即時看板切換與資料讀取
 async function toggleRealtimeLayer(checkbox) {
     realtimeLayer.clearLayers();
     if(!checkbox.checked) return;
@@ -1697,17 +1766,14 @@ async function toggleRealtimeLayer(checkbox) {
                     fillOpacity: 0.9
                 });
 
-                // 產生 StoreID
                 const storeId = generateStoreId(props);
                 
-                // 存入快取
                 CASE_DATA_CACHE[storeId] = props;
 
-                // 將 storeId 綁在 customData 上
                 marker.customData = {
                     configLabel: "民眾通報-" + (props['案件編號']||''), 
                     props: props,
-                    storeId: storeId // 傳遞給 click handler
+                    storeId: storeId 
                 };
 
                 marker.on('click', (e) => {
@@ -1730,7 +1796,6 @@ async function toggleRealtimeLayer(checkbox) {
     }
 }
 
-// [修正] V3 語音輸入功能: 新增 Overlay 開關邏輯
 function setupVoiceInput(triggerId, targetId) {
     const trigger = document.getElementById(triggerId);
     const target = document.getElementById(targetId);
@@ -1781,7 +1846,6 @@ function setupVoiceInput(triggerId, targetId) {
     };
 }
 
-// 綁定所有語音輸入
 window.addEventListener('load', () => {
     setupVoiceInput('voiceBtnKeyword', 'keywordInput');
     setupVoiceInput('voiceBtnReport', 'reportDesc');
@@ -1802,6 +1866,9 @@ function initReportData() {
     document.getElementById('reportCaseId').innerText = "(待系統取號)";
     document.getElementById('reportTime').innerText = new Date().toLocaleString();
     
+    // [V12] 重置 reCAPTCHA
+    try { if(grecaptcha) grecaptcha.reset(); } catch(e){}
+
     const historySection = document.getElementById('nearbyHistorySection');
     const historyList = document.getElementById('nearbyHistoryList');
     historySection.style.display = 'none';
@@ -1948,21 +2015,198 @@ function closeSourceModal() {
     document.getElementById('photoSourceModal').style.display = 'none';
 }
 
-function previewImage(input, id) {
-    document.getElementById('photoSourceModal').style.display = 'none';
+// === [V10] AI 隱私保護與影像處理邏輯 ===
 
-    if (input.files && input.files[0]) {
-        compressImage(input.files[0], 800, 0.7, function(compressedDataUrl) {
-            const img = document.getElementById(`imgPreview${id}`);
-            const box = document.getElementById(`photoBox${id}`);
-            const delBtn = document.getElementById(`delBtn${id}`);
-            img.src = compressedDataUrl; img.style.display = 'block';
-            box.querySelector('.add-photo-btn').style.display = 'none';
-            box.classList.add('has-image');
-            delBtn.style.display = 'block';
-        });
+let blazefaceModel = null;
+let peCanvas = document.getElementById('peCanvas');
+let peCtx = peCanvas.getContext('2d');
+let peCurrentImg = new Image();
+let peHistory = []; 
+let isDrawing = false;
+let currentTargetId = null; 
+
+async function loadAiModel() {
+    try {
+        console.log("Loading AI Model...");
+        blazefaceModel = await blazeface.load();
+        console.log("AI Model Loaded!");
+    } catch (e) {
+        console.error("AI Model Load Failed:", e);
     }
 }
+loadAiModel(); 
+
+// [V10] 攔截原本的 previewImage，改為開啟編輯器
+window.previewImage = function(input, id) {
+    document.getElementById('photoSourceModal').style.display = 'none';
+    
+    if (input.files && input.files[0]) {
+        compressImage(input.files[0], 1024, 0.8, function(dataUrl) {
+            openPrivacyEditor(dataUrl, id);
+        });
+    }
+    input.value = '';
+};
+
+function openPrivacyEditor(imgUrl, id) {
+    currentTargetId = id;
+    const modal = document.getElementById('privacyEditorModal');
+    modal.style.display = 'flex';
+    
+    peCurrentImg.onload = function() {
+        const maxWidth = modal.clientWidth;
+        const maxHeight = modal.clientHeight - 120; 
+        
+        peCanvas.width = peCurrentImg.width;
+        peCanvas.height = peCurrentImg.height;
+        
+        const ratio = Math.min(maxWidth / peCurrentImg.width, maxHeight / peCurrentImg.height);
+        peCanvas.style.width = (peCurrentImg.width * ratio) + 'px';
+        peCanvas.style.height = (peCurrentImg.height * ratio) + 'px';
+        
+        peCtx.drawImage(peCurrentImg, 0, 0);
+        saveHistory(); 
+        
+        triggerAutoBlur();
+    };
+    peCurrentImg.src = imgUrl;
+}
+
+function closePrivacyEditor() {
+    document.getElementById('privacyEditorModal').style.display = 'none';
+    peHistory = [];
+}
+
+async function triggerAutoBlur() {
+    if (!blazefaceModel) {
+        alert("AI 模型尚未載入完成，請稍候再試。");
+        return;
+    }
+    
+    const loading = document.getElementById('peLoading');
+    loading.style.display = 'block';
+    
+    try {
+        const returnTensors = false;
+        const predictions = await blazefaceModel.estimateFaces(peCanvas, returnTensors);
+        
+        if (predictions.length > 0) {
+            peCtx.fillStyle = "#000000"; 
+            
+            predictions.forEach(prediction => {
+                const start = prediction.topLeft;
+                const end = prediction.bottomRight;
+                const size = [end[0] - start[0], end[1] - start[1]];
+                
+                const pad = size[0] * 0.2; 
+                
+                peCtx.fillRect(
+                    start[0] - pad, 
+                    start[1] - pad, 
+                    size[0] + pad*2, 
+                    size[1] + pad*2
+                );
+            });
+            saveHistory();
+        } 
+    } catch (err) {
+        console.error(err);
+        alert("AI 偵測發生錯誤");
+    } finally {
+        loading.style.display = 'none';
+    }
+}
+
+function setMode(mode) {
+}
+
+function getTouchPos(canvasDom, touchEvent) {
+    const rect = canvasDom.getBoundingClientRect();
+    const scaleX = canvasDom.width / rect.width;
+    const scaleY = canvasDom.height / rect.height;
+    return {
+        x: (touchEvent.touches[0].clientX - rect.left) * scaleX,
+        y: (touchEvent.touches[0].clientY - rect.top) * scaleY
+    };
+}
+
+peCanvas.addEventListener('touchstart', (e) => {
+    isDrawing = true;
+    const pos = getTouchPos(peCanvas, e);
+    drawDot(pos.x, pos.y);
+    e.preventDefault();
+}, {passive: false});
+
+peCanvas.addEventListener('touchmove', (e) => {
+    if (!isDrawing) return;
+    const pos = getTouchPos(peCanvas, e);
+    drawDot(pos.x, pos.y);
+    e.preventDefault();
+}, {passive: false});
+
+peCanvas.addEventListener('touchend', () => {
+    if(isDrawing) {
+        isDrawing = false;
+        saveHistory();
+    }
+});
+
+peCanvas.addEventListener('mousedown', (e) => {
+    isDrawing = true;
+    const rect = peCanvas.getBoundingClientRect();
+    const scaleX = peCanvas.width / rect.width;
+    const scaleY = peCanvas.height / rect.height;
+    drawDot((e.clientX - rect.left)*scaleX, (e.clientY - rect.top)*scaleY);
+});
+peCanvas.addEventListener('mousemove', (e) => {
+    if(!isDrawing) return;
+    const rect = peCanvas.getBoundingClientRect();
+    const scaleX = peCanvas.width / rect.width;
+    const scaleY = peCanvas.height / rect.height;
+    drawDot((e.clientX - rect.left)*scaleX, (e.clientY - rect.top)*scaleY);
+});
+peCanvas.addEventListener('mouseup', () => { if(isDrawing){ isDrawing=false; saveHistory(); } });
+
+function drawDot(x, y) {
+    peCtx.beginPath();
+    peCtx.arc(x, y, 30, 0, 2 * Math.PI); 
+    peCtx.fillStyle = "#000000";
+    peCtx.fill();
+}
+
+function saveHistory() {
+    if (peHistory.length > 5) peHistory.shift(); 
+    peHistory.push(peCanvas.toDataURL());
+}
+
+function undoCanvas() {
+    if (peHistory.length <= 1) return; 
+    peHistory.pop(); 
+    const prevUrl = peHistory[peHistory.length - 1];
+    const img = new Image();
+    img.onload = () => {
+        peCtx.clearRect(0,0,peCanvas.width, peCanvas.height);
+        peCtx.drawImage(img, 0, 0);
+    };
+    img.src = prevUrl;
+}
+
+function savePrivacyImage() {
+    const finalDataUrl = peCanvas.toDataURL('image/jpeg', 0.8);
+    
+    const imgPreview = document.getElementById(`imgPreview${currentTargetId}`);
+    const photoBox = document.getElementById(`photoBox${currentTargetId}`);
+    const delBtn = document.getElementById(`delBtn${currentTargetId}`);
+    
+    imgPreview.src = finalDataUrl;
+    imgPreview.style.display = 'block';
+    photoBox.querySelector('.add-photo-btn').style.display = 'none';
+    photoBox.classList.add('has-image');
+    delBtn.style.display = 'block';
+    
+    closePrivacyEditor();
+}
+
 function compressImage(file, maxWidth, quality, callback) {
     const reader = new FileReader(); reader.readAsDataURL(file);
     reader.onload = function (event) {
@@ -1998,9 +2242,21 @@ function getUserID() {
 
 async function submitReport() {
     if (GOOGLE_SCRIPT_URL.includes("您的SCRIPT_ID")) { alert("請先設定 Google Apps Script URL！"); return; }
-    const desc = document.getElementById('reportDesc').value;
-    if (!desc.trim()) { alert("請輸入案情描述！"); return; }
-    if (!confirm("確定要上傳此案件通報嗎？")) return;
+    
+    // [V12] reCAPTCHA 驗證
+    const recaptchaResponse = grecaptcha.getResponse();
+    if(document.getElementById('recaptchaReport').innerHTML !== "" && recaptchaResponse.length === 0) {
+        alert("請勾選「我不是機器人」！");
+        return;
+    }
+
+    const rawDesc = document.getElementById('reportDesc').value;
+    if (!rawDesc.trim()) { alert("請輸入案情描述！"); return; }
+
+    // [V12] 輸入過濾
+    const desc = sanitizeInput(rawDesc.trim());
+
+    if (!confirm("確定要上傳此案件通報嗎？\n請確認照片已做去識別化處理。")) return;
     const btn = document.getElementById('btnSubmitReport'); const originalText = btn.innerText; btn.disabled = true; btn.innerText = "資料上傳中...";
     try {
         const img1 = document.getElementById('imgPreview1'), img2 = document.getElementById('imgPreview2');
@@ -2013,7 +2269,8 @@ async function submitReport() {
             photo2: (img2.src && img2.src.startsWith('data:')) ? img2.src : "",
             appKey: "TainanMap2026_SecureKey_v1", 
             siteUrl: window.location.href,        
-            uid: getUserID()                      
+            uid: getUserID(),
+            // 實務上這裡應傳送 recaptchaResponse 給後端再次驗證
         };
         const response = await fetch(GOOGLE_SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) });
         const result = await response.json();
@@ -2178,11 +2435,10 @@ document.getElementById('villageSelect').addEventListener('change', function() {
         const data = REPAIR_DATA_CACHE[conf.value]; if (!data || !data.features) return;
         data.features.forEach(f => {
             try {
-                if (f.geometry.type !== 'Point') return;
-                if (turf.booleanPointInPolygon(turf.point(f.geometry.coordinates), villageFeature)) {
+                if(f.geometry.type !== 'Point') return;
+                if(turf.booleanPointInPolygon(turf.point(f.geometry.coordinates), villageFeature)) {
                     const [lng, lat] = f.geometry.coordinates; const ll = L.latLng(lat, lng);
                     L.circleMarker(ll, { radius: 18, fillColor: '#ffd700', color: '#ff8c00', weight: 2, fillOpacity: 0.6, interactive: false }).addTo(searchResultLayer);
-                    // 修正：賦予 storeId
                     const storeId = generateStoreId(f.properties);
                     const marker = L.circleMarker(ll, { radius: 6, fillColor: '#d32f2f', color: '#fff', weight: 1, fillOpacity: 1 }).addTo(searchResultLayer);
                     marker.customData = { configLabel: conf.label, props: f.properties, storeId: storeId };
@@ -2226,7 +2482,6 @@ document.getElementById('statsVillageSelect').addEventListener('change', functio
                 if (turf.booleanPointInPolygon(turf.point(f.geometry.coordinates), villageFeature)) {
                     const [lng, lat] = f.geometry.coordinates; const ll = L.latLng(lat, lng);
                     L.circleMarker(ll, { radius: 18, fillColor: '#ffd700', color: '#ff8c00', weight: 2, fillOpacity: 0.6 }).addTo(searchResultLayer);
-                    // 修正：賦予 storeId
                     const storeId = generateStoreId(f.properties);
                     const marker = L.circleMarker(ll, { radius: 6, fillColor: '#d32f2f', color: '#fff', weight: 1, fillOpacity: 1 }).addTo(searchResultLayer);
                     marker.customData = { configLabel: conf.label, props: f.properties, storeId: storeId };
@@ -2322,7 +2577,6 @@ function updateRepairPoints() {
         const iconHtml = `<div style="width:14px; height:14px; background:${color}; border:2px solid #fff; border-radius:50%; box-shadow:0 2px 4px rgba(0,0,0,0.2);"></div>`;
         const icon = L.divIcon({ html: iconHtml, className: 'custom-dot-marker', iconSize: [18, 18], iconAnchor: [9, 9] });
         const marker = L.marker(pt, { icon: icon });
-        // 修正：賦予 storeId
         const storeId = generateStoreId(firstItem.feature.properties);
         marker.customData = { group: group, configLabel: firstItem.configLabel, props: firstItem.feature.properties, storeId: storeId };
         marker.on('click', (e) => handleNearbyMarkerClick(e, activeRepairLayers));
@@ -2445,7 +2699,6 @@ window.openDetailPopupFromMarker = function(marker) {
         }));
         L.popup({className:'custom-popup', maxWidth:960}).setLatLng(marker.getLatLng()).setContent(content).openOn(map);
 
-        // [V5新增] 開啟即觸發動態留言更新
         const storeId = data.storeId;
         const caseId = data.props['案件編號'];
         fetchAndRefreshComments(storeId, caseId);
@@ -2459,7 +2712,6 @@ window.openSingleGroupItem = function(index) {
         const content = createPopup({ fileName: item.configLabel, props: item.feature.properties, lat: item.latlng.lat, lng: item.latlng.lng, dist: dist });
         L.popup({className:'custom-popup', maxWidth:960}).setLatLng(item.latlng).setContent(content).openOn(map);
 
-        // [V5新增] 群組開啟單項也觸發更新
         const storeId = generateStoreId(item.feature.properties);
         const caseId = item.feature.properties['案件編號'];
         fetchAndRefreshComments(storeId, caseId);
@@ -2636,7 +2888,6 @@ async function performSearch(predicate, label) {
                 if(predicate(f.properties)) {
                     const [lng, lat] = f.geometry.coordinates; const ll = L.latLng(lat, lng);
                     L.circleMarker(ll, { radius: 18, fillColor: '#ffd700', color: '#ff8c00', weight: 2, fillOpacity: 0.6, interactive: false }).addTo(searchResultLayer);
-                    // 修正：賦予 storeId
                     const storeId = generateStoreId(f.properties);
                     const marker = L.circleMarker(ll, { radius: 6, fillColor: '#d32f2f', color: '#fff', weight: 1, fillOpacity: 1 }).addTo(searchResultLayer);
                     marker.customData = { configLabel: conf.label, props: f.properties, storeId: storeId };
@@ -2678,12 +2929,10 @@ function handleMapClickSelection(idx, isInteractive) {
     if(idx==="" || idx===null) return; if(roadsLayer) roadsLayer.eachLayer(l => l.setStyle({color: DEEP_BLUE, weight:3}));
     const target = roadLayersArray[idx];
     if(target) {
-        // [V8 修改] 輕量版檢查
         if (document.body.classList.contains('lite-mode')) {
             target.setStyle({ color: 'red', weight: 6 });
             map.fitBounds(target.getBounds());
             
-            // 輕量版只顯示簡單資訊，不開啟面板
             const name = target.feature.properties.name || "道路";
             L.popup()
                 .setLatLng(target.getBounds().getCenter())
@@ -2919,7 +3168,6 @@ function renderTimeline(matches) {
         const highlightStyle = { radius: 20, color:'#ffd700', weight:4, fillColor:'#d32f2f' };
 
         matches.forEach((m, i) => {
-            // 修正：賦予 storeId
             const storeId = generateStoreId(m.props);
             const marker = L.circleMarker([m.lat, m.lng], normalStyle).addTo(routeMatchLayer);
             marker.customData = { configLabel: m.label, props: m.props, storeId: storeId };

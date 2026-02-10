@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0209V9_UI_Fixed)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0209V10_Final)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -86,25 +86,23 @@
   .card-section { background: #fff; border-radius: 12px; padding: 12px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: 1px solid #f0f0f0; }
   .card-title { font-size: 14px; font-weight: bold; color: var(--primary-color); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 2px solid #f0f0f0; }
   
-  /* === [修正] 搜尋分頁專用樣式 (仿 App 質感) === */
-  /* 優化 .search-card 以達到圖二的效果 */
+  /* === 搜尋分頁專用樣式 (仿 App 質感) === */
   .search-card {
       background: #fff;
-      border-radius: 16px; /* 更圓潤 */
+      border-radius: 16px; 
       padding: 15px;
       margin-bottom: 15px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.05); /* 輕柔陰影 */
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05); 
       border: 1px solid #eef2f6;
   }
   .search-card .card-title {
-      border-bottom: none; /* 移除舊的分隔線 */
+      border-bottom: none; 
       margin-bottom: 15px;
       color: var(--primary-color);
       font-size: 15px;
       display: flex; align-items: center; gap: 8px;
   }
   
-  /* 搜尋區塊標籤 */
   .search-block-label {
       font-size: 14px; 
       color: #333; 
@@ -116,33 +114,62 @@
   }
   .search-block-label i { color: #555; width: 16px; text-align: center; }
 
-  /* 搜尋輸入框與下拉選單美化 */
+  /* === [修正2, 4, 5] 統一輸入框與下拉選單樣式 === */
+  /* 包含：搜尋卡片的 select/input, 里別統計 select, 工具頁 textarea, 重複檢核 input */
   .search-card select, 
-  .search-card input[type="text"] {
+  .search-card input[type="text"],
+  #statsVillageSelect,
+  textarea#coordsInput, 
+  textarea#dengueCoordsInput,
+  input#dupCheckInput {
       width: 100%;
       padding: 10px 12px;
       border: 1px solid #cbd5e1;
-      border-radius: 8px; /* 圓角矩形 */
+      border-radius: 8px; /* 統一圓角 */
       background-color: #fff;
       font-size: 14px;
       color: #333;
       outline: none;
-      box-sizing: border-box; /* 確保內距不撐大寬度 */
-      appearance: none; /* 移除預設樣式 */
-      -webkit-appearance: none;
+      box-sizing: border-box; /* 確保 padding 不撐大寬度 */
       transition: all 0.2s;
+      font-family: inherit;
+  }
+
+  /* 下拉選單專用樣式 (箭頭) */
+  .search-card select,
+  #statsVillageSelect {
+      appearance: none; 
+      -webkit-appearance: none;
       background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23333%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
       background-repeat: no-repeat;
       background-position: right 12px top 50%;
       background-size: 10px auto;
   }
-  .search-card input[type="text"] {
-      background-image: none; /* 輸入框不需要箭頭 */
+  
+  /* 移除一般 Input 的背景圖 (避免誤用箭頭) */
+  .search-card input[type="text"],
+  textarea#coordsInput, 
+  textarea#dengueCoordsInput,
+  input#dupCheckInput {
+      background-image: none;
   }
+
+  /* Focus 效果 */
   .search-card select:focus, 
-  .search-card input:focus {
+  .search-card input:focus,
+  #statsVillageSelect:focus,
+  textarea#coordsInput:focus, 
+  textarea#dengueCoordsInput:focus,
+  input#dupCheckInput:focus {
       border-color: var(--primary-color);
       box-shadow: 0 0 0 3px rgba(0, 64, 128, 0.1);
+  }
+
+  /* [修正4] 工具頁 Textarea 固定 */
+  textarea#coordsInput, 
+  textarea#dengueCoordsInput {
+      resize: vertical; /* 只允許垂直調整，防止破壞版面 */
+      min-height: 80px;
   }
   
   /* 分隔線美化 */
@@ -165,14 +192,23 @@
   .search-divider::before { left: 0; }
   .search-divider::after { right: 0; }
 
-  /* 搜尋按鈕美化 */
+  /* === [修正3] 搜尋按鈕美化 (全寬、亮色、粗體) === */
   #searchBtn {
-      background: var(--primary-color);
+      width: 100%; /* 全寬 */
+      background: #0056b3; /* 較亮的深藍，增加對比 */
+      color: #fff;
+      border: none;
       border-radius: 8px;
       padding: 12px;
-      font-size: 15px;
+      font-size: 16px; /* 加大字體 */
+      font-weight: bold; /* 粗體 */
       margin-top: 15px;
       box-shadow: 0 4px 6px rgba(0,64,128,0.2);
+      cursor: pointer;
+      transition: background 0.2s;
+  }
+  #searchBtn:hover {
+      background: #004494;
   }
   
   /* 年度摺疊選單 */
@@ -1466,6 +1502,21 @@ function createPopup(data) {
     let date2 = safeDate(props['派工日期']);
     let date3 = safeDate(props['完工日期']);
 
+    // V10 新增: 日期轉換 (西元 -> 民國格式 1150205)
+    const toRocDate = (dStr) => {
+        if(!dStr || dStr === '-') return '-';
+        const match = dStr.match(/^(\d{4})[-/](\d{2})[-/](\d{2})/);
+        if(match) {
+            const year = parseInt(match[1]) - 1911;
+            return `${year}${match[2]}${match[3]}`;
+        }
+        return dStr;
+    };
+    
+    let displayDate1 = toRocDate(date1);
+    let displayDate2 = toRocDate(date2);
+    let displayDate3 = toRocDate(date3);
+
     // 照片
     const processPhotoStr = (str) => {
         if (!str) return [];
@@ -1499,17 +1550,17 @@ function createPopup(data) {
             <div class="progress-step active">
                 <div class="step-circle"></div>
                 <div class="step-label">待處理</div>
-                <div class="step-date">${date1}</div>
+                <div class="step-date">${displayDate1}</div>
             </div>
             <div class="progress-step ${step>=2 ? 'active' : ''}">
                 <div class="step-circle"></div>
                 <div class="step-label">派工中</div>
-                <div class="step-date">${date2}</div>
+                <div class="step-date">${displayDate2}</div>
             </div>
             <div class="progress-step ${step>=3 ? 'active' : ''}">
                 <div class="step-circle"></div>
                 <div class="step-label">已完工</div>
-                <div class="step-date">${date3}</div>
+                <div class="step-date">${displayDate3}</div>
             </div>
         </div>
 
@@ -1549,7 +1600,7 @@ function createPopup(data) {
                 </div>
                 <div class="grid-item">
                     <span class="grid-label">完工日期</span>
-                    <span class="grid-val">${date3}</span>
+                    <span class="grid-val">${displayDate3}</span>
                 </div>
                 <div class="grid-item">
                     <span class="grid-label">施工廠商</span>

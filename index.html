@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0210V12_Secure)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0210V13_Fixed)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -1033,17 +1033,17 @@
 <script src="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol/dist/L.Control.Locate.min.js"></script>
 
 <script>
-// === [V12 新增] 資安防護函式庫 ===
+// === [V12 修正] 資安防護函式庫 (修正語法錯誤) ===
 
-// 1. HTML 跳脫 (防止 XSS)
+// 1. HTML 跳脫 (防止 XSS) - [已修正] 使用 HTML 實體代碼
 function escapeHtml(text) {
     if (!text) return "";
     return text
-        .replace(/&/g, "&")
-        .replace(/</g, "<")
-        .replace(/>/g, ">")
-        .replace(/"/g, """)
-        .replace(/'/g, "'");
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
 }
 
 // 2. 輸入過濾 (防止 Excel 注入)
@@ -1056,7 +1056,7 @@ function sanitizeInput(text) {
     return text;
 }
 
-// === [V12 新增] reCAPTCHA 明確渲染與管理 ===
+// === [V12] reCAPTCHA 明確渲染與管理 ===
 // 定義全域變數來儲存 Widget ID
 var commentWidgetId = null;
 var reportWidgetId = null;
@@ -1065,12 +1065,12 @@ var reportWidgetId = null;
 function initRecaptcha() {
     // 渲染留言板的驗證碼
     commentWidgetId = grecaptcha.render('recaptchaComment', {
-        'sitekey': '6Le7EGcsAAAAAADIeBF0dxCkmm65BGXGhCKT9_zb' // 您的 Site Key
+        'sitekey': '您的_SITE_KEY' // 請記得換成您申請的 Key
     });
     
     // 渲染案件通報的驗證碼
     reportWidgetId = grecaptcha.render('recaptchaReport', {
-        'sitekey': '6Le7EGcsAAAAAADIeBF0dxCkmm65BGXGhCKT9_zb' // 您的 Site Key
+        'sitekey': '您的_SITE_KEY' // 請記得換成您申請的 Key
     });
 }
 

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0210V13_Fixed)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0212V1_NoRecaptcha)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -12,8 +12,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface"></script>
-
-<script src="https://www.google.com/recaptcha/api.js?onload=initRecaptcha&render=explicit" async defer></script>
 
 <style>
   /* === 1. 全局設定 === */
@@ -492,13 +490,6 @@
       border: 1px solid #ffcdd2;
   }
 
-  /* [V12] reCAPTCHA 樣式調整 */
-  .g-recaptcha {
-      display: flex;
-      justify-content: center;
-      margin-bottom: 10px;
-  }
-
   .nearby-item { padding:8px 6px; border-bottom:1px dashed #ccc; cursor:pointer; display:flex; justify-content:space-between; align-items:center; transition:background 0.2s; }
   .nearby-item:last-child { border-bottom:none; }
   .nearby-item:hover { background: #fff; border-radius:4px; }
@@ -626,6 +617,8 @@
         </div>
         <div class="comment-body" id="commentList"></div>
         <div class="chat-input-area">
+            <input type="text" id="hp_comment" style="display:none;" tabindex="-1" autocomplete="off">
+            
             <div class="chat-nickname-row">
                 <div class="input-group-inner">
                     <input type="text" id="chatNickname" maxlength="20" placeholder="您的暱稱 (最多20字)" onchange="saveNickname(this.value)">
@@ -648,7 +641,6 @@
                 </div>
                 <button class="chat-send-btn" onclick="submitChatComment()"><i class="fas fa-paper-plane"></i></button>
             </div>
-            <div id="recaptchaComment" style="margin-top:10px; display:flex; justify-content:center;"></div>
         </div>
     </div>
 </div>
@@ -659,6 +651,8 @@
         <button onclick="closeReport()" style="background:none; border:none; color:white; font-size:20px;"><i class="fas fa-times"></i></button>
     </div>
     <div class="report-body">
+        <input type="text" id="hp_report" style="display:none;" tabindex="-1" autocomplete="off">
+
         <div class="report-grid">
             <div class="report-col">
                 <div class="report-item"><span class="report-label">案件編號：</span><span id="reportCaseId" style="color:#666; font-style:italic;">(待系統取號)</span></div>
@@ -707,8 +701,6 @@
             <i class="fas fa-exclamation-triangle"></i> 上傳前請務必遮蔽他人隱私資訊，避免觸法
         </div>
         <div style="margin-top:5px; font-size:12px; color:#666; text-align:center;">支援 AI 隱私去識別化與手動遮蔽功能</div>
-        
-        <div id="recaptchaReport" style="margin-top:15px; display:flex; justify-content:center;"></div>
     </div>
     <div class="report-footer">
         <button class="btn-cancel" onclick="closeReport()">取消</button>
@@ -1033,17 +1025,17 @@
 <script src="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol/dist/L.Control.Locate.min.js"></script>
 
 <script>
-// === [V12 修正] 資安防護函式庫 (修正語法錯誤) ===
+// === [V12 修正] 資安防護函式庫 ===
 
-// 1. HTML 跳脫 (防止 XSS) - [已修正] 使用 HTML 實體代碼
+// 1. HTML 跳脫 (防止 XSS)
 function escapeHtml(text) {
     if (!text) return "";
     return text
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+        .replace(/&/g, "&")
+        .replace(/</g, "<")
+        .replace(/>/g, ">")
+        .replace(/"/g, """)
+        .replace(/'/g, "'");
 }
 
 // 2. 輸入過濾 (防止 Excel 注入)
@@ -1056,23 +1048,9 @@ function sanitizeInput(text) {
     return text;
 }
 
-// === [V12] reCAPTCHA 明確渲染與管理 ===
-// 定義全域變數來儲存 Widget ID
-var commentWidgetId = null;
-var reportWidgetId = null;
-
-// 當 Google API 載入完成後會自動執行此函式
-function initRecaptcha() {
-    // 渲染留言板的驗證碼
-    commentWidgetId = grecaptcha.render('recaptchaComment', {
-        'sitekey': '6Ld40GgsAAAAABG9ZEoOJJDS5SpQbBYQWEfUvelk' // 請記得換成您申請的 Key
-    });
-    
-    // 渲染案件通報的驗證碼
-    reportWidgetId = grecaptcha.render('recaptchaReport', {
-        'sitekey': '6Ld40GgsAAAAABG9ZEoOJJDS5SpQbBYQWEfUvelk' // 請記得換成您申請的 Key
-    });
-}
+// === [V12] 隱形驗證 (Honeypot + Time-based Check) 全域變數 ===
+let reportStartTime = 0;
+let commentStartTime = 0;
 
 // ===================================
 
@@ -1331,6 +1309,9 @@ window.jumpToCaseSibling = function(targetStoreId) {
 
 let currentActiveStoreId = ""; 
 window.openCommentModal = function(storeId) {
+    // [時間鎖] 紀錄開啟時間
+    commentStartTime = Date.now();
+    
     currentActiveStoreId = storeId;
     const props = CASE_DATA_CACHE[storeId];
     
@@ -1351,10 +1332,8 @@ window.openCommentModal = function(storeId) {
 
     renderCommentList(list, comments);
     document.getElementById('chatMessage').value = "";
+    document.getElementById('hp_comment').value = ""; // 清空蜜罐
     setChatStar(0);
-    
-    // [V12] 重置指定 ID 的 reCAPTCHA
-    try { if(commentWidgetId !== null) grecaptcha.reset(commentWidgetId); } catch(e){}
 };
 
 function renderCommentList(container, comments) {
@@ -1416,18 +1395,22 @@ window.saveNickname = function(val) {
 
 window.submitChatComment = async function() {
     if (!currentActiveStoreId) return;
+
+    // [V12] 隱形驗證：蜜罐檢查
+    if (document.getElementById('hp_comment').value !== "") {
+        return alert("系統偵測到異常操作，請重新整理頁面 (H1)");
+    }
+
+    // [V12] 隱形驗證：時間鎖 (3秒)
+    if (Date.now() - commentStartTime < 3000) {
+        return alert("您填寫的速度過快，請確認內容後稍候再試。");
+    }
+
     const props = CASE_DATA_CACHE[currentActiveStoreId];
     if (!props) return;
 
     if (GOOGLE_SCRIPT_URL.includes("您的SCRIPT_ID")) { alert("請先設定 Google Apps Script URL！"); return; }
     
-    // [V12] reCAPTCHA 驗證 (使用明確的 widget ID)
-    const recaptchaToken = grecaptcha.getResponse(commentWidgetId);
-    if(recaptchaToken.length === 0) {
-        alert("請勾選「我不是機器人」！");
-        return;
-    }
-
     // [V12] 輸入過濾
     const rawText = document.getElementById('chatMessage').value;
     const rawNickname = document.getElementById('chatNickname').value;
@@ -1473,9 +1456,6 @@ window.submitChatComment = async function() {
     document.getElementById('chatMessage').value = "";
     setChatStar(0);
     
-    // 重置特定的 reCAPTCHA
-    try { if(commentWidgetId !== null) grecaptcha.reset(commentWidgetId); } catch(e){}
-
     const ratingText = document.getElementById(`rating-text-${currentActiveStoreId}`);
     if(ratingText) {
         ratingText.innerHTML = `${newAvg} <span class="rating-count">(${currentComments.length})</span>`;
@@ -1489,8 +1469,8 @@ window.submitChatComment = async function() {
             comment: text,
             nickname: nickname,
             appKey: "TainanMap2026_SecureKey_v1",
-            siteUrl: window.location.href,
-            recaptchaToken: recaptchaToken // [V12] 傳送 Token
+            siteUrl: window.location.href
+            // [V12] 移除 recaptchaToken
         };
         
         await fetch(GOOGLE_SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) });
@@ -1504,8 +1484,6 @@ window.submitChatComment = async function() {
 
 function closeCommentModal() {
     document.getElementById('commentModal').style.display = 'none';
-    // 關閉時重置
-    try { if(commentWidgetId !== null) grecaptcha.reset(commentWidgetId); } catch(e){}
 }
 
 async function fetchAndRefreshComments(storeId, caseId) {
@@ -1882,17 +1860,16 @@ function closeReport() {
     reportOverlay.style.display = 'none'; 
     document.getElementById('photoSourceModal').style.display = 'none';
     resetReportForm(); 
-    // 關閉視窗時也重置
-    try { if(reportWidgetId !== null) grecaptcha.reset(reportWidgetId); } catch(e){}
 }
 
 function initReportData() {
+    // [時間鎖] 紀錄開啟時間
+    reportStartTime = Date.now();
+    document.getElementById('hp_report').value = ""; // 清空蜜罐
+
     document.getElementById('reportCaseId').innerText = "(待系統取號)";
     document.getElementById('reportTime').innerText = new Date().toLocaleString();
     
-    // [V12] 重置指定 ID 的 reCAPTCHA
-    try { if(reportWidgetId !== null) grecaptcha.reset(reportWidgetId); } catch(e){}
-
     const historySection = document.getElementById('nearbyHistorySection');
     const historyList = document.getElementById('nearbyHistoryList');
     historySection.style.display = 'none';
@@ -2265,15 +2242,18 @@ function getUserID() {
 }
 
 async function submitReport() {
-    if (GOOGLE_SCRIPT_URL.includes("您的SCRIPT_ID")) { alert("請先設定 Google Apps Script URL！"); return; }
-    
-    // [V12] reCAPTCHA 驗證 (使用明確的 widget ID)
-    const recaptchaToken = grecaptcha.getResponse(reportWidgetId);
-    if(recaptchaToken.length === 0) {
-        alert("請勾選「我不是機器人」！");
-        return;
+    // [V12] 隱形驗證：蜜罐檢查
+    if (document.getElementById('hp_report').value !== "") {
+        return alert("系統偵測到異常操作，請重新整理頁面 (H2)");
     }
 
+    // [V12] 隱形驗證：時間鎖 (3秒)
+    if (Date.now() - reportStartTime < 3000) {
+        return alert("請勿頻繁送出，請檢查資料後再試");
+    }
+
+    if (GOOGLE_SCRIPT_URL.includes("您的SCRIPT_ID")) { alert("請先設定 Google Apps Script URL！"); return; }
+    
     const rawDesc = document.getElementById('reportDesc').value;
     if (!rawDesc.trim()) { alert("請輸入案情描述！"); return; }
 
@@ -2293,8 +2273,8 @@ async function submitReport() {
             photo2: (img2.src && img2.src.startsWith('data:')) ? img2.src : "",
             appKey: "TainanMap2026_SecureKey_v1", 
             siteUrl: window.location.href,        
-            uid: getUserID(),
-            recaptchaToken: recaptchaToken // [V12] 傳送 Token
+            uid: getUserID()
+            // [V12] 移除 recaptchaToken
         };
         const response = await fetch(GOOGLE_SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) });
         const result = await response.json();

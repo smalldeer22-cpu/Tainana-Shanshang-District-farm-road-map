@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0212V1_NoRecaptcha)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0213_MathAuth)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -697,6 +697,19 @@
                 <button class="delete-photo-btn" id="delBtn2" onclick="deletePhoto(2)">刪除</button>
             </div>
         </div>
+        
+        <div style="margin: 15px 0; padding: 10px; background: #f0f7ff; border: 1px dashed #004080; border-radius: 8px;">
+            <div style="font-weight:bold; color:#004080; margin-bottom:5px;">
+                <i class="fas fa-shield-alt"></i> 安全驗證 (必填)
+            </div>
+            <div style="display:flex; align-items:center; gap:10px;">
+                <span id="mathQuestion" style="font-size:18px; font-weight:bold; color:#d32f2f; letter-spacing:2px; background:#fff; padding:5px 10px; border-radius:4px;">...</span>
+                <span>=</span>
+                <input type="number" id="mathAnswer" placeholder="請輸入答案" style="width:80px; padding:8px; border:1px solid #ccc; border-radius:4px; text-align:center;">
+            </div>
+            <div style="font-size:11px; color:#666; margin-top:5px;">請計算算式以證明您不是機器人</div>
+        </div>
+
         <div class="privacy-warning">
             <i class="fas fa-exclamation-triangle"></i> 上傳前請務必遮蔽他人隱私資訊，避免觸法
         </div>
@@ -1034,7 +1047,7 @@ function escapeHtml(text) {
         .replace(/&/g, "&")
         .replace(/</g, "<")
         .replace(/>/g, ">")
-        .replace(/"/g, "&quot;")
+        .replace(/"/g, """)
         .replace(/'/g, "'");
 }
 
@@ -1048,9 +1061,21 @@ function sanitizeInput(text) {
     return text;
 }
 
-// === [V12] 隱形驗證 (Honeypot + Time-based Check) 全域變數 ===
+// === [V13] 動態數學驗證 (Client-Side Gatekeeper) ===
+let correctMathAnswer = 0;
 let reportStartTime = 0;
 let commentStartTime = 0;
+
+function initMathChallenge() {
+    // 產生兩個 1~9 的隨機數字，避免過大難以心算
+    const n1 = Math.floor(Math.random() * 9) + 1;
+    const n2 = Math.floor(Math.random() * 9) + 1;
+    correctMathAnswer = n1 + n2;
+    
+    // 更新畫面
+    document.getElementById('mathQuestion').innerText = `${n1} + ${n2}`;
+    document.getElementById('mathAnswer').value = ''; // 清空輸入框
+}
 
 // ===================================
 
@@ -1469,8 +1494,8 @@ window.submitChatComment = async function() {
             comment: text,
             nickname: nickname,
             appKey: "TainanMap2026_SecureKey_v1",
-            siteUrl: window.location.href
-            // [V12] 移除 recaptchaToken
+            siteUrl: window.location.href,
+            uid: getUserID()
         };
         
         await fetch(GOOGLE_SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) });
@@ -1867,6 +1892,9 @@ function initReportData() {
     reportStartTime = Date.now();
     document.getElementById('hp_report').value = ""; // 清空蜜罐
 
+    // [V13] 新增：產生數學題
+    initMathChallenge();
+
     document.getElementById('reportCaseId').innerText = "(待系統取號)";
     document.getElementById('reportTime').innerText = new Date().toLocaleString();
     
@@ -2238,13 +2266,21 @@ function getUserID() {
         uid = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
         localStorage.setItem('site_user_uid', uid);
     }
-    return getUserID;
+    return uid;
 }
 
 async function submitReport() {
     // [V12] 隱形驗證：蜜罐檢查
     if (document.getElementById('hp_report').value !== "") {
         return alert("系統偵測到異常操作，請重新整理頁面 (H2)");
+    }
+
+    // [V13] 動態數學驗證 (Client-Side Check)
+    const userAnswer = parseInt(document.getElementById('mathAnswer').value);
+    if (isNaN(userAnswer) || userAnswer !== correctMathAnswer) {
+        alert("❌ 驗證失敗！\n\n請輸入正確的算式答案以證明您不是機器人。");
+        document.getElementById('mathAnswer').focus();
+        return; 
     }
 
     // [V12] 隱形驗證：時間鎖 (3秒)
@@ -2273,8 +2309,8 @@ async function submitReport() {
             photo2: (img2.src && img2.src.startsWith('data:')) ? img2.src : "",
             appKey: "TainanMap2026_SecureKey_v1", 
             siteUrl: window.location.href,        
-            uid: getUserID()
-            // [V12] 移除 recaptchaToken
+            uid: getUserID(),
+            mathVerified: "true" 
         };
         const response = await fetch(GOOGLE_SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) });
         const result = await response.json();

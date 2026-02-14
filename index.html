@@ -1047,8 +1047,8 @@ function escapeHtml(text) {
         .replace(/&/g, "&")
         .replace(/</g, "<")
         .replace(/>/g, ">")
-        .replace(/"/g, """)
-        .replace(/'/g, "'");
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
 }
 
 // 2. 輸入過濾 (防止 Excel 注入)

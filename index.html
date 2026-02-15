@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0216_Optimized)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0216V2_Final)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -1359,6 +1359,12 @@ window.openCommentModal = function(storeId) {
     document.getElementById('chatMessage').value = "";
     document.getElementById('hp_comment').value = ""; // 清空蜜罐
     setChatStar(0);
+
+    // [修正] 開窗即更新 (Lazy Fetch)：確保從後端拉取最新留言
+    const caseId = props['案件編號'];
+    if(caseId && caseId !== "無編號") {
+        fetchAndRefreshComments(storeId, caseId);
+    }
 };
 
 function renderCommentList(container, comments) {
@@ -1787,7 +1793,9 @@ async function toggleRealtimeLayer(checkbox) {
     document.body.style.cursor = 'wait';
 
     try {
-        const res = await fetch(GOOGLE_SCRIPT_URL);
+        // [修正] 加入 &t=${Date.now()} 防止瀏覽器快取舊資料 (Double Cache Busting)
+        const url = `${GOOGLE_SCRIPT_URL}?t=${Date.now()}`;
+        const res = await fetch(url);
         const data = await res.json();
 
         if(data.features) {
@@ -3247,139 +3255,4 @@ function renderTimeline(matches) {
             let sizeClass = 'dot-sm'; if (amount > 5000000) sizeClass = 'dot-lg'; else if (amount > 1000000) sizeClass = 'dot-md'; 
             
             let isFrequent = false; 
-            if (i < matches.length - 1) { 
-                const nextItem = matches[i+1]; 
-                if(nextItem && nextItem.props) {
-                    const days = getDateDiffDays(m.props['完工日期'], nextItem.props['完工日期']); 
-                    if (days < 180) isFrequent = true; 
-                }
-            }
-            const alertClass = isFrequent ? 'alert-right' : '';
-            const item = document.createElement('div'); item.className = `h-item ${alertClass}`;
-            item.innerHTML = `<div class="h-date">${m.props['完工日期']||'未知'}</div><div class="h-line-container"><div class="h-dot ${sizeClass}"></div></div><div class="h-badge ${labelName.includes('搶修')||labelName.includes('災害')||labelName.includes('緊急') ? 'badge-urgent' : 'badge-normal'}">${labelName.includes('搶修')||labelName.includes('災害')||labelName.includes('緊急') ? '搶修' : '一般'}</div>`;
-            item.addEventListener('mouseenter', () => { 
-                const photoUrls = getPhotosFromProps(m.props);
-                preloadImages(photoUrls);
-                if (selectedTimelineMarker === marker) return; 
-                marker.setStyle(highlightStyle); marker.bringToFront(); 
-                if(!marker._tempPopup) { marker._tempPopup = L.popup({ className: 'custom-popup', maxWidth: 960, offset: [0, -10], closeButton: false }).setLatLng([m.lat, m.lng]).setContent(popupContent); }
-                marker._tempPopup.openOn(map);
-            });
-            item.addEventListener('mouseleave', () => { 
-                if (selectedTimelineMarker === marker) return; 
-                marker.setStyle(normalStyle); 
-                if(marker._tempPopup) { map.closePopup(marker._tempPopup); marker._tempPopup = null; }
-                if(selectedTimelineMarker && selectedTimelineMarker._lockedPopup) { selectedTimelineMarker._lockedPopup.openOn(map); }
-            });
-            item.addEventListener('click', (e) => {
-                e.stopPropagation(); 
-                if (selectedTimelineMarker && selectedTimelineMarker !== marker) { selectedTimelineMarker.setStyle(normalStyle); if(selectedTimelineMarker._lockedPopup) map.closePopup(selectedTimelineMarker._lockedPopup); }
-                selectedTimelineMarker = marker; marker.setStyle(highlightStyle); marker.bringToFront();
-                if(!marker._lockedPopup) { marker._lockedPopup = L.popup({ className: 'custom-popup', maxWidth: 960, offset: [0, -10] }).setLatLng([m.lat, m.lng]).setContent(popupContent); }
-                marker._lockedPopup.openOn(map); map.flyTo([m.lat, m.lng], 18);
-            });
-            cont.appendChild(item);
-        });
-    } catch(err) { console.error("Timeline render error:", err); cont.innerHTML = '<div style="padding:20px; color:red;">顯示失敗：資料格式有誤</div>'; }
-}
-function updateDengueRadius() {
-    dengueRadiusLayer.clearLayers(); const radios = document.getElementsByName('dengueRadius'); let r = 0;
-    for(let i=0; i<radios.length; i++){ if(radios[i].checked) r = parseInt(radios[i].value); }
-    if(r === 0) return; dengueLayer.eachLayer(marker => { L.circle(marker.getLatLng(), { radius: r, color: 'none', fillColor: '#ff9800', fillOpacity: 0.3 }).addTo(dengueRadiusLayer); });
-}
-
-map.on('popupopen', function(e) {
-    var content = e.popup.getContent();
-    var latlng = e.popup.getLatLng();
-    sessionStorage.setItem('savedPopup', JSON.stringify({
-        lat: latlng.lat,
-        lng: latlng.lng,
-        content: content,
-        zoom: map.getZoom()
-    }));
-});
-map.on('popupclose', function(e) { sessionStorage.removeItem('savedPopup'); });
-window.addEventListener('load', function() {
-    setTimeout(function(){
-        var saved = sessionStorage.getItem('savedPopup');
-        if(saved) {
-            try { var data = JSON.parse(saved); map.setView([data.lat, data.lng], data.zoom || 18); L.popup({className:'custom-popup', maxWidth:960}).setLatLng([data.lat, data.lng]).setContent(data.content).openOn(map); } catch(e) {}
-        }
-    }, 500); 
-});
-
-const aiRiskLayer = L.layerGroup().addTo(map);
-let aiRiskData = [];
-async function toggleAiRiskLayer(checkbox) {
-    aiRiskLayer.clearLayers(); aiRiskData = []; const loading = document.getElementById('aiLoading'); const dashboard = document.getElementById('aiDashboard');
-    if (!checkbox.checked) { loading.style.display = 'none'; dashboard.style.display = 'none'; return; }
-    if (activeRepairLayers.length === 0) { alert("系統提示：\n目前地圖上沒有載入任何維修案件。\n\n請先至「透明」分頁勾選年份，或載入資料後再執行 AI 預測。"); checkbox.checked = false; return; }
-    loading.style.display = 'block'; dashboard.style.display = 'none';
-    setTimeout(() => { runAiRiskAnalysis(); loading.style.display = 'none'; dashboard.style.display = 'block'; updateAiDashboard('all'); }, 100);
-}
-
-function runAiRiskAnalysis() {
-    const points = activeRepairLayers.map(layer => { if (layer.feature && layer.feature.geometry.type === 'Point') return layer.feature; return null; }).filter(p => p !== null);
-    const ANALYSIS_RADIUS = 0.05; const processedCenters = []; let riskCount = 0;
-    points.forEach(point => {
-        const center = turf.point(point.geometry.coordinates);
-        const isOverlap = processedCenters.some(pc => turf.distance(center, pc) < 0.03); if (isOverlap) return;
-        const neighbors = points.filter(p => { const target = turf.point(p.geometry.coordinates); return turf.distance(center, target) <= ANALYSIS_RADIUS; });
-        if (neighbors.length < 2) return;
-        let riskScore = 0; let treeTrimCount = 0; let roadFixCount = 0; let recentCaseCount = 0; const now = new Date();
-        const kwRoad = ['AC','PC','瀝青','混凝土','坑洞','下陷','沉陷','掏空','裂縫','破裂','鋪設','修補','填補','路緣','擋土牆'];
-        const kwTree = ['樹','竹','草','枝','葉','蕉','鋸除','清運','倒伏','修剪'];
-        neighbors.forEach(n => {
-            const props = n.properties; const name = (props['工程名稱'] || '').toString(); const type = (props['搶修類型'] || '').toString(); const fullText = name + type; const dateStr = (props['完工日期'] || '').toString().trim();
-            let isTree = kwTree.some(k => fullText.includes(k));
-            if (isTree) treeTrimCount++; else roadFixCount++;
-            if (fullText.includes('坑洞') || fullText.includes('沉陷') || fullText.includes('掏空') || fullText.includes('下陷')) riskScore += 2; else riskScore += 1;
-            if (dateStr.length === 7) {
-                const y = parseInt(dateStr.substring(0, 3)) + 1911; const m = parseInt(dateStr.substring(3, 5)) - 1; const d = parseInt(dateStr.substring(5, 7)); const caseDate = new Date(y, m, d);
-                const diffMonths = (now.getFullYear() - caseDate.getFullYear()) * 12 + (now.getMonth() - caseDate.getMonth());
-                if (diffMonths <= 6) { riskScore += 3; recentCaseCount++; } else if (diffMonths <= 12) riskScore += 1.5; 
-            }
-        });
-        if (riskScore >= 5 || (neighbors.length >= 3 && recentCaseCount > 0)) {
-            const marker = createRiskMarker(center, neighbors.length, treeTrimCount, roadFixCount, recentCaseCount, riskScore);
-            processedCenters.push(center);
-            aiRiskData.push({ marker: marker, score: riskScore, total: neighbors.length, tree: treeTrimCount, road: roadFixCount, recent: recentCaseCount, lat: center.geometry.coordinates[1], lng: center.geometry.coordinates[0] });
-            riskCount++;
-        }
-    });
-    if (riskCount === 0) alert("AI 分析完成：\n目前範圍內無顯著的高風險群聚熱點。");
-}
-
-function createRiskMarker(centerPoint, totalCount, treeCount, roadCount, recentCount, score) {
-    const lat = centerPoint.geometry.coordinates[1]; const lng = centerPoint.geometry.coordinates[0];
-    let level = "中度風險"; let cssClass = "ai-marker-med"; 
-    if (score > 10) { level = "極高風險"; cssClass = "ai-pulse-marker"; } else if (score > 7) { level = "高度風險"; cssClass = "ai-pulse-marker"; }
-    const icon = L.divIcon({ className: 'custom-div-icon', html: `<div class="${cssClass}" title="AI 風險預警"><i class="fas fa-radiation-alt"></i></div>`, iconSize: [24, 24], iconAnchor: [12, 12] });
-    const marker = L.marker([lat, lng], { icon: icon, zIndexOffset: 1000 }).addTo(aiRiskLayer);
-    let advice = "";
-    if (treeCount > roadCount) advice = "此處植被修剪頻繁，建議檢查路樹根系是否影響路基/排水，或評估行道樹矮化/移植可行性。";
-    else if (recentCount >= 2) advice = "半年內發生多次重複維修，顯示該處路基極不穩定！建議安排透地雷達檢測或開挖檢視地下管線。";
-    else advice = "此處為維修熱區，建議納入下一年度優先路平專案路段。";
-    const popupHtml = `<div style="width:280px;"><div class="ai-report-header"><i class="fas fa-robot"></i> AI 道路健康風險評估</div><div class="ai-report-body"><div class="ai-stat-row"><span>風險等級</span><span class="ai-stat-val">${level} (Score: ${score})</span></div><div class="ai-stat-row"><span>範圍半徑</span><span style="font-family:monospace;">50 公尺內</span></div><div class="ai-stat-row"><span>累計維修總數</span><span class="ai-stat-val">${totalCount} 次</span></div><div class="ai-stat-row"><span>土木結構修補</span><span>${roadCount} 次</span></div><div class="ai-stat-row"><span>環境植被處理</span><span>${treeCount} 次</span></div><div class="ai-stat-row"><span>近半年內案件</span><span style="color:${recentCount>0?'red':'#333'}">${recentCount} 次</span></div><div class="ai-advice-box"><strong><i class="fas fa-clipboard-check"></i> 預防性決策建議：</strong><br>${advice}</div></div></div>`;
-    marker.bindPopup(popupHtml, { className: 'custom-popup', maxWidth: 300 }); return marker;
-}
-
-window.filterAiResults = function(type, btn) { document.querySelectorAll('.ai-filter-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); updateAiDashboard(type); };
-function updateAiDashboard(filterType) {
-    const list = document.getElementById('aiResultList'); list.innerHTML = '';
-    let sorted = [...aiRiskData].sort((a,b) => b.score - a.score);
-    if (filterType === 'high') sorted = sorted.filter(d => d.score > 10); else if (filterType === 'road') sorted = sorted.filter(d => d.road > d.tree); else if (filterType === 'tree') sorted = sorted.filter(d => d.tree >= d.road);
-    aiRiskLayer.eachLayer(l => l.setOpacity(0)); 
-    sorted.forEach((d, i) => {
-        d.marker.setOpacity(1); 
-        const badgeClass = d.score > 10 ? 'badge-high' : 'badge-med'; const badgeText = d.score > 10 ? '極高' : '中高'; const typeText = d.road > d.tree ? '土木' : '植被';
-        const div = document.createElement('div'); div.className = 'ai-list-item';
-        div.innerHTML = `<div><span class="ai-score-badge ${badgeClass}">${badgeText}</span> <span style="font-weight:bold; color:#555;">熱點 #${i+1}</span></div><div style="text-align:right; color:#666;">${typeText} | ${d.total}次維修</div>`;
-        div.onclick = () => { map.flyTo([d.lat, d.lng], 18); setTimeout(() => d.marker.openPopup(), 500); if(window.innerWidth <= 768) document.body.classList.remove('sidebar-open'); };
-        list.appendChild(div);
-    });
-    if(sorted.length === 0) list.innerHTML = '<div style="padding:10px; text-align:center; color:#999;">無符合條件的熱點</div>';
-}
-</script>
-</body>
-</html>
+            if (i < matches

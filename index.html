@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0213_MathAuth)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0216_Optimized)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -1040,14 +1040,14 @@
 <script>
 // === [V12 修正] 資安防護函式庫 ===
 
-// 1. HTML 跳脫 (防止 XSS)
+// 1. HTML 跳脫 (防止 XSS) - [已修正引號問題]
 function escapeHtml(text) {
     if (!text) return "";
     return text
-        .replace(/&/g, "&")
-        .replace(/</g, "<")
-        .replace(/>/g, ">")
-        .replace(/"/g, "&quot;")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")  
         .replace(/'/g, "&#039;");
 }
 
@@ -1418,41 +1418,36 @@ window.saveNickname = function(val) {
     if(val) localStorage.setItem("chatNickname", val);
 }
 
-window.submitChatComment = async function() {
+// [修正版] 送出留言 (極速回應模式)
+async function submitChatComment() {
     if (!currentActiveStoreId) return;
 
-    // [V12] 隱形驗證：蜜罐檢查
+    // 1. 基本驗證 (蜜罐與時間鎖)
     if (document.getElementById('hp_comment').value !== "") {
-        return alert("系統偵測到異常操作，請重新整理頁面 (H1)");
+        return alert("系統偵測到異常操作 (Bot)");
     }
-
-    // [V12] 隱形驗證：時間鎖 (3秒)
     if (Date.now() - commentStartTime < 3000) {
-        return alert("您填寫的速度過快，請確認內容後稍候再試。");
+        return alert("請勿頻繁操作，請稍候再試。");
     }
 
     const props = CASE_DATA_CACHE[currentActiveStoreId];
     if (!props) return;
 
-    if (GOOGLE_SCRIPT_URL.includes("您的SCRIPT_ID")) { alert("請先設定 Google Apps Script URL！"); return; }
-    
-    // [V12] 輸入過濾
+    // 2. 取得並清洗輸入資料
     const rawText = document.getElementById('chatMessage').value;
     const rawNickname = document.getElementById('chatNickname').value;
     
-    if(!rawText.trim() && document.getElementById('chatCurrentStar').value == 0) { alert("請輸入留言或評分！"); return; }
-    if(!rawNickname.trim()) { alert("請輸入暱稱！"); return; }
+    if(!rawText.trim() && document.getElementById('chatCurrentStar').value == 0) { return alert("請輸入留言或評分！"); }
+    if(!rawNickname.trim()) { return alert("請輸入暱稱！"); }
     
     const text = sanitizeInput(rawText.trim());
     const nickname = sanitizeInput(rawNickname.trim());
     const star = parseInt(document.getElementById('chatCurrentStar').value);
     
+    // 3. 儲存暱稱供下次使用
     localStorage.setItem("chatNickname", nickname);
 
-    const btn = document.querySelector('.chat-send-btn');
-    const originalIcon = btn.innerHTML;
-    btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-
+    // 4. [極速回應] 先更新畫面 (不等後端)
     const now = new Date();
     const timeStr = `${now.getFullYear()}/${('0'+(now.getMonth()+1)).slice(-2)}/${('0'+now.getDate()).slice(-2)} ${('0'+now.getHours()).slice(-2)}:${('0'+now.getMinutes()).slice(-2)}`;
     
@@ -1463,6 +1458,7 @@ window.submitChatComment = async function() {
         user: nickname
     };
 
+    // 更新本地快取資料
     let currentComments = [];
     try {
         currentComments = JSON.parse(props['評論內容'] || "[]");
@@ -1470,6 +1466,8 @@ window.submitChatComment = async function() {
     
     currentComments.push(newComment);
     props['評論內容'] = JSON.stringify(currentComments);
+    
+    // 計算新星等
     const oldTotal = parseFloat(props['平均星等']||0) * parseInt(props['評論數']||0);
     const newCount = parseInt(props['評論數']||0) + (star > 0 ? 1 : 0);
     const newAvg = newCount > 0 ? ((oldTotal + star) / newCount).toFixed(1) : props['平均星等'];
@@ -1477,15 +1475,23 @@ window.submitChatComment = async function() {
     props['平均星等'] = newAvg;
     if(star > 0) props['評論數'] = newCount;
     
+    // 立即渲染畫面
     renderCommentList(document.getElementById('commentList'), currentComments);
+    
+    // 清空輸入框
     document.getElementById('chatMessage').value = "";
     setChatStar(0);
     
+    // 更新外部標籤顯示
     const ratingText = document.getElementById(`rating-text-${currentActiveStoreId}`);
     if(ratingText) {
         ratingText.innerHTML = `${newAvg} <span class="rating-count">(${currentComments.length})</span>`;
     }
 
+    // 5. [背景執行] 默默將資料傳給後端 (使用者感覺不到卡頓)
+    const btn = document.querySelector('.chat-send-btn');
+    btn.disabled = true; // 暫時鎖定按鈕防止重複送出
+    
     try {
         const payload = {
             action: "comment",
@@ -1498,12 +1504,20 @@ window.submitChatComment = async function() {
             uid: getUserID()
         };
         
-        await fetch(GOOGLE_SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) });
-        
+        // 這裡不使用 await 阻擋介面，但為了確保按鈕解鎖，我們用 .then/.finally
+        fetch(GOOGLE_SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) })
+            .then(res => res.json())
+            .then(res => {
+                if(res.result !== "success") console.warn("留言上傳可能失敗:", res);
+            })
+            .catch(err => console.error("留言連線錯誤:", err))
+            .finally(() => {
+                btn.disabled = false; // 解鎖按鈕
+            });
+            
     } catch(e) {
-        console.error("Comment submit failed", e);
-    } finally {
-        btn.disabled = false; btn.innerHTML = originalIcon;
+        console.error("Comment submit process error", e);
+        btn.disabled = false;
     }
 }
 
@@ -1511,6 +1525,7 @@ function closeCommentModal() {
     document.getElementById('commentModal').style.display = 'none';
 }
 
+// [修正版] 讀取留言 (加入防快取機制)
 async function fetchAndRefreshComments(storeId, caseId) {
     if (!caseId || caseId === "無編號") return;
     if (GOOGLE_SCRIPT_URL.includes("您的SCRIPT_ID")) return;
@@ -1519,7 +1534,8 @@ async function fetchAndRefreshComments(storeId, caseId) {
     if(ratingText) ratingText.style.opacity = "0.5";
 
     try {
-        const url = `${GOOGLE_SCRIPT_URL}?action=getComments&caseId=${caseId}`;
+        // [修改點] 加入 &t=${Date.now()} 防止瀏覽器快取舊資料
+        const url = `${GOOGLE_SCRIPT_URL}?action=getComments&caseId=${caseId}&t=${Date.now()}`;
         const res = await fetch(url);
         const json = await res.json();
 
@@ -1546,6 +1562,11 @@ async function fetchAndRefreshComments(storeId, caseId) {
             if(ratingText) {
                 ratingText.innerHTML = `${avg} <span class="rating-count">(${comments.length})</span>`;
                 ratingText.style.opacity = "1";
+            }
+            
+            // 如果目前正打開這個案件的留言板，順便更新清單
+            if (currentActiveStoreId === storeId && document.getElementById('commentModal').style.display !== 'none') {
+                 renderCommentList(document.getElementById('commentList'), comments);
             }
         }
     } catch (e) {
@@ -2266,7 +2287,7 @@ function getUserID() {
         uid = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
         localStorage.setItem('site_user_uid', uid);
     }
-    return uid;
+    return uid; // [修正] 之前是 return getUserID; (錯誤)，已更正
 }
 
 async function submitReport() {

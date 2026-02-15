@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0216V2_Final)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0216V3_Fixed)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -1044,9 +1044,9 @@
 function escapeHtml(text) {
     if (!text) return "";
     return text
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
+        .replace(/&/g, "&")
+        .replace(/</g, "<")
+        .replace(/>/g, ">")
         .replace(/"/g, "&quot;")  
         .replace(/'/g, "&#039;");
 }
@@ -3255,4 +3255,35 @@ function renderTimeline(matches) {
             let sizeClass = 'dot-sm'; if (amount > 5000000) sizeClass = 'dot-lg'; else if (amount > 1000000) sizeClass = 'dot-md'; 
             
             let isFrequent = false; 
-            if (i < matches
+            const isEmergency = /搶修|災害|緊急/.test(labelName);
+
+            // [V0216V3 Fix] 以下是補齊的 DOM 生成邏輯
+            const itemDiv = document.createElement('div');
+            itemDiv.className = `h-item ${isEmergency ? 'alert-right' : ''}`;
+            
+            const dateStr = m.props['完工日期'] || '日期未知';
+            const costStr = amount > 0 ? (Math.floor(amount/10000) + '萬') : '0';
+            
+            itemDiv.innerHTML = `
+                <div class="h-date">${dateStr}</div>
+                <div class="h-line-container">
+                    <div class="h-dot ${sizeClass}" style="background:${isEmergency?'#d32f2f':'var(--primary-color)'}"></div>
+                </div>
+                <div class="h-badge ${isEmergency?'badge-urgent':'badge-normal'}">$${costStr}</div>
+            `;
+            
+            itemDiv.onclick = () => {
+                if(selectedTimelineMarker) selectedTimelineMarker.setStyle(normalStyle);
+                marker.setStyle(highlightStyle);
+                selectedTimelineMarker = marker;
+                map.flyTo([m.lat, m.lng], 18);
+                marker.openPopup();
+            };
+            
+            cont.appendChild(itemDiv);
+        });
+    } catch(e) { console.error(e); }
+}
+</script>
+</body>
+</html>

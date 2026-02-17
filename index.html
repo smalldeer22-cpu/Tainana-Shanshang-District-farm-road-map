@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0216V3_Fixed)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0217V1_Policy)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -406,6 +406,23 @@
   .comment-header { padding: 15px; background: var(--primary-color); color: white; display: flex; justify-content: space-between; align-items: center; font-weight: bold; flex-shrink: 0; }
   .comment-body { padding: 15px; overflow-y: auto; flex: 1; background: #eef2f6; display: flex; flex-direction: column; gap: 10px; }
   
+  /* [V0217V1_Policy] 新增：留言板免責聲明樣式 */
+  .comment-policy-notice {
+      font-size: 11px;
+      color: #666;
+      background: #fff3cd; /* 柔和的警示黃 */
+      border-bottom: 1px solid #ffeeba;
+      padding: 8px 15px;
+      line-height: 1.4;
+      text-align: center;
+      flex-shrink: 0;
+  }
+  .comment-hidden-text {
+      color: #999;
+      font-style: italic;
+      font-size: 12px;
+  }
+
   .chat-bubble { display: flex; gap: 10px; align-items: flex-start; animation: fadeIn 0.2s; }
   .chat-bubble.official { flex-direction: row-reverse; } 
   .chat-avatar { width: 36px; height: 36px; border-radius: 50%; background: #ddd; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #555; font-size: 14px; flex-shrink: 0; border: 2px solid #fff; }
@@ -615,6 +632,13 @@
             <span><i class="fas fa-comments"></i> 案件留言板</span>
             <button onclick="closeCommentModal()" style="background:none; border:none; color:white; font-size:18px; cursor:pointer;"><i class="fas fa-times"></i></button>
         </div>
+        
+        <div class="comment-policy-notice">
+            <i class="fas fa-info-circle"></i> 
+            本平台歡迎理性指教。若留言涉及人身攻擊、髒話、廣告或違法內容，<br>
+            管理單位保留隱藏該留言之權利，恕不另行通知。
+        </div>
+
         <div class="comment-body" id="commentList"></div>
         <div class="chat-input-area">
             <input type="text" id="hp_comment" style="display:none;" tabindex="-1" autocomplete="off">
@@ -1373,12 +1397,20 @@ function renderCommentList(container, comments) {
     } else {
         let html = "";
         comments.forEach(c => {
-            const starHtml = c.star > 0 ? `<span class="chat-star">${'<i class="fas fa-star"></i>'.repeat(c.star)}</span>` : "";
-            // [V12] 使用 escapeHtml 進行 XSS 防護
+            // [V0217V1_Policy] 預埋：隱藏狀態判斷邏輯
+            // 若後端有傳回 status 且為 HIDDEN，則顯示替代文字
+            const isHidden = (c.status === 'HIDDEN' || c.status === 'ABUSIVE');
+            
             const user = escapeHtml(c.user || "熱心民眾");
             const avatarChar = user.charAt(0);
             const safeText = escapeHtml(c.text);
             const safeReply = c.reply ? escapeHtml(c.reply) : "";
+            const starHtml = (c.star > 0 && !isHidden) ? `<span class="chat-star">${'<i class="fas fa-star"></i>'.repeat(c.star)}</span>` : "";
+            
+            let displayContent = safeText;
+            if (isHidden) {
+                displayContent = '<span class="comment-hidden-text"><i class="fas fa-exclamation-triangle"></i> 此留言因違反社群規範（涉及謾罵/廣告/違法），已被系統隱藏。</span>';
+            }
             
             html += `
             <div class="chat-bubble">
@@ -1386,14 +1418,14 @@ function renderCommentList(container, comments) {
                 <div class="chat-content">
                     <div class="chat-meta"><b>${user}</b></div>
                     <div class="chat-box">
-                        ${safeText}
+                        ${displayContent}
                         ${starHtml}
                     </div>
                     <div class="chat-time">${c.date}</div>
                 </div>
             </div>`;
 
-            if (safeReply.trim() !== "") {
+            if (safeReply.trim() !== "" && !isHidden) {
                 html += `
                 <div class="chat-bubble official">
                     <div class="chat-avatar"><i class="fas fa-building"></i></div>
@@ -1549,24 +1581,30 @@ async function fetchAndRefreshComments(storeId, caseId) {
             const comments = json.data;
             const props = CASE_DATA_CACHE[storeId];
             
+            // [V0217V1_Policy] 前端過濾邏輯：計算星等時排除被隱藏的留言
             let totalStars = 0;
             let starCount = 0;
+            
             comments.forEach(c => {
-                if (c.star > 0) {
+                const isHidden = (c.status === 'HIDDEN' || c.status === 'ABUSIVE');
+                if (c.star > 0 && !isHidden) { // 只有沒被隱藏的留言才計分
                     totalStars += c.star;
                     starCount++;
                 }
             });
+            
             const avg = starCount > 0 ? (totalStars / starCount).toFixed(1) : 0;
+            // 未被隱藏的總數
+            const visibleCount = comments.filter(c => c.status !== 'HIDDEN' && c.status !== 'ABUSIVE').length;
 
             if (props) {
                 props['平均星等'] = avg;
-                props['評論數'] = comments.length;
+                props['評論數'] = visibleCount; 
                 props['評論內容'] = JSON.stringify(comments);
             }
 
             if(ratingText) {
-                ratingText.innerHTML = `${avg} <span class="rating-count">(${comments.length})</span>`;
+                ratingText.innerHTML = `${avg} <span class="rating-count">(${visibleCount})</span>`;
                 ratingText.style.opacity = "1";
             }
             

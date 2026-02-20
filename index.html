@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0220_V4)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0220_V5)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -657,9 +657,31 @@
   .h-list-item { padding: 10px; border-bottom: 1px dashed #eee; font-size: 14px; cursor: pointer; display: flex; justify-content: space-between; }
   .h-list-item:hover { background: #f0f7ff; color: var(--primary-color); font-weight: bold; }
 
+  /* === 專屬資料庫讀取 Loading 動畫 === */
+  #searchLoadingOverlay {
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(255, 255, 255, 0.85); z-index: 35000;
+      align-items: center; justify-content: center; backdrop-filter: blur(5px);
+      animation: fadeIn 0.3s;
+  }
+  .loading-card {
+      background: white; padding: 30px 40px; border-radius: 20px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2); text-align: center;
+      display: flex; flex-direction: column; align-items: center; gap: 15px;
+  }
+  .loading-spinner-large { font-size: 50px; color: #ff9800; animation: spin 1.5s linear infinite; }
+  @keyframes spin { 100% { transform: rotate(360deg); } }
+
 </style>
 </head>
 <body>
+
+<div id="searchLoadingOverlay">
+    <div class="loading-card">
+        <i class="fas fa-satellite-dish loading-spinner-large"></i>
+        <div style="font-size:18px; font-weight:bold; color:var(--primary-color);">連線資料庫中...<br><span style="font-size:14px; color:#666; font-weight:normal; margin-top:5px; display:inline-block;" id="searchLoadingText">正在為您找尋歷史通報</span></div>
+    </div>
+</div>
 
 <div id="aiLogicModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:25000; align-items:center; justify-content:center; backdrop-filter:blur(3px);">
     <div style="background:#fff; width:90%; max-width:450px; border-radius:12px; overflow:hidden; box-shadow:0 10px 30px rgba(0,0,0,0.3); animation: popIn 0.3s;">
@@ -891,7 +913,6 @@
     <div id="timelineFilterBar"><span class="filter-label"><i class="fas fa-filter"></i> 篩選：</span></div>
     <div id="timelineContainer"><div style="padding:20px; color:#777;">請點選地圖上的藍色路線以檢視紀錄。</div></div>
 </div>
-
 <div id="sidebar">
     <div class="sidebar-header">
         <h3>臺南市山上區<br>公眾通行道路圖資及施工/維修案件透明</h3>
@@ -907,9 +928,8 @@
     <div id="tab-layers" class="tab-content-container tab-pane active">
         <div class="card-section" style="border-left: 5px solid #ff9800;">
             <div class="card-title" style="color:#e65100;"><i class="fas fa-satellite-dish"></i> 民眾通報即時看板</div>
-            <!-- 修改點3：預設開啟打勾 -->
             <label class="toggle-switch">
-                <input type="checkbox" id="realtimeToggle" onchange="toggleRealtimeLayer(this)" checked> 顯示即時通報案件
+                <input type="checkbox" id="realtimeToggle" onchange="toggleRealtimeLayer(this)"> 顯示即時通報案件
             </label>
             <div class="small" style="color:#666; margin-top:5px; display:flex; gap:10px;">
                 <span><span style="color:#ff9800;">●</span> 派工中</span>
@@ -928,7 +948,6 @@
         <div class="card-section">
             <div class="card-title"><i class="fas fa-calculator"></i> 里別維修統計</div>
             <div class="small" style="margin-bottom:5px; color:#666;">系統將自動排除同案件重複計算</div>
-            <!-- 修改點1：更新下拉選單預設文字 -->
             <select id="statsVillageSelect" style="margin-bottom:10px;">
                 <option value="">-- 請選擇里別 --</option>
             </select>
@@ -958,7 +977,6 @@
             <div class="card-title"><i class="fas fa-search-plus"></i> 案件進階搜尋</div>
             
             <div class="search-block-label"><i class="fas fa-map-marked-alt"></i> 依里別快篩</div>
-            <!-- 修改點1：更新下拉選單預設文字 -->
             <select id="villageSelect">
                 <option value="">-- 請選擇里別 --</option>
             </select>
@@ -966,7 +984,7 @@
             <div class="search-divider">- 或 -</div>
             
             <div class="search-block-label"><i class="fas fa-filter"></i> 依廠商快篩</div>
-            <select id="contractorSelect"><option value="">(讀取系統資料中...)</option></select>
+            <select id="contractorSelect"><option value="">-- 請選擇廠商 --</option></select>
             <div id="contractorStatsResult" style="display:none; margin-top:10px;">
                 <div class="stats-columns">
                     <div class="stats-col col-general">
@@ -985,7 +1003,7 @@
             
             <div class="search-block-label"><i class="fas fa-clock"></i> 依派工時機快篩</div>
             <select id="timingSelect">
-                <option value="">(讀取系統資料中...)</option>
+                <option value="">-- 請選擇派工時機 --</option>
             </select>
             
             <div class="search-divider">- 或 -</div>
@@ -1006,18 +1024,21 @@
 
             <div class="search-divider">- 或 -</div>
             
+            <div class="search-block-label"><i class="fas fa-history"></i> 我的歷史通報紀錄</div>
+            <button id="myHistoryBtn" class="secondary" style="margin-top:0; background:#fff3e0; border-color:#ffcc80; color:#e65100; font-weight:bold; font-size:14px; padding:10px;" onclick="openQuickSearch()">
+                <i class="fas fa-search"></i> 尋找我的歷史通報
+            </button>
+            
+            <div class="search-divider">- 或 -</div>
+            
             <div class="search-block-label"><i class="fas fa-keyboard"></i> 關鍵字搜尋</div>
             <div class="input-with-voice">
                 <input type="text" id="keywordInput" placeholder="例如：案件編號(113001) 案件名稱 廠商名稱">
                 <button class="voice-btn" id="voiceBtnKeyword"><i class="fas fa-microphone"></i></button>
             </div>
-            <button id="searchBtn"><i class="fas fa-search"></i> 開始搜尋</button>
+            <button id="searchBtn" style="margin-top: 10px;"><i class="fas fa-search"></i> 開始搜尋</button>
             
-            <button id="myHistoryBtn" class="secondary" style="margin-top:5px; background:#fff3e0; border-color:#ffcc80; color:#e65100;" onclick="openQuickSearch()">
-                <i class="fas fa-history"></i> 查詢我的歷史通報
-            </button>
-            
-            <button id="clearSearchBtn" class="secondary" style="display:none; background:#ffebee; border-color:#ffcdd2; color:#d32f2f;"><i class="fas fa-times"></i> 清除結果</button>
+            <button id="clearSearchBtn" class="secondary" style="display:none; background:#ffebee; border-color:#ffcdd2; color:#d32f2f; margin-top:10px;"><i class="fas fa-times"></i> 清除結果</button>
             <div id="searchStatus" class="small" style="margin-top:8px; color:#004080; font-weight:bold;"></div>
         </div>
     </div>
@@ -1094,7 +1115,6 @@
     </div>
     
     <div id="tab-dengue" class="tab-content-container tab-pane">
-        <!-- 修改點2：登革熱分頁排版調整 -->
         <div class="card-section">
             <div class="card-title"><i class="fas fa-map-pin"></i> 座標輸入</div>
             <div class="small" style="margin-bottom:5px;">輸入 TWD97 座標 (X,Y)，每行一組</div>
@@ -1183,16 +1203,15 @@ function closeAiLogicModal() { document.getElementById('aiLogicModal').style.dis
 function escapeHtml(text) {
     if (!text) return "";
     return text
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
+        .replace(/&/g, "&")
+        .replace(/</g, "<")
+        .replace(/>/g, ">")
+        .replace(/"/g, "&quot")
         .replace(/'/g, "&#039;");
 }
 
 function sanitizeInput(text) {
     if (!text) return "";
-    // 防 Excel 公式注入
     if (/^[=+\-@]/.test(text)) return "'" + text;
     return text;
 }
@@ -1338,15 +1357,8 @@ window.addEventListener('load', () => {
     setupVoiceInput('voiceBtnChatMsg', 'chatMessage');
     setupVoiceInput('voiceBtnReportHuge', 'reportDesc', 'recordingHintText');
 
-    // 修改點3：即時通報預設開啟
-    if (document.getElementById('realtimeToggle').checked) {
-        toggleRealtimeLayer(document.getElementById('realtimeToggle'));
-    }
-
-    // 修改點4：確保搜尋狀態清空防呆
     document.getElementById('searchStatus').innerHTML = '';
 
-    // 修改點5：確保 AI 風險層預設為關閉狀態
     const aiToggle = document.getElementById('aiRiskToggle');
     if (aiToggle) aiToggle.checked = false;
     aiRiskLayer.clearLayers();
@@ -1360,15 +1372,25 @@ window.addEventListener('load', () => {
         document.getElementById('entryModal').style.display = 'none';
         document.body.classList.remove('lite-mode'); 
         
-        setTimeout(() => {
+        setTimeout(async () => {
             document.getElementById('keywordInput').value = searchId;
             switchTab('tab-search');
+            
+            // 處理 Lazy Loading 確保連結直達能搜到即時案件
+            const rtToggle = document.getElementById('realtimeToggle');
+            if (!isRealtimeLoaded || !rtToggle.checked) {
+                const loadingOverlay = document.getElementById('searchLoadingOverlay');
+                if(loadingOverlay) loadingOverlay.style.display = 'flex';
+                if(rtToggle) rtToggle.checked = true;
+                await toggleRealtimeLayer(rtToggle);
+                if(loadingOverlay) loadingOverlay.style.display = 'none';
+            }
+            
             document.getElementById('searchBtn').click();
         }, 1500);
     }
 });
 
-// === 圖片與字串處理輔助函式 ===
 function preloadImages(urls) {
     if (!urls || !Array.isArray(urls)) return;
     urls.forEach(url => {
@@ -1409,7 +1431,6 @@ function formatMoneyWan(val) {
     return `${w}萬${r === 0 ? "0000" : r.toLocaleString('en-US')}元`;
 }
 
-// === 彈出視窗與細節控制 ===
 window.switchMobilePhotoTab = function(el, type, uid) {
     const card = el.closest('.popup-card');
     card.querySelectorAll('.m-photo-tab').forEach(t => t.classList.remove('active'));
@@ -1516,7 +1537,6 @@ window.jumpToCaseSibling = function(targetStoreId) {
     }
 };
 
-// === 建立地圖泡泡窗 (Popup) 模板 ===
 function createPopup(data) {
     const { fileName, props, lat, lng, dist } = data; 
     const twd = twd97FromWgs84(lat, lng);
@@ -1624,7 +1644,7 @@ function createPopup(data) {
     </div>
     `;
 }
-// === 留言板處理邏輯 ===
+
 let currentActiveStoreId = ""; 
 
 window.openCommentModal = function(storeId) {
@@ -1820,10 +1840,14 @@ async function fetchAndRefreshComments(storeId, caseId) {
     }
 }
 
-// === 即時通報圖層載入 ===
+// === 修改點：即時通報圖層載入 (改為 Async 並支援 Lazy Loading) ===
+let isRealtimeLoaded = false;
 async function toggleRealtimeLayer(checkbox) {
-    realtimeLayer.clearLayers();
-    if(!checkbox.checked) return;
+    if(!checkbox.checked) {
+        realtimeLayer.clearLayers();
+        return;
+    }
+    
     if (GOOGLE_SCRIPT_URL.includes("您的SCRIPT_ID")) { 
         console.warn("未設定 Google Apps Script URL，跳過載入");
         return; 
@@ -1833,6 +1857,7 @@ async function toggleRealtimeLayer(checkbox) {
     try {
         const res = await fetch(`${GOOGLE_SCRIPT_URL}?t=${Date.now()}`);
         const data = await res.json();
+        realtimeLayer.clearLayers();
         if(data.features) {
             data.features.forEach(f => {
                 const props = f.properties;
@@ -1851,6 +1876,7 @@ async function toggleRealtimeLayer(checkbox) {
                 marker.on('click', (e) => handleNearbyMarkerClick(e, [...realtimeLayer.getLayers(), ...activeRepairLayers]));
             });
         }
+        isRealtimeLoaded = true;
     } catch(e) { 
         console.error(e); 
     } finally { 
@@ -1858,7 +1884,6 @@ async function toggleRealtimeLayer(checkbox) {
     }
 }
 
-// === 語音辨識與輸入設定 ===
 function setupVoiceInput(triggerId, targetId, hintId = null) {
     const trigger = document.getElementById(triggerId);
     const target = document.getElementById(targetId);
@@ -1905,9 +1930,6 @@ function setupVoiceInput(triggerId, targetId, hintId = null) {
     };
 }
 
-// =========================================================
-// 案件通報精靈 (3-Step Wizard) 核心邏輯
-// =========================================================
 let currentWizardStep = 1;
 const openReportBtn = document.getElementById('openReportBtn');
 
@@ -2067,7 +2089,6 @@ function selectSource(type) {
 }
 function closeSourceModal() { document.getElementById('photoSourceModal').style.display = 'none'; }
 
-// === AI 隱私保護 (TensorFlow.js) ===
 let blazefaceModel = null;
 let peCanvas = document.getElementById('peCanvas');
 let peCtx = peCanvas.getContext('2d');
@@ -2284,7 +2305,6 @@ function getUserID() {
     return uid; 
 }
 
-// === 提交通報與存檔 ===
 async function submitReport() {
     if (document.getElementById('hp_report').value !== "") return alert("系統偵測到異常操作");
     
@@ -2354,7 +2374,6 @@ function saveMyHistory(caseId) {
     }
 }
 
-// === 快速搜尋與歷史紀錄 Modal ===
 window.openQuickSearch = function() {
     document.getElementById('quickSearchModal').style.display = 'flex';
     const list = document.getElementById('quickSearchHistoryList');
@@ -2381,7 +2400,8 @@ window.triggerSearch = (keyword) => {
     doQuickSearch();
 }
 
-window.doQuickSearch = () => {
+// === 修改點：快速搜尋自動判斷並 Lazy Load 即時圖層 ===
+window.doQuickSearch = async () => {
     const kw = document.getElementById('quickSearchInput').value.trim();
     if(!kw) return;
     
@@ -2394,10 +2414,19 @@ window.doQuickSearch = () => {
     
     document.getElementById('keywordInput').value = kw;
     switchTab('tab-search');
+
+    const rtToggle = document.getElementById('realtimeToggle');
+    if (!isRealtimeLoaded || !rtToggle.checked) {
+        const loadingOverlay = document.getElementById('searchLoadingOverlay');
+        if(loadingOverlay) loadingOverlay.style.display = 'flex';
+        if(rtToggle) rtToggle.checked = true;
+        await toggleRealtimeLayer(rtToggle);
+        if(loadingOverlay) loadingOverlay.style.display = 'none';
+    }
+    
     document.getElementById('searchBtn').click();
 }
 
-// === 重複性案件檢核邏輯 ===
 document.getElementById('dupClearBtn').addEventListener('click', function() {
     dupCheckLayer.clearLayers(); 
     document.getElementById('dupCheckResult').innerHTML = ''; 
@@ -2577,7 +2606,6 @@ document.getElementById('dupCheckBtn').addEventListener('click', function() {
     }
 });
 
-// === UI 選單與圖層邏輯 ===
 window.switchTab = function(tabId) {
     document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
@@ -2619,7 +2647,6 @@ togglePanelSizeBtn.addEventListener('click', () => {
     }
 });
 
-// 載入 GeoJSON
 fetch('tainan_districts.geojson')
     .then(r=>r.json())
     .then(data=>{
@@ -2641,7 +2668,6 @@ fetch('t22.json').then(r => r.json()).then(topology => {
     const vSelSearch = document.getElementById('villageSelect');
     const vSelStats = document.getElementById('statsVillageSelect');
     
-    // 【修正點1】預設文字更改
     vSelSearch.innerHTML = '<option value="">-- 請選擇里別 --</option>';
     vSelStats.innerHTML = '<option value="">-- 請選擇里別 --</option>';
     
@@ -2724,7 +2750,6 @@ document.getElementById('villageSelect').addEventListener('change', function() {
     if(clusterToggle.checked) setTimeout(calculateClusters, 100);
 });
 
-// === 統計報表邏輯 ===
 document.getElementById('statsVillageSelect').addEventListener('change', function() {
     const selectedVillage = this.value; 
     const statsResult = document.getElementById('statsResult');
@@ -2847,7 +2872,6 @@ document.getElementById('clearStatsBtn').addEventListener('click', function() {
     document.getElementById('statsResult').style.display = 'none'; 
 });
 
-// 載入道路
 fetch('farmroads.geojson').then(r=>r.json()).then(data=>{
     roadsLayer = L.geoJSON(data, {
         style: { color: DEEP_BLUE, weight: 3, opacity: 0.9 }, 
@@ -3119,7 +3143,6 @@ document.getElementById('closeClusterControlBtn').addEventListener('click', func
     document.getElementById('toggleClusterControlBtn').classList.remove('active'); 
 });
 
-// === 篩選與進階搜尋 ===
 function renderTypeCheckboxes() {
     const container = document.getElementById('typeCheckboxList'); 
     if(!container) return; 
@@ -3145,7 +3168,7 @@ function updateTypeSelection() {
     const label = document.getElementById('typeFilterLabel');
     const total = document.querySelectorAll('.type-filter-cb').length;
     
-    if(checkedBoxes.length === total) {
+    if(checkedBoxes.length === total && total > 0) {
         label.innerText = `請選擇維修類型 (全選)`; 
     } else if (checkedBoxes.length === 0) {
         label.innerText = `請選擇維修類型 (未選)`; 
@@ -3161,10 +3184,14 @@ function updateTypeSelection() {
     document.getElementById('contractorSelect').value=''; 
     document.getElementById('timingSelect').value=''; 
     
-    performSearch(p => {
-        const types = (p['搶修類型'] || '').split(/[,，]/).map(s => s.trim());
-        return selectedSet.size > 0 && types.some(t => selectedSet.has(t));
-    }, `維修類型篩選`);
+    if (selectedSet.size > 0) {
+        performSearch(p => {
+            const types = (p['搶修類型'] || '').split(/[,，]/).map(s => s.trim());
+            return types.some(t => selectedSet.has(t));
+        }, `維修類型篩選`);
+    } else {
+        clearSearchResults();
+    }
 }
 
 async function preloadAllDataForContractors() {
@@ -3191,7 +3218,8 @@ async function preloadAllDataForContractors() {
         }
     }));
     
-    cSel.innerHTML = '<option value="">-- 請選擇廠商 (' + ALL_CONTRACTORS.size + ') --</option>' + Array.from(ALL_CONTRACTORS).sort().map(c => `<option value="${c}">${c}</option>`).join('');
+    // 修改點：文字對齊截圖
+    cSel.innerHTML = '<option value="">-- 請選擇廠商 --</option>' + Array.from(ALL_CONTRACTORS).sort().map(c => `<option value="${c}">${c}</option>`).join('');
     cSel.addEventListener('change', function() { 
         if(this.value) { 
             document.getElementById('keywordInput').value=''; 
@@ -3205,6 +3233,7 @@ async function preloadAllDataForContractors() {
         } 
     });
     
+    // 修改點：文字對齊截圖
     tSel.innerHTML = '<option value="">-- 請選擇派工時機 --</option>' + Array.from(ALL_TIMINGS).sort().map(t => `<option value="${t}">${t}</option>`).join('');
     tSel.addEventListener('change', function() {
         if(this.value) { 
@@ -3333,7 +3362,7 @@ function clearSearchResults() {
     document.getElementById('villageSelect').value = ''; 
     document.getElementById('timingSelect').value = ''; 
     resetTypeCheckboxesToNone(); 
-    document.getElementById('searchStatus').innerHTML = ''; // 確保完全清空
+    document.getElementById('searchStatus').innerHTML = ''; 
     document.getElementById('clearSearchBtn').style.display = 'none'; 
     document.getElementById('contractorStatsResult').style.display = 'none'; 
 }
@@ -3372,7 +3401,7 @@ async function performSearch(predicate, label) {
         });
     });
 
-    // 2. 搜尋即時通報圖層
+    // 2. 搜尋即時通報圖層 (支援 Lazy Load 延遲載入後搜尋)
     realtimeLayer.eachLayer(layer => {
         if (layer.customData && layer.customData.props && predicate(layer.customData.props)) {
             const ll = layer.getLatLng();
@@ -3389,10 +3418,11 @@ async function performSearch(predicate, label) {
     
     if(count > 0) { 
         if (count === 1 && targetMarker) {
-            map.flyTo(targetMarker.getLatLng(), 18, { duration: 0.5 });
+            // Lazy Load FlyTo 動畫與自動開窗
+            map.flyTo(targetMarker.getLatLng(), 18, { duration: 0.8 });
             setTimeout(() => {
                 openDetailPopupFromMarker(targetMarker);
-            }, 600);
+            }, 900);
         } else {
             map.fitBounds(searchResultLayer.getBounds()); 
         }
@@ -3410,7 +3440,8 @@ async function performSearch(predicate, label) {
     if(clusterToggle.checked) setTimeout(calculateClusters, 100);
 }
 
-document.getElementById('searchBtn').addEventListener('click', () => {
+// 修改點：加上 async 以支援即時通報的 Lazy Load
+document.getElementById('searchBtn').addEventListener('click', async () => {
     const kw = document.getElementById('keywordInput').value.trim().toLowerCase();
     if(!kw) return alert('請輸入關鍵字');
     
@@ -3420,9 +3451,21 @@ document.getElementById('searchBtn').addEventListener('click', () => {
     resetTypeCheckboxesToNone(); 
     document.getElementById('contractorStatsResult').style.display = 'none';
     
+    // 觸發 Lazy Load (如果尚未載入即時案件資料)
+    const rtToggle = document.getElementById('realtimeToggle');
+    if (!isRealtimeLoaded || !rtToggle.checked) {
+        const loadingOverlay = document.getElementById('searchLoadingOverlay');
+        if(loadingOverlay) {
+            document.getElementById('searchLoadingText').innerText = "正在為您找尋相關通報";
+            loadingOverlay.style.display = 'flex';
+        }
+        if(rtToggle) rtToggle.checked = true;
+        await toggleRealtimeLayer(rtToggle);
+        if(loadingOverlay) loadingOverlay.style.display = 'none';
+    }
+
     performSearch(p => Object.values(p).join(' ').toLowerCase().includes(kw), kw);
 });
-
 
 document.getElementById('roadSelect').addEventListener('change', (e) => handleMapClickSelection(e.target.value, false));
 
@@ -3503,8 +3546,8 @@ map.on('contextmenu', (e) => {
     });
 });
 
-document.getElementById('ctxStreetView').onclick = () => { if(clickedLatLng) window.open(`https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${clickedLatLng.lat},${clickedLatLng.lng}`, '_blank'); ctxMenu.style.display='none'; }
-document.getElementById('ctxGoogleNav').onclick = () => { if(clickedLatLng) window.open(`https://www.google.com/maps/dir/?api=1&destination=${clickedLatLng.lat},${clickedLatLng.lng}`, '_blank'); ctxMenu.style.display='none'; }
+document.getElementById('ctxStreetView').onclick = () => { if(clickedLatLng) window.open(`https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=$${clickedLatLng.lat},${clickedLatLng.lng}`, '_blank'); ctxMenu.style.display='none'; }
+document.getElementById('ctxGoogleNav').onclick = () => { if(clickedLatLng) window.open(`https://www.google.com/maps/dir/?api=1&destination=$${clickedLatLng.lat},${clickedLatLng.lng}`, '_blank'); ctxMenu.style.display='none'; }
 document.getElementById('ctxCadastral').onclick = () => { if(clickedLatLng) window.open(`https://maps.nlsc.gov.tw/go/${clickedLatLng.lng}/${clickedLatLng.lat}`, '_blank'); ctxMenu.style.display='none'; }
 document.getElementById('ctxClearMarker').onclick = () => { pointLayer.clearLayers(); measureLayer.clearLayers(); isMeasuring = false; document.body.classList.remove('measuring'); measureStartLatLng = null; ctxMenu.style.display='none'; }
 
@@ -3566,7 +3609,6 @@ map.on('mousemove', e => {
     }
 });
 
-// 各類工具按鈕
 document.getElementById('toggleMapBtn').onclick = function() { 
     if(isSat) { map.removeLayer(sat); osm.addTo(map); this.classList.remove('active'); } 
     else { map.removeLayer(osm); sat.addTo(map); this.classList.add('active'); } 
@@ -3705,7 +3747,6 @@ document.getElementById('clearRepairBtn').addEventListener('click', () => {
     }
 });
 
-// === 熱區聚類分析 ===
 const clusterToggle = document.getElementById('clusterToggle');
 const clusterSlider = document.getElementById('clusterSlider');
 const clusterValue = document.getElementById('clusterValue');
@@ -3790,7 +3831,6 @@ function formatMoney(val) {
     return parseInt(val.toString().replace(/,/g, '')) || 0; 
 }
 
-// === AI 風險熱點分析 ===
 function toggleAiRiskLayer(checkbox) {
     aiRiskLayer.clearLayers(); 
     document.getElementById('aiDashboard').style.display = 'none'; 
@@ -3898,7 +3938,6 @@ window.filterAiResults = function(filter, btn) {
     btn.classList.add('active');
 };
 
-// === 底部時間軸 (Timeline) ===
 function showTimeline(routeLayer) {
     const cont = document.getElementById('timelineContainer');
     const filterBar = document.getElementById('timelineFilterBar');

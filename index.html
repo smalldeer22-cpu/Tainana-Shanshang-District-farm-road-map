@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0220_Final)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0220_V4)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -486,12 +486,11 @@
   .col-general .stat-bar-fill { background-color: var(--primary-color); }
   .col-emergency .stat-bar-fill { background-color: #d32f2f; }
   
-  /* === [新版] 案件通報三步驟介面 === */
+  /* === 案件通報三步驟介面 === */
   #reportOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
   .report-wizard-card { background: #fff; width: 100%; max-width: 500px; height: 95vh; max-height: 800px; border-radius: 20px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
   @media (max-width: 768px) { .report-wizard-card { height: 100vh; border-radius: 0; } }
 
-  /* [修正問題3：排版防重疊] */
   .report-header { 
       background: var(--primary-color); 
       color: white; 
@@ -606,7 +605,7 @@
   .ai-stat-val { font-weight: bold; color: #8e44ad; }
   .ai-advice-box { background: #fdf2fe; border-left: 4px solid #9b59b6; padding: 10px; margin-top: 10px; font-size: 12px; color: #555; }
 
-  /* === [V10] AI 隱私編輯器樣式 === */
+  /* === AI 隱私編輯器樣式 === */
   #privacyEditorModal {
       display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: #000; z-index: 99999; flex-direction: column;
@@ -661,6 +660,33 @@
 </style>
 </head>
 <body>
+
+<div id="aiLogicModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:25000; align-items:center; justify-content:center; backdrop-filter:blur(3px);">
+    <div style="background:#fff; width:90%; max-width:450px; border-radius:12px; overflow:hidden; box-shadow:0 10px 30px rgba(0,0,0,0.3); animation: popIn 0.3s;">
+        <div style="background:#8e44ad; color:white; padding:15px; font-weight:bold; display:flex; justify-content:space-between; align-items:center;">
+            <span><i class="fas fa-brain"></i> 智慧演算道路風險預測 - 評分邏輯</span>
+            <button onclick="closeAiLogicModal()" style="background:none; border:none; color:white; font-size:18px; cursor:pointer;"><i class="fas fa-times"></i></button>
+        </div>
+        <div style="padding:20px; font-size:14px; line-height:1.6; color:#333; max-height:70vh; overflow-y:auto;">
+            <p>系統自動分析歷史與即時通報的案件，計算該路段的潛在風險指數，滿分為 100 分：</p>
+            <div style="background:#f9f9f9; padding:10px; border-radius:6px; margin:10px 0;">
+                <b style="color:#8e44ad;">1. 基礎分數與頻率加權：</b><br>
+                起算分數 60 分。同地點（50公尺內）每發生過一次重複通報或維修，加 10 分。
+            </div>
+            <div style="background:#f9f9f9; padding:10px; border-radius:6px; margin:10px 0;">
+                <b style="color:#8e44ad;">2. 損壞類型加權：</b><br>
+                • <b>土木結構 (x1.5倍)</b>：擋土牆、路基、崩塌。<br>
+                • <b>路面老化 (x1.2倍)</b>：AC鋪面、坑洞、混凝土。<br>
+                • <b>環境植被 (x1.0倍)</b>：雜草、路樹、其他。
+            </div>
+            <div style="background:#f9f9f9; padding:10px; border-radius:6px; margin:10px 0;">
+                <b style="color:#8e44ad;">3. 風險等級判定：</b><br>
+                • <span style="background:#9b59b6; color:white; padding:2px 6px; border-radius:4px; font-size:12px;">極高風險 (>90分)</span>：建議優先安排現勘與結構重建。<br>
+                • <span style="background:#e67e22; color:white; padding:2px 6px; border-radius:4px; font-size:12px;">中高風險 (70~89分)</span>：建議納入後續巡檢與改善觀察名單。
+            </div>
+        </div>
+    </div>
+</div>
 
 <div id="entryModal">
     <div class="entry-card">
@@ -881,8 +907,9 @@
     <div id="tab-layers" class="tab-content-container tab-pane active">
         <div class="card-section" style="border-left: 5px solid #ff9800;">
             <div class="card-title" style="color:#e65100;"><i class="fas fa-satellite-dish"></i> 民眾通報即時看板</div>
+            <!-- 修改點3：預設開啟打勾 -->
             <label class="toggle-switch">
-                <input type="checkbox" id="realtimeToggle" onchange="toggleRealtimeLayer(this)"> 顯示即時通報案件
+                <input type="checkbox" id="realtimeToggle" onchange="toggleRealtimeLayer(this)" checked> 顯示即時通報案件
             </label>
             <div class="small" style="color:#666; margin-top:5px; display:flex; gap:10px;">
                 <span><span style="color:#ff9800;">●</span> 派工中</span>
@@ -901,8 +928,9 @@
         <div class="card-section">
             <div class="card-title"><i class="fas fa-calculator"></i> 里別維修統計</div>
             <div class="small" style="margin-bottom:5px; color:#666;">系統將自動排除同案件重複計算</div>
+            <!-- 修改點1：更新下拉選單預設文字 -->
             <select id="statsVillageSelect" style="margin-bottom:10px;">
-                <option value="">(讀取中...)</option>
+                <option value="">-- 請選擇里別 --</option>
             </select>
             <div id="statsResult" style="display:none;">
                 <div class="stats-columns">
@@ -930,8 +958,9 @@
             <div class="card-title"><i class="fas fa-search-plus"></i> 案件進階搜尋</div>
             
             <div class="search-block-label"><i class="fas fa-map-marked-alt"></i> 依里別快篩</div>
+            <!-- 修改點1：更新下拉選單預設文字 -->
             <select id="villageSelect">
-                <option value="">-- 請選擇行政區 (載入中...) --</option>
+                <option value="">-- 請選擇里別 --</option>
             </select>
             
             <div class="search-divider">- 或 -</div>
@@ -992,7 +1021,6 @@
             <div id="searchStatus" class="small" style="margin-top:8px; color:#004080; font-weight:bold;"></div>
         </div>
     </div>
-    
     <div id="tab-tools" class="tab-content-container tab-pane">
         <div class="card-section">
             <div class="card-title"><i class="fas fa-map-marker-alt"></i> 座標查詢工具</div>
@@ -1006,7 +1034,7 @@
         
         <div class="card-section">
             <div class="card-title"><i class="fas fa-home"></i> 門牌查詢</div>
-            <a href="https://addressrs.moi.gov.tw/address/index.cfm?city_id=67000" target="_blank" class="popup-btn" style="background:#28a745; color:white; border:none; width:100%; box-sizing:border-box; text-align:center; display:block; padding:10px;">
+            <a href="https://addressrs.moi.gov.tw/address/index.cfm?city_id=67000" target="_blank" class="popup-btn" style="background:#28a745; color:white; border:none; width:100%; box-sizing:border-box; text-align:center; display:block; padding:10px; border-radius:8px; text-decoration:none;">
                 <i class="fas fa-map-marked-alt"></i> 臺南市門牌電子地圖查詢系統
             </a>
         </div>
@@ -1038,13 +1066,16 @@
         </div>
 
         <div class="card-section" style="border-left: 5px solid #9b59b6;">
-            <div class="card-title" style="color:#8e44ad;"><i class="fas fa-brain"></i> AI 道路健康風險預測</div>
+            <div class="card-title" style="color:#8e44ad;"><i class="fas fa-brain"></i> 智慧演算道路風險預測</div>
             <div class="small" style="margin-bottom:8px; color:#666;">
                 透過演算法分析維修頻率、結構風險與植被影響，點擊列表可快速定位。
             </div>
             <label class="toggle-switch">
                 <input type="checkbox" id="aiRiskToggle" onchange="toggleAiRiskLayer(this)"> 顯示 AI 風險預警熱點
             </label>
+            <div style="margin-top:10px; font-size:13px;">
+                <a href="javascript:void(0)" onclick="openAiLogicModal()" style="color:#8e44ad; text-decoration:underline; font-weight:bold;"><i class="fas fa-info-circle"></i> 演算法與評分邏輯說明</a>
+            </div>
             <div id="aiLoading" style="display:none; color:#8e44ad; font-size:12px; margin-top:5px;">
                 <i class="fas fa-circle-notch fa-spin"></i> 運算中...
             </div>
@@ -1063,6 +1094,7 @@
     </div>
     
     <div id="tab-dengue" class="tab-content-container tab-pane">
+        <!-- 修改點2：登革熱分頁排版調整 -->
         <div class="card-section">
             <div class="card-title"><i class="fas fa-map-pin"></i> 座標輸入</div>
             <div class="small" style="margin-bottom:5px;">輸入 TWD97 座標 (X,Y)，每行一組</div>
@@ -1072,6 +1104,14 @@
               <button id="clearDengueBtn" class="secondary" style="margin-top:0;">清除</button>
             </div>
         </div>
+
+        <div class="card-section">
+            <div class="card-title"><i class="fas fa-home"></i> 門牌查詢</div>
+            <a href="https://addressrs.moi.gov.tw/address/index.cfm?city_id=67000" target="_blank" class="popup-btn" style="background:#28a745; color:white; border:none; width:100%; box-sizing:border-box; text-align:center; display:block; padding:10px; border-radius:8px; text-decoration:none;">
+                <i class="fas fa-map-marked-alt"></i> 臺南市門牌電子地圖查詢系統
+            </a>
+        </div>
+
         <div class="card-section">
             <div class="card-title"><i class="fas fa-circle-notch"></i> 選擇方圓半徑</div>
             <div style="display:flex; flex-direction:column; gap:8px; margin-top:10px;">
@@ -1128,7 +1168,6 @@
         </button>
     </div>
 </div>
-
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.9.0/proj4.js"></script>
 <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
@@ -1136,6 +1175,10 @@
 <script src="https://unpkg.com/topojson-client@3"></script>
 <script src="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol/dist/L.Control.Locate.min.js"></script>
 <script>
+// === 視窗控制 ===
+function openAiLogicModal() { document.getElementById('aiLogicModal').style.display = 'flex'; }
+function closeAiLogicModal() { document.getElementById('aiLogicModal').style.display = 'none'; }
+
 // === 資安防護函式庫 ===
 function escapeHtml(text) {
     if (!text) return "";
@@ -1154,10 +1197,11 @@ function sanitizeInput(text) {
     return text;
 }
 
-// === 動態數學驗證 (Client-Side Gatekeeper) ===
+// === 動態數學驗證 ===
 let correctMathAnswer = 0;
 let reportStartTime = 0;
 let commentStartTime = 0;
+let lastCommentSentTime = 0;
 
 function initMathChallenge() {
     const n1 = Math.floor(Math.random() * 9) + 1;
@@ -1167,12 +1211,12 @@ function initMathChallenge() {
     document.getElementById('mathAnswer').value = ''; 
 }
 
-// === 模式切換與 Magic Link (一鍵查詢) ===
+// === 模式切換與 Magic Link ===
 function selectMode(mode) {
     if (mode === 'lite') {
         document.body.classList.add('lite-mode');
         if(lc) lc.start();
-        openReportWizard(); // 輕量版直接開啟通報精靈
+        openReportWizard(); 
     } else {
         document.body.classList.remove('lite-mode');
         document.getElementById('reportOverlay').style.display = 'none';
@@ -1287,21 +1331,35 @@ function twd97FromWgs84(lat,lng){
     return { x: Math.round(p[0]), y: Math.round(p[1]) }; 
 }
 
-// === 頁面載入執行 (Magic Link) ===
+// === 頁面載入執行 ===
 window.addEventListener('load', () => {
     setupVoiceInput('voiceBtnKeyword', 'keywordInput');
     setupVoiceInput('voiceBtnChatNick', 'chatNickname');
     setupVoiceInput('voiceBtnChatMsg', 'chatMessage');
     setupVoiceInput('voiceBtnReportHuge', 'reportDesc', 'recordingHintText');
 
+    // 修改點3：即時通報預設開啟
+    if (document.getElementById('realtimeToggle').checked) {
+        toggleRealtimeLayer(document.getElementById('realtimeToggle'));
+    }
+
+    // 修改點4：確保搜尋狀態清空防呆
+    document.getElementById('searchStatus').innerHTML = '';
+
+    // 修改點5：確保 AI 風險層預設為關閉狀態
+    const aiToggle = document.getElementById('aiRiskToggle');
+    if (aiToggle) aiToggle.checked = false;
+    aiRiskLayer.clearLayers();
+    const aiDash = document.getElementById('aiDashboard');
+    if (aiDash) aiDash.style.display = 'none';
+
     const params = new URLSearchParams(window.location.search);
     const searchId = params.get('search');
     
     if (searchId) {
         document.getElementById('entryModal').style.display = 'none';
-        document.body.classList.remove('lite-mode'); // 強制進入完整版
+        document.body.classList.remove('lite-mode'); 
         
-        // 給予 GeoJSON 載入時間後執行搜尋
         setTimeout(() => {
             document.getElementById('keywordInput').value = searchId;
             switchTab('tab-search');
@@ -1331,7 +1389,7 @@ function getDirectDriveUrl(url) {
         let match2 = cleanUrl.match(/[?&]id=([a-zA-Z0-9_-]+)/);
         if (match2) id = match2[1];
     }
-    if (id) return `https://lh3.googleusercontent.com/d/$${id}`;
+    if (id) return `https://lh3.googleusercontent.com/d/${id}`;
     return cleanUrl;
 }
 
@@ -1566,7 +1624,6 @@ function createPopup(data) {
     </div>
     `;
 }
-
 // === 留言板處理邏輯 ===
 let currentActiveStoreId = ""; 
 
@@ -1646,6 +1703,10 @@ async function submitChatComment() {
     if (!currentActiveStoreId) return;
     if (document.getElementById('hp_comment').value !== "") return alert("系統偵測到異常操作 (Bot)");
     if (Date.now() - commentStartTime < 3000) return alert("請勿頻繁操作，請稍候再試。");
+    
+    if (Date.now() - lastCommentSentTime < 60000) {
+        return alert("為免系統壅塞，請於一分鐘後再留言。");
+    }
 
     const props = CASE_DATA_CACHE[currentActiveStoreId];
     if (!props) return;
@@ -1662,31 +1723,11 @@ async function submitChatComment() {
     
     localStorage.setItem("chatNickname", nickname);
     
-    const now = new Date();
-    const timeStr = `${now.getFullYear()}/${('0'+(now.getMonth()+1)).slice(-2)}/${('0'+now.getDate()).slice(-2)} ${('0'+now.getHours()).slice(-2)}:${('0'+now.getMinutes()).slice(-2)}`;
-    
-    let currentComments = [];
-    try { currentComments = JSON.parse(props['評論內容'] || "[]"); } catch(e) {}
-    
-    currentComments.push({ star: star, text: text, date: timeStr, user: nickname });
-    props['評論內容'] = JSON.stringify(currentComments);
-    
-    const oldTotal = parseFloat(props['平均星等']||0) * parseInt(props['評論數']||0);
-    const newCount = parseInt(props['評論數']||0) + (star > 0 ? 1 : 0);
-    const newAvg = newCount > 0 ? ((oldTotal + star) / newCount).toFixed(1) : props['平均星等'];
-    
-    props['平均星等'] = newAvg;
-    if(star > 0) props['評論數'] = newCount;
-    
-    renderCommentList(document.getElementById('commentList'), currentComments);
-    document.getElementById('chatMessage').value = ""; 
-    setChatStar(0);
-    
-    const ratingText = document.getElementById(`rating-text-${currentActiveStoreId}`);
-    if(ratingText) ratingText.innerHTML = `${newAvg} <span class="rating-count">(${currentComments.length})</span>`;
-
     const btn = document.querySelector('.chat-send-btn'); 
     btn.disabled = true;
+    const originalIcon = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
     try {
         const payload = { 
             action: "comment", 
@@ -1698,9 +1739,42 @@ async function submitChatComment() {
             siteUrl: window.location.href, 
             uid: getUserID() 
         };
-        fetch(GOOGLE_SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) }).finally(() => btn.disabled = false);
+        const response = await fetch(GOOGLE_SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) });
+        const result = await response.json();
+
+        if (result.result === "success") {
+            lastCommentSentTime = Date.now();
+
+            const now = new Date();
+            const timeStr = `${now.getFullYear()}/${('0'+(now.getMonth()+1)).slice(-2)}/${('0'+now.getDate()).slice(-2)} ${('0'+now.getHours()).slice(-2)}:${('0'+now.getMinutes()).slice(-2)}`;
+            
+            let currentComments = [];
+            try { currentComments = JSON.parse(props['評論內容'] || "[]"); } catch(e) {}
+            
+            currentComments.push({ star: star, text: text, date: timeStr, user: nickname });
+            props['評論內容'] = JSON.stringify(currentComments);
+            
+            const oldTotal = parseFloat(props['平均星等']||0) * parseInt(props['評論數']||0);
+            const newCount = parseInt(props['評論數']||0) + (star > 0 ? 1 : 0);
+            const newAvg = newCount > 0 ? ((oldTotal + star) / newCount).toFixed(1) : props['平均星等'];
+            
+            props['平均星等'] = newAvg;
+            if(star > 0) props['評論數'] = newCount;
+            
+            renderCommentList(document.getElementById('commentList'), currentComments);
+            document.getElementById('chatMessage').value = ""; 
+            setChatStar(0);
+            
+            const ratingText = document.getElementById(`rating-text-${currentActiveStoreId}`);
+            if(ratingText) ratingText.innerHTML = `${newAvg} <span class="rating-count">(${currentComments.length})</span>`;
+        } else {
+            alert("留言失敗：" + (result.error || "未知錯誤"));
+        }
     } catch(e) { 
-        btn.disabled = false; 
+        alert("連線錯誤，請檢查網路或稍後再試。");
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalIcon;
     }
 }
 
@@ -1751,8 +1825,7 @@ async function toggleRealtimeLayer(checkbox) {
     realtimeLayer.clearLayers();
     if(!checkbox.checked) return;
     if (GOOGLE_SCRIPT_URL.includes("您的SCRIPT_ID")) { 
-        alert("請先設定 Google Apps Script URL！"); 
-        checkbox.checked = false; 
+        console.warn("未設定 Google Apps Script URL，跳過載入");
         return; 
     }
     
@@ -1833,7 +1906,7 @@ function setupVoiceInput(triggerId, targetId, hintId = null) {
 }
 
 // =========================================================
-// [新版] 案件通報精靈 (3-Step Wizard) 核心邏輯
+// 案件通報精靈 (3-Step Wizard) 核心邏輯
 // =========================================================
 let currentWizardStep = 1;
 const openReportBtn = document.getElementById('openReportBtn');
@@ -1854,7 +1927,6 @@ function closeReport() {
 }
 
 window.goToWizardStep = function(step) {
-    // 步驟切換的防呆驗證
     if(step === 2 && currentWizardStep === 1) {
         const img1 = document.getElementById('imgPreview1').src;
         if(!img1 || !img1.startsWith('data:')) {
@@ -1869,7 +1941,6 @@ window.goToWizardStep = function(step) {
         }
     }
 
-    // UI 切換
     document.querySelectorAll('.wizard-tab').forEach((t, i) => t.classList.toggle('active', i+1 === step));
     document.querySelectorAll('.wizard-step').forEach((s, i) => s.classList.toggle('active', i+1 === step));
     document.getElementById('wizardBar').style.width = (step * 33.33) + '%';
@@ -2180,7 +2251,6 @@ window.deletePhoto = function(id, e) {
     delBtn.style.display = 'none';
 }
 
-// === [修復問題1] 重新設計重置邏輯，強制返回第一步 ===
 function resetReportForm() { 
     deletePhoto(1); 
     deletePhoto(2); 
@@ -2192,7 +2262,6 @@ function resetReportForm() {
     document.getElementById('subscriberEmail').value = "";
     document.getElementById('collisionWarningBox').style.display = 'none';
     
-    // 強制 UI 回到第一步驟
     goToWizardStep(1);
 }
 
@@ -2265,7 +2334,6 @@ async function submitReport() {
             saveMyHistory(result.caseId);
             alert(`✅ 案件通報成功！\n\n案件編號：${result.caseId}\n已自動儲存至「我的歷史通報」。`); 
             
-            // 關閉並觸發重置 (resetReportForm 會被 closeReport 呼叫)
             closeReport(); 
         } else { 
             alert("❌ 上傳失敗: " + (result.error || "未知錯誤")); 
@@ -2569,8 +2637,13 @@ const VILLAGE_COLORS = { "明和里": "#E74C3C", "山上里": "#F39C12", "南洲
 fetch('t22.json').then(r => r.json()).then(topology => {
     villageGeoJSON = topojson.feature(topology, topology.objects.t22);
     const villageNames = villageGeoJSON.features.map(f => f.properties.VILLAGE || f.properties.VILLNAME).sort();
+    
     const vSelSearch = document.getElementById('villageSelect');
     const vSelStats = document.getElementById('statsVillageSelect');
+    
+    // 【修正點1】預設文字更改
+    vSelSearch.innerHTML = '<option value="">-- 請選擇里別 --</option>';
+    vSelStats.innerHTML = '<option value="">-- 請選擇里別 --</option>';
     
     villageNames.forEach(v => {
         vSelSearch.appendChild(new Option(v, v)); 
@@ -2611,8 +2684,8 @@ document.getElementById('villageSelect').addEventListener('change', function() {
     document.getElementById('timingSelect').value = ''; 
     searchResultLayer.clearLayers();
     
-    if (!selectedVillage) { 
-        status.innerText = ''; 
+    if (!selectedVillage || selectedVillage === "") { 
+        status.innerHTML = ''; 
         clearBtn.style.display = 'none'; 
         return; 
     }
@@ -2644,7 +2717,7 @@ document.getElementById('villageSelect').addEventListener('change', function() {
         status.innerHTML = `${selectedVillage} 找到 <b style="color:#d32f2f">${count}</b> 筆`; 
         clearBtn.style.display = 'block'; 
     } else { 
-        status.innerHTML = '<span style="color:red">無資料</span>'; 
+        status.innerHTML = '<span style="color:red">查無資料</span>'; 
         map.fitBounds(L.geoJSON(villageFeature).getBounds()); 
     }
     
@@ -2662,7 +2735,7 @@ document.getElementById('statsVillageSelect').addEventListener('change', functio
     statsGenList.innerHTML = ''; 
     statsEmgList.innerHTML = '';
     
-    if (!selectedVillage) { 
+    if (!selectedVillage || selectedVillage === "") { 
         statsResult.style.display = 'none'; 
         return; 
     }
@@ -3253,7 +3326,19 @@ function updateContractorStats(contractorName) {
     statsResult.style.display = 'block';
 }
 
-document.getElementById('clearContractorStatsBtn').addEventListener('click', clearSearchResults);
+function clearSearchResults() { 
+    searchResultLayer.clearLayers(); 
+    document.getElementById('keywordInput').value = ''; 
+    document.getElementById('contractorSelect').value = ''; 
+    document.getElementById('villageSelect').value = ''; 
+    document.getElementById('timingSelect').value = ''; 
+    resetTypeCheckboxesToNone(); 
+    document.getElementById('searchStatus').innerHTML = ''; // 確保完全清空
+    document.getElementById('clearSearchBtn').style.display = 'none'; 
+    document.getElementById('contractorStatsResult').style.display = 'none'; 
+}
+
+document.getElementById('clearSearchBtn').addEventListener('click', clearSearchResults);
 
 async function performSearch(predicate, label) {
     const status = document.getElementById('searchStatus');
@@ -3265,6 +3350,9 @@ async function performSearch(predicate, label) {
     searchResultLayer.clearLayers();
     
     let count = 0;
+    let targetMarker = null;
+
+    // 1. 搜尋歷史資料庫
     REPAIR_CONFIG.forEach(conf => {
         const data = REPAIR_DATA_CACHE[conf.value]; 
         if(!data || !data.features) return;
@@ -3278,13 +3366,37 @@ async function performSearch(predicate, label) {
                 marker.customData = { configLabel: conf.label, props: f.properties, storeId: generateStoreId(f.properties) };
                 marker.on('click', (e) => handleNearbyMarkerClick(e, searchResultLayer.getLayers()));
                 marker.feature = f; 
+                targetMarker = marker; 
                 count++;
             }
         });
     });
+
+    // 2. 搜尋即時通報圖層
+    realtimeLayer.eachLayer(layer => {
+        if (layer.customData && layer.customData.props && predicate(layer.customData.props)) {
+            const ll = layer.getLatLng();
+            L.circleMarker(ll, { radius: 18, fillColor: '#ffd700', color: '#ff8c00', weight: 2, fillOpacity: 0.6, interactive: false }).addTo(searchResultLayer);
+            
+            const marker = L.circleMarker(ll, { radius: 6, fillColor: '#d32f2f', color: '#fff', weight: 1, fillOpacity: 1 }).addTo(searchResultLayer);
+            marker.customData = layer.customData;
+            marker.on('click', (e) => handleNearbyMarkerClick(e, searchResultLayer.getLayers()));
+            marker.feature = { geometry: { type: 'Point', coordinates: [ll.lng, ll.lat] }, properties: layer.customData.props };
+            targetMarker = marker;
+            count++;
+        }
+    });
     
     if(count > 0) { 
-        map.fitBounds(searchResultLayer.getBounds()); 
+        if (count === 1 && targetMarker) {
+            map.flyTo(targetMarker.getLatLng(), 18, { duration: 0.5 });
+            setTimeout(() => {
+                openDetailPopupFromMarker(targetMarker);
+            }, 600);
+        } else {
+            map.fitBounds(searchResultLayer.getBounds()); 
+        }
+
         if(window.innerWidth <= 768) document.body.classList.remove('sidebar-open'); 
         status.innerHTML = `找到 <b style="color:#d32f2f">${count}</b> 筆`; 
         document.getElementById('clearSearchBtn').style.display = 'block'; 
@@ -3311,19 +3423,6 @@ document.getElementById('searchBtn').addEventListener('click', () => {
     performSearch(p => Object.values(p).join(' ').toLowerCase().includes(kw), kw);
 });
 
-document.getElementById('clearSearchBtn').addEventListener('click', clearSearchResults);
-
-function clearSearchResults() { 
-    searchResultLayer.clearLayers(); 
-    document.getElementById('keywordInput').value = ''; 
-    document.getElementById('contractorSelect').value = ''; 
-    document.getElementById('villageSelect').value = ''; 
-    document.getElementById('timingSelect').value = ''; 
-    resetTypeCheckboxesToNone(); 
-    document.getElementById('searchStatus').innerText = ''; 
-    document.getElementById('clearSearchBtn').style.display = 'none'; 
-    document.getElementById('contractorStatsResult').style.display = 'none'; 
-}
 
 document.getElementById('roadSelect').addEventListener('change', (e) => handleMapClickSelection(e.target.value, false));
 
@@ -3517,11 +3616,30 @@ document.getElementById('plotBtn').onclick = () => {
     }
 };
 
+window.updateDengueRadius = function() {
+    dengueRadiusLayer.clearLayers();
+    const checked = document.querySelector('input[name="dengueRadius"]:checked');
+    if(!checked) return;
+    const radius = parseInt(checked.value);
+    
+    dengueLayer.eachLayer(marker => {
+        L.circle(marker.getLatLng(), {
+            radius: radius,
+            color: '#e74c3c',
+            fillColor: '#e74c3c',
+            fillOpacity: 0.1,
+            weight: 2,
+            dashArray: '5, 5'
+        }).addTo(dengueRadiusLayer);
+    });
+};
+
 document.getElementById('plotDengueBtn').onclick = () => {
     dengueLayer.clearLayers(); 
     const val = document.getElementById('dengueCoordsInput').value.trim(); 
     if(!val) return;
     
+    let plotted = false;
     val.split(/\r?\n/).forEach(line => {
         const parts = line.split(/[, \t]+/);
         if(parts.length>=2) {
@@ -3530,9 +3648,14 @@ document.getElementById('plotDengueBtn').onclick = () => {
                 const w = proj4('EPSG:3826','EPSG:4326',[x,y]);
                 L.marker([w[1],w[0]], {icon: L.divIcon({ className: 'custom-div-icon', html: "<div class='gray-dot-marker'></div>", iconSize: [14, 14], iconAnchor: [7, 7] })}).addTo(dengueLayer).bindPopup(`確診戶座標: ${x}, ${y}`); 
                 map.setView([w[1],w[0]], 16);
+                plotted = true;
             }
         }
     });
+    
+    if (plotted) {
+        updateDengueRadius();
+    }
 };
 
 document.getElementById('clearDengueBtn').onclick = () => { 
@@ -3742,7 +3865,7 @@ function toggleAiRiskLayer(checkbox) {
                     icon: L.divIcon({ className: level === 'high' ? 'ai-pulse-marker' : 'ai-pulse-marker ai-marker-med', html: score, iconSize: [24, 24] })
                 });
                 
-                marker.bindPopup(`<div class="ai-report-header"><i class="fas fa-robot"></i> AI 風險評估報告</div><div class="ai-report-body"><div class="ai-stat-row"><span>風險指數</span> <span class="ai-stat-val">${score}/100</span></div><div class="ai-stat-row"><span>主要成因</span> <span>${dominantType === 'struct' ? '土木結構' : (dominantType === 'pave' ? '路面老化' : '環境植被')} (${c.points.length}次維修)</span></div><div class="ai-advice-box"><b>AI 建議：</b><br>${advice}</div></div>`, {className:'custom-popup', maxWidth:300});
+                marker.bindPopup(`<div class="ai-report-header"><i class="fas fa-robot"></i> 智慧演算分析報告</div><div class="ai-report-body"><div class="ai-stat-row"><span>風險指數</span> <span class="ai-stat-val">${score}/100</span></div><div class="ai-stat-row"><span>主要成因</span> <span>${dominantType === 'struct' ? '土木結構' : (dominantType === 'pave' ? '路面老化' : '環境植被')} (${c.points.length}次維修)</span></div><div class="ai-advice-box"><b>系統建議：</b><br>${advice}</div></div>`, {className:'custom-popup', maxWidth:300});
                 
                 aiRiskLayer.addLayer(marker);
                 riskResults.push({ score, type: dominantType === 'struct' ? 'road' : 'tree', level, lat: c.lat, lng: c.lng, roadName: `維修熱點 (x${c.points.length})` });
@@ -3929,4 +4052,3 @@ function renderTimeline(matches) {
 </script>
 </body>
 </html>
-

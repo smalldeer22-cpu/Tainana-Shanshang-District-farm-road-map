@@ -1740,15 +1740,12 @@
     <div class="card-section">
       <div class="card-title"><i class="fas fa-bullhorn"></i> 最新公告</div>
       <div id="newsContainer">
-        <div class="news-card">
-          <div class="news-date">2026/02/21</div>
-          <div class="news-title">歡迎使用山上區道路圖資系統 (v0220_V8)</div>
-          <div class="news-content">本系統提供即時通報、歷史案件查詢、與 AI 道路風險預測功能。如有操作問題，請參考相關說明。</div>
-          <a href="#" class="news-attach-btn"><i class="fas fa-download"></i> 操作手冊預留點.pdf</a>
+        <div style="padding: 20px; text-align: center; color: #666;">
+          <i class="fas fa-spinner fa-spin"></i> 公告載入中...
         </div>
       </div>
       <div style="font-size:11px; color:#999; margin-top:15px; text-align:center;">
-        ※ 未來可於 Google Sheets 中直接新增公告，系統將自動同步顯示於此。
+        ※ 本區公告與 Google Sheets 同步更新
       </div>
     </div>
   </div>
@@ -4810,6 +4807,62 @@ function renderTimeline(matches) {
     cont.appendChild(itemDiv);
   });
 }
+// === 動態載入公告功能 ===
+async function fetchNews() {
+  const container = document.getElementById('newsContainer');
+  if (!container) return;
+  
+  if (GOOGLE_SCRIPT_URL.includes("您的SCRIPT_ID")) {
+    container.innerHTML = '<div style="padding:15px; text-align:center; color:#999;">尚未設定資料庫連線</div>';
+    return;
+  }
+
+  try {
+    // 向 GAS 發送請求，要求拿取 action=getNews 的資料
+    const res = await fetch(`${GOOGLE_SCRIPT_URL}?action=getNews&t=${Date.now()}`);
+    const json = await res.json();
+    
+    if (json.result === "success" && json.data && json.data.length > 0) {
+      let html = "";
+      json.data.forEach(item => {
+        let attachHtml = "";
+        // 如果有填寫附件網址，才顯示下載按鈕
+        if (item.attachUrl) {
+          const btnText = item.attachName ? item.attachName : "下載附件";
+          attachHtml = `<a href="${item.attachUrl}" target="_blank" class="news-attach-btn"><i class="fas fa-download"></i> ${btnText}</a>`;
+        }
+        
+        // 將 Google Sheets 裡的換行符號轉成 HTML 的 <br>
+        const safeContent = item.content.replace(/\n/g, '<br>');
+        
+        html += `
+        <div class="news-card">
+          <div class="news-date">${item.date}</div>
+          <div class="news-title">${item.title}</div>
+          <div class="news-content">${safeContent}</div>
+          ${attachHtml}
+        </div>`;
+      });
+      container.innerHTML = html;
+    } else {
+      container.innerHTML = '<div style="padding:15px; text-align:center; color:#999;">目前無最新公告</div>';
+    }
+  } catch (err) {
+    container.innerHTML = '<div style="padding:15px; text-align:center; color:red;">公告載入失敗，請稍後再試</div>';
+    console.error("載入公告發生錯誤:", err);
+  }
+}
+
+// 攔截原本的 switchTab 功能：當使用者點擊「公告」分頁時，自動觸發載入
+let isNewsLoaded = false;
+const originalSwitchTab = window.switchTab;
+window.switchTab = function(tabId) {
+  originalSwitchTab(tabId); // 執行原本的切換動作
+  if (tabId === 'tab-news' && !isNewsLoaded) {
+    fetchNews(); // 抓取公告資料
+    isNewsLoaded = true; // 記錄已載入，避免每次點都重新抓
+  }
+};
 </script>
 </body>
 </html>

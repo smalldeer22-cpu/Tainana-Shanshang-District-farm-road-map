@@ -3019,6 +3019,17 @@ async function submitReport() {
   const originalText = btn.innerHTML; 
   btn.disabled = true; 
   btn.innerText = "資料上傳中...";
+
+  // --- 【新增】將前端計算出的附近歷史案件，組合成純文字 ---
+  let nearbyInfoText = "";
+  if (typeof reportNearbyMatches !== 'undefined' && reportNearbyMatches.length > 0) {
+    nearbyInfoText = `⚠️ 系統警示：50公尺內有 ${reportNearbyMatches.length} 筆近3年維修紀錄\n`;
+    reportNearbyMatches.forEach((item, index) => {
+      let caseNo = item.props['案件編號'] || '無編號';
+      nearbyInfoText += `${index + 1}. [${caseNo}] ${item.label} (完工:${item.dateStr}) - 距 ${item.dist}m\n`;
+    });
+  }
+  // --------------------------------------------------------
   
   try {
     const payload = { 
@@ -3032,7 +3043,8 @@ async function submitReport() {
       siteUrl: window.location.href,        
       uid: getUserID(), 
       mathVerified: "true", 
-      email: email 
+      email: email,
+      nearbyInfo: nearbyInfoText // 【新增】把警示文字打包送給後端
     };
     
     const response = await fetch(GOOGLE_SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) });

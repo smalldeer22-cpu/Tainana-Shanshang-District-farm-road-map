@@ -2280,20 +2280,35 @@ function generateStoreId(props) {
 function findMarkersByCaseId(caseId) {
   if (!caseId || caseId === '無編號' || caseId === '未知編號') return [];
   let allMarkers = [];
-  const collect = (layerGroup) => { 
-    layerGroup.eachLayer(layer => { 
-      if (layer.customData && layer.customData.props && layer.customData.props['案件編號'] === caseId) 
-        allMarkers.push(layer); 
-    }); 
+  let seenStoreIds = new Set(); // 【新增】用來記錄已經抓過的內部 ID，防止不同圖層重複計算
+
+  const collect = (layerGroup) => {
+    layerGroup.eachLayer(layer => {
+      if (layer.customData && layer.customData.props && layer.customData.props['案件編號'] === caseId) {
+        const sId = layer.customData.storeId;
+        if (!seenStoreIds.has(sId)) {
+          seenStoreIds.add(sId);
+          allMarkers.push(layer);
+        }
+      }
+    });
   };
-  collect(realtimeLayer); 
-  collect(searchResultLayer); 
+
+  // 依序收集各圖層的標記
+  collect(realtimeLayer);
   collect(routeMatchLayer);
-  activeRepairLayers.forEach(m => { 
-    if (m.customData && m.customData.props && m.customData.props['案件編號'] === caseId) 
-      allMarkers.push(m); 
+  activeRepairLayers.forEach(layer => {
+    if (layer.customData && layer.customData.props && layer.customData.props['案件編號'] === caseId) {
+      const sId = layer.customData.storeId;
+      if (!seenStoreIds.has(sId)) {
+        seenStoreIds.add(sId);
+        allMarkers.push(layer);
+      }
+    }
   });
-  return [...new Set(allMarkers)].sort((a,b) => b.getLatLng().lat - a.getLatLng().lat);
+  collect(searchResultLayer); // 搜尋結果最後才收集，確保絕對不會重複算
+
+  return allMarkers.sort((a,b) => b.getLatLng().lat - a.getLatLng().lat);
 }
 
 window.jumpToCaseSibling = function(targetStoreId) {

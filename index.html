@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0224_V2)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0224_V3)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -1732,6 +1732,15 @@
   </div>
 
   <div id="tab-tools" class="tab-content-container tab-pane">
+<div class="card-section" style="border-left: 5px solid #28a745;">
+      <div class="card-title" style="color:#28a745;"><i class="fas fa-download"></i> 開放資料 (Open Data) 下載</div>
+      <div class="small" style="margin-bottom:10px; color:#666;">
+        提供學術單位或民眾下載去識別化後的歷史維修數據 (CSV格式)，包含座標、廠商、金額與完工日期等。
+      </div>
+      <button class="primary" style="background:#28a745;" onclick="exportOpenDataCSV()">
+        <i class="fas fa-file-csv"></i> 下載去識別化資料 (CSV)
+      </button>
+    </div>
     <div class="card-section">
       <div class="card-title"><i class="fas fa-map-marker-alt"></i> 座標查詢工具</div>
       <div class="small" style="margin-bottom:5px;">輸入 TWD97 座標 (X,Y)，每行一組</div>
@@ -5135,6 +5144,95 @@ appKey: "TainanMap2026_SecureKey_v1",
     btn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> 確認上傳回報';
     btn.disabled = false;
   }
+}
+// === 新增：開放資料 (Open Data) CSV 下載功能 ===
+function exportOpenDataCSV() {
+  // 1. 定義要公開的欄位 (這裡已經過濾掉 Email 與民眾暱稱等個資)
+  const headers = [
+    "案件編號", "通報日期", "派工日期", "完工日期",
+    "TWD97座標", "WGS84座標", "案情描述",
+    "搶修類型", "施工廠商", "決標金額", "平均星等"
+  ];
+
+  let csvRows = [];
+  // 加上 BOM 碼，確保用 Excel 打開時中文不會變成亂碼
+  csvRows.push('\uFEFF' + headers.join(','));
+
+  let totalExported = 0;
+
+  // 2. 從系統記憶體中撈出已經載入的案件資料
+  Object.keys(REPAIR_DATA_CACHE).forEach(key => {
+    const data = REPAIR_DATA_CACHE[key];
+    if (!data || !data.features) return;
+
+    data.features.forEach(f => {
+      const props = f.properties || {};
+      
+      // 自動抓取與轉換座標
+      let wgs84 = props['WGS84'] || props['wgs84'] || '';
+      let twd97 = props['TWD97'] || props['twd97'] || '';
+      
+      if (f.geometry && f.geometry.coordinates) {
+          const lng = f.geometry.coordinates[0];
+          const lat = f.geometry.coordinates[1];
+          // 確保有 WGS84
+          if (!wgs84) wgs84 = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+          
+          // 【關鍵修改】如果原本沒有 TWD97，就呼叫系統內建函數即時運算出來
+          if (!twd97) {
+              const twd = twd97FromWgs84(lat, lng);
+              twd97 = `${twd.x}, ${twd.y}`;
+          }
+      }
+
+      // 提取我們要的乾淨資料
+      const rowData = [
+        props['案件編號'] || '',
+        props['通報日期'] || props['通報日期ROC'] || '',
+        props['派工日期'] || '',
+        props['完工日期'] || '',
+        twd97,  // 這裡改為自動計算出來的 twd97 變數
+        wgs84,
+        props['案情描述'] || '',
+        props['搶修類型'] || '',
+        props['施工廠商'] || '',
+        props['決標金額'] || '0',
+        props['平均星等'] || '0'
+      ];
+
+      // 防止內容中有逗號或換行導致 CSV 格式錯亂的保護機制
+      const safeRowData = rowData.map(item => {
+        let str = String(item).replace(/"/g, '""'); 
+        if (str.search(/("|,|\n)/g) >= 0) {
+          str = `"${str}"`;
+        }
+        return str;
+      });
+
+      csvRows.push(safeRowData.join(','));
+      totalExported++;
+    });
+  });
+
+  // 如果使用者還沒載入任何資料就按下載，給予提示
+  if (totalExported === 0) {
+    return alert("目前系統尚未載入任何案件資料。\n請先至左側「透明」分頁，勾選要顯示的年度資料後再下載！");
+  }
+
+  // 3. 打包成 CSV 檔案並觸發下載
+  const csvString = csvRows.join('\n');
+  const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  
+  // 自動產生包含今天日期的檔名
+  const today = new Date().toISOString().slice(0,10).replace(/-/g,"");
+  const link = document.createElement("a");
+  link.setAttribute("href", url);
+  link.setAttribute("download", `山上區道路維修開放資料_${today}.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
 }
 // ======================================
 </script>

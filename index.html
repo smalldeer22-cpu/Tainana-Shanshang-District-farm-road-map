@@ -5229,6 +5229,50 @@ function exportOpenDataCSV() {
     });
   });
 
+// === 新增：同時抓取「即時通報」圖層上的案件資料 ===
+  if (typeof realtimeLayer !== 'undefined') {
+    realtimeLayer.eachLayer(layer => {
+      if (layer.customData && layer.customData.props) {
+        const props = layer.customData.props;
+        const lat = layer.getLatLng().lat;
+        const lng = layer.getLatLng().lng;
+        
+        let wgs84 = props['WGS84'] || props['wgs84'] || `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+        let twd97 = props['TWD97'] || props['twd97'] || '';
+        
+        if (!twd97) {
+            const twd = twd97FromWgs84(lat, lng);
+            twd97 = `${twd.x}, ${twd.y}`;
+        }
+
+        const rowData = [
+          props['案件編號'] || '',
+          props['通報日期'] || props['通報日期ROC'] || '',
+          props['派工日期'] || '',
+          props['完工日期'] || '',
+          twd97,
+          wgs84,
+          props['案情描述'] || '',
+          props['搶修類型'] || '一般案件',
+          props['施工廠商'] || '',
+          props['決標金額'] || '0',
+          props['平均星等'] || '0'
+        ];
+
+        const safeRowData = rowData.map(item => {
+          let str = String(item).replace(/"/g, '""'); 
+          if (str.search(/("|,|\n)/g) >= 0) {
+            str = `"${str}"`;
+          }
+          return str;
+        });
+
+        csvRows.push(safeRowData.join(','));
+        totalExported++;
+      }
+    });
+  }
+  // ====================================================
   // 如果使用者還沒載入任何資料就按下載，給予提示
   if (totalExported === 0) {
     return alert("目前系統尚未載入任何案件資料。\n請先至左側「透明」分頁，勾選要顯示的年度資料後再下載！");

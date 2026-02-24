@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0220_V8)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0224_V2)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -1280,6 +1280,44 @@
   .news-attach-btn:hover { 
     background: #d0e1f9; 
   }
+/* === 新增：廠商完工回報專屬樣式 === */
+  #vendorOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; height: 100dvh; background: rgba(0,0,0,0.8); z-index: 99999; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+  .vendor-card { background: #fff; width: 100%; max-width: 600px; height: 95vh; border-radius: 16px; display: flex; flex-direction: column; overflow: hidden; }
+  .vendor-header { background: #2e7d32; color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; font-size: 18px; font-weight: bold; }
+  .vendor-body { padding: 20px; overflow-y: auto; flex: 1; background: #f8fafc; }
+  .vendor-input-group { display: flex; gap: 10px; margin-bottom: 15px; }
+  .vendor-input-group input { flex: 1; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; }
+  .vendor-btn { background: #2e7d32; color: white; border: none; padding: 12px 20px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; white-space: nowrap; }
+  .vendor-info-box { background: #e8f5e9; border: 1px dashed #4caf50; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: none; }
+  .vendor-upload-section { margin-bottom: 20px; background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #ddd; }
+  .vendor-upload-title { font-weight: bold; color: #333; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+  .vendor-photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 10px; }
+  .vendor-photo-item { position: relative; width: 100%; aspect-ratio: 1; border-radius: 6px; overflow: hidden; border: 1px solid #ccc; }
+  .vendor-photo-item img { width: 100%; height: 100%; object-fit: cover; }
+.vendor-photo-delete-btn {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    background: rgba(211, 47, 47, 0.9);
+    color: white;
+    border: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    transition: transform 0.2s;
+  }
+  .vendor-photo-delete-btn:hover {
+    transform: scale(1.1);
+    background: rgba(211, 47, 47, 1);
+  }
+  .file-upload-label { display: inline-block; background: #f1f5f9; color: #004080; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: bold; }
+  .file-upload-label input { display: none; }
 </style>
 </head>
 <body>
@@ -1334,6 +1372,10 @@
       <button class="entry-btn full" onclick="selectMode('full')">
         <i class="fas fa-search-location"></i>
         <span>公開查詢<br><small>(完整版)</small></span>
+      </button>
+<button class="entry-btn vendor" onclick="openVendorModal()" style="background: linear-gradient(135deg, #2e7d32, #1b5e20); color: white;">
+        <i class="fas fa-hard-hat"></i>
+        <span>廠商回報<br><small>(施工完工上傳)</small></span>
       </button>
     </div>
   </div>
@@ -1501,6 +1543,63 @@
   </div>
 </div>
 
+<div id="vendorOverlay">
+  <div class="vendor-card">
+    <div class="vendor-header">
+      <span><i class="fas fa-hard-hat"></i> 廠商完工回報專區</span>
+      <button onclick="closeVendorModal()" style="background:none;border:none;color:white;font-size:24px;cursor:pointer;"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="vendor-body">
+      <div style="color: #d32f2f; font-size: 12px; margin-bottom: 15px; font-weight: bold;">
+        ※ 本專區僅供機關授權之承攬廠商使用
+      </div>
+      
+      <div class="vendor-input-group">
+        <input type="password" id="vendorPwd" placeholder="請輸入廠商授權密碼">
+      </div>
+      <div class="vendor-input-group">
+        <input type="text" id="vendorCaseId" placeholder="請輸入案件編號 (例:1130520001)">
+        <button class="vendor-btn" onclick="fetchVendorCase()"><i class="fas fa-search"></i> 載入資料</button>
+      </div>
+
+      <div class="vendor-info-box" id="vendorInfoBox">
+        <div style="font-weight:bold; color:#1b5e20; margin-bottom:5px;">案件已尋獲，請確認資訊：</div>
+        <div style="font-size:14px; color:#333; margin-bottom:5px;" id="vendorCoord">座標：...</div>
+        <div style="font-size:14px; color:#333;" id="vendorDesc">案情：...</div>
+      </div>
+
+      <div id="vendorUploadBlocks" style="display:none;">
+        <div style="font-size:12px; color:#666; margin-bottom:10px;">請依施工階段上傳照片 (每區最多20張)</div>
+        
+        <div class="vendor-upload-section">
+          <div class="vendor-upload-title">
+            <span>一、施工前照片</span>
+            <label class="file-upload-label"><input type="file" multiple accept="image/*" onchange="handleVendorFiles(this, 'Before')"><i class="fas fa-plus"></i> 選擇照片</label>
+          </div>
+          <div class="vendor-photo-grid" id="gridBefore"></div>
+        </div>
+
+        <div class="vendor-upload-section">
+          <div class="vendor-upload-title">
+            <span>二、施工中照片 (機具/交維)</span>
+            <label class="file-upload-label"><input type="file" multiple accept="image/*" onchange="handleVendorFiles(this, 'During')"><i class="fas fa-plus"></i> 選擇照片</label>
+          </div>
+          <div class="vendor-photo-grid" id="gridDuring"></div>
+        </div>
+
+        <div class="vendor-upload-section">
+          <div class="vendor-upload-title">
+            <span>三、施工後照片 (完工成果)</span>
+            <label class="file-upload-label"><input type="file" multiple accept="image/*" onchange="handleVendorFiles(this, 'After')"><i class="fas fa-plus"></i> 選擇照片</label>
+          </div>
+          <div class="vendor-photo-grid" id="gridAfter"></div>
+        </div>
+
+        <button class="vendor-btn" style="width:100%; margin-top:10px; background:#e65100;" onclick="submitVendorReport()" id="btnSubmitVendor"><i class="fas fa-cloud-upload-alt"></i> 確認上傳回報</button>
+      </div>
+    </div>
+  </div>
+</div>
 <div id="sidebar">
   <div class="sidebar-header">
     <h3>臺南市山上區<br>公眾通行道路圖資及施工/維修案件透明</h3>
@@ -2280,6 +2379,35 @@ function createPopup(data) {
   
   const renderImg = (src) => src ? `<img src="${src}" oncontextmenu="return false;">` : '<div style="width:100%;height:100%;background:#f1f5f9;display:flex;align-items:center;justify-content:center;color:#999;font-size:12px;">無影像</div>';
 
+  // --- 新增：處理廠商多張照片輪播邏輯 ---
+  let vendorBefore = [];
+  let vendorDuring = [];
+  try {
+    vendorBefore = JSON.parse(props['廠商施工前JSON'] || "[]");
+    vendorDuring = JSON.parse(props['廠商施工中JSON'] || "[]");
+  } catch(e) {}
+
+  let processPhotosHtml = '';
+  if (vendorBefore.length > 0 || vendorDuring.length > 0) {
+    let allProcessPhotos = [];
+    vendorBefore.forEach(url => allProcessPhotos.push({url: url, label: '施工前(廠商)'}));
+    vendorDuring.forEach(url => allProcessPhotos.push({url: url, label: '施工中(機具/交維)'}));
+    
+    processPhotosHtml = `
+    <div style="margin: 0 15px 10px 15px; border-top: 1px dashed #ccc; padding-top: 10px;">
+      <div style="font-size:12px; font-weight:bold; color:#004080; margin-bottom:5px;"><i class="fas fa-images"></i> 施工歷程照片 (左右滑動檢視)</div>
+      <div style="display:flex; overflow-x:auto; gap:8px; padding-bottom:8px;">
+        ${allProcessPhotos.map(p => `
+          <div style="min-width:120px; height:90px; position:relative; border-radius:4px; overflow:hidden; border:1px solid #ddd; flex-shrink:0;">
+            <img src="${getDirectDriveUrl(p.url)}" style="width:100%; height:100%; object-fit:cover;">
+            <div style="position:absolute; bottom:0; width:100%; background:rgba(0,0,0,0.6); color:white; font-size:10px; text-align:center; padding:2px 0;">${p.label}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>`;
+  }
+  // ------------------------------------
+
   return `
   <div class="popup-card">
     <div class="popup-header">
@@ -2310,18 +2438,20 @@ function createPopup(data) {
     </div>
 
     <div class="desktop-photo-row">
-      <div class="photo-half">${renderImg(arrBefore[0])}<div class="photo-label">施工前</div></div>
-      <div class="photo-half">${renderImg(arrAfter[0])}<div class="photo-label">施工後</div></div>
+      <div class="photo-half">${renderImg(arrBefore[0])}<div class="photo-label">原始報案照 (基準)</div></div>
+      <div class="photo-half">${renderImg(arrAfter[0])}<div class="photo-label">完工成果照</div></div>
     </div>
 
     <div class="mobile-photo-tabs">
-      <div class="m-photo-tab active" onclick="switchMobilePhotoTab(this, 'after', '${uid}')">施工後</div>
-      <div class="m-photo-tab" onclick="switchMobilePhotoTab(this, 'before', '${uid}')">施工前</div>
+      <div class="m-photo-tab active" onclick="switchMobilePhotoTab(this, 'after', '${uid}')">完工成果照</div>
+      <div class="m-photo-tab" onclick="switchMobilePhotoTab(this, 'before', '${uid}')">原始報案照</div>
     </div>
     <div class="mobile-photo-area">
       <div class="mobile-photo-view active" id="m-view-after-${uid}">${renderImg(arrAfter[0])}</div>
       <div class="mobile-photo-view" id="m-view-before-${uid}">${renderImg(arrBefore[0])}</div>
     </div>
+
+    ${processPhotosHtml}
 
     <div class="details-toggle" onclick="toggleDetails(this)">▼ 查看詳細資訊</div>
     <div class="details-content">
@@ -2447,7 +2577,6 @@ async function submitChatComment() {
       star: star, 
       comment: text, 
       nickname: nickname, 
-      appKey: "TainanMap2026_SecureKey_v1", 
       siteUrl: window.location.href, 
       uid: getUserID() 
     };
@@ -4875,6 +5004,139 @@ window.switchTab = function(tabId) {
     isNewsLoaded = true; // 記錄已載入，避免每次點都重新抓
   }
 };
+// === 新增：廠商完工回報前端邏輯 ===
+let vendorPhotoData = { Before: [], During: [], After: [] };
+
+function openVendorModal() {
+  document.getElementById('entryModal').style.display = 'none';
+  document.getElementById('vendorOverlay').style.display = 'flex';
+  document.getElementById('vendorUploadBlocks').style.display = 'none';
+  document.getElementById('vendorInfoBox').style.display = 'none';
+  document.getElementById('vendorCaseId').value = '';
+}
+
+function closeVendorModal() {
+  document.getElementById('vendorOverlay').style.display = 'none';
+  vendorPhotoData = { Before: [], During: [], After: [] };
+  ['Before', 'During', 'After'].forEach(type => document.getElementById(`grid${type}`).innerHTML = '');
+}
+
+async function fetchVendorCase() {
+  const caseId = document.getElementById('vendorCaseId').value.trim();
+  if(!caseId) return alert("請輸入案件編號！");
+  
+  const btn = document.querySelector('#vendorCaseId + button');
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+  btn.disabled = true;
+
+  try {
+    const res = await fetch(`${GOOGLE_SCRIPT_URL}?action=getCaseDetail&caseId=${caseId}`);
+    const json = await res.json();
+    if(json.result === "success") {
+      document.getElementById('vendorCoord').innerText = `座標：${json.data.twd97 || '無紀錄'}`;
+      document.getElementById('vendorDesc').innerText = `案情：${json.data.description || '無紀錄'}`;
+      document.getElementById('vendorInfoBox').style.display = 'block';
+      document.getElementById('vendorUploadBlocks').style.display = 'block';
+    } else {
+      alert("❌ 查無此案件，請確認編號是否正確！");
+      document.getElementById('vendorInfoBox').style.display = 'none';
+      document.getElementById('vendorUploadBlocks').style.display = 'none';
+    }
+  } catch(e) {
+    alert("連線失敗，請稍後再試");
+  } finally {
+    btn.innerHTML = '<i class="fas fa-search"></i> 載入資料';
+    btn.disabled = false;
+  }
+}
+
+// --- 處理廠商照片選取 ---
+async function handleVendorFiles(input, type) {
+  const files = input.files;
+  if(files.length === 0) return;
+  
+  if(vendorPhotoData[type].length + files.length > 20) {
+    return alert(`每區塊最多只能上傳 20 張照片！目前已選 ${vendorPhotoData[type].length} 張。`);
+  }
+
+  for(let i=0; i<files.length; i++) {
+    const file = files[i];
+    // 客戶端壓縮照片 (寬度1280px, 畫質0.8) 避免上傳過慢
+    compressImage(file, 1280, 0.8, (dataUrl) => {
+      vendorPhotoData[type].push(dataUrl); // 存入陣列
+      renderVendorPhotoGrid(type); // 重新繪製該區塊的預覽圖
+    });
+  }
+  input.value = ""; // 清空選取，允許重複選相同的檔案
+}
+
+// --- 繪製預覽圖與刪除按鈕 ---
+function renderVendorPhotoGrid(type) {
+  const grid = document.getElementById(`grid${type}`);
+  grid.innerHTML = ''; // 清空畫面
+  
+  vendorPhotoData[type].forEach((dataUrl, index) => {
+    const div = document.createElement('div');
+    div.className = 'vendor-photo-item';
+    div.innerHTML = `
+      <img src="${dataUrl}">
+      <button class="vendor-photo-delete-btn" onclick="removeVendorPhoto('${type}', ${index})" title="移除這張照片">
+        <i class="fas fa-times"></i>
+      </button>
+    `;
+    grid.appendChild(div);
+  });
+}
+
+// --- 刪除特定照片 ---
+window.removeVendorPhoto = function(type, index) {
+  vendorPhotoData[type].splice(index, 1); // 從陣列中把該照片抽出剔除
+  renderVendorPhotoGrid(type); // 重新繪製剩下的預覽圖
+};
+
+async function submitVendorReport() {
+  const pwd = document.getElementById('vendorPwd').value.trim();
+  const caseId = document.getElementById('vendorCaseId').value.trim();
+  
+  if(!pwd) return alert("請輸入廠商授權密碼！");
+  if(vendorPhotoData.Before.length === 0 && vendorPhotoData.During.length === 0 && vendorPhotoData.After.length === 0) {
+    return alert("請至少上傳一張照片！");
+  }
+  if(!confirm(`確定要為案件 ${caseId} 送出完工照片嗎？\n資料送出後需較長處理時間，請耐心等候。`)) return;
+
+  const btn = document.getElementById('btnSubmitVendor');
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 上傳處理中，請勿關閉視窗...';
+  btn.disabled = true;
+
+  try {
+    const payload = {
+      action: "vendorReport",
+appKey: "TainanMap2026_SecureKey_v1",
+      vendorPassword: pwd,
+      caseId: caseId,
+      photosBefore: vendorPhotoData.Before,
+      photosDuring: vendorPhotoData.During,
+      photosAfter: vendorPhotoData.After
+    };
+
+    const response = await fetch(GOOGLE_SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) });
+    const result = await response.json();
+
+    if(result.result === "success") {
+      alert("✅ 完工照片上傳成功！驗收資料已同步至後台。");
+      closeVendorModal();
+      document.getElementById('entryModal').style.display = 'flex'; // 回到主畫面
+    } else {
+      alert("❌ 上傳失敗: " + (result.error || "授權碼錯誤或伺服器異常"));
+    }
+  } catch(e) {
+    alert("❌ 連線逾時或發生錯誤，請稍後再試。");
+  } finally {
+    btn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> 確認上傳回報';
+    btn.disabled = false;
+  }
+}
+// ======================================
 </script>
 </body>
 </html>

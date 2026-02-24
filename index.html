@@ -2395,6 +2395,10 @@ function createPopup(data) {
   
   let distDisplay = (!isNaN(dist) && dist !== null) ? `<div class="info-pill pill-dist"><i class="fas fa-route"></i> 距路線 ${Math.ceil(dist)}m</div>` : '';
   
+  // 【新增】判斷來源標籤 (藍綠色)，優先使用後台新欄位，若無則顯示預設字樣
+  let projectTypeStr = props['案件類型'];
+  let sourceDisplay = (projectTypeStr && projectTypeStr.trim() !== '') ? projectTypeStr : (fileName || '來源未知');
+
   let arrBefore = getPhotosFromProps({'施工前照片': props['施工前照片']});
   let arrAfter = getPhotosFromProps({'施工後照片': props['施工後照片']});
   if(arrBefore.length === 0 && props.photoUrl) {
@@ -2444,7 +2448,7 @@ function createPopup(data) {
         </div>
         <div class="info-pill pill-type" ${typeClickAttr} title="${typeStr}"><i class="fas fa-wrench"></i> ${typeDisplay}</div>
         ${distDisplay}
-        <div class="info-pill pill-source"><i class="fas fa-file-contract"></i> ${fileName || '來源未知'}</div>
+        <div class="info-pill pill-source"><i class="fas fa-file-contract"></i> ${sourceDisplay}</div>
       </div>
     </div>
 
@@ -3904,8 +3908,10 @@ window.showMultiSelectPopup = function(latlng, markers) {
   markers.forEach((m, idx) => {
     const data = m.customData || {};
     const isGroup = data.group && data.group.length > 1;
-    const title = data.configLabel || "案件";
     const props = data.props || {};
+    // 【修改】優先讀取後台的「案件類型」，如果沒有才顯示預設的名稱
+    const projectType = props['案件類型'];
+    const title = (projectType && projectType.trim() !== '') ? projectType : (data.configLabel || "案件");
     const twd = twd97FromWgs84(m.getLatLng().lat, m.getLatLng().lng);
     window[`_temp_marker_${idx}`] = m;
     

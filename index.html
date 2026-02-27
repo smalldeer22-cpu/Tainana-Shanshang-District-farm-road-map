@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0224_V3)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0226_V8)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -1190,26 +1190,46 @@
 
   #floatingCoords { position:absolute; pointer-events:none; background:rgba(255,255,255,0.9); border:1px solid #ccc; border-radius:4px; padding:4px 8px; font-size:11px; display:none; z-index:1300; bottom: 10px; right: 10px; }
 
-  .ai-pulse-marker { width: 24px; height: 24px; background: rgba(155, 89, 182, 0.9); border: 2px solid #fff; border-radius: 50%; box-shadow: 0 0 0 0 rgba(155, 89, 182, 0.7); animation: pulse-purple 2s infinite; cursor: pointer; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; font-weight: bold; z-index: 5000; }
-  .ai-marker-med { background: rgba(230, 126, 34, 0.9); box-shadow: 0 0 0 0 rgba(230, 126, 34, 0.7); animation: pulse-orange 2s infinite; }
-  @keyframes pulse-purple { 0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(155, 89, 182, 0.7); } 70% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(155, 89, 182, 0); } 100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(155, 89, 182, 0); } }
-  @keyframes pulse-orange { 0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(230, 126, 34, 0.7); } 70% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(230, 126, 34, 0); } 100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(230, 126, 34, 0); } }
+  /* === 新版 AI 雷達掃描與儀表板樣式 (V16 強制防偏移裝甲) === */
+  /* 強制覆蓋所有全域樣式，保證圖釘絕對釘在座標正中心 */
+  .ai-radar-wrapper { margin-left: -18px !important; margin-top: -18px !important; background: transparent !important; border: none !important; }
+  .ai-radar-red, .ai-radar-yellow, .ai-radar-green { width: 100%; height: 100%; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 14px; position: relative; cursor: pointer; z-index: 5000; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
+  .ai-radar-red { background: rgba(211, 47, 47, 0.9); border: 2px solid #fff; }
+  .ai-radar-yellow { background: rgba(245, 127, 23, 0.9); border: 2px solid #fff; }
+  .ai-radar-green { background: rgba(56, 142, 60, 0.9); border: 2px solid #fff; }
+  .ai-radar-red::after, .ai-radar-yellow::after, .ai-radar-green::after { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; border-radius: 50%; z-index: -1; animation: radar-scan 2s infinite ease-out; }
+  .ai-radar-red::after { border: 2px solid #d32f2f; background: rgba(211,47,47,0.3); }
+  .ai-radar-yellow::after { border: 2px solid #f57f17; background: rgba(245,127,23,0.3); }
+  .ai-radar-green::after { border: 2px solid #388e3c; background: rgba(56,142,60,0.3); }
+  @keyframes radar-scan { 0% { transform: scale(0.5); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
+  .dashboard-popup .leaflet-popup-content-wrapper { padding: 0 !important; border-radius: 12px !important; overflow: hidden; }
+  .dashboard-popup .leaflet-popup-content { margin: 0 !important; width: 300px !important; }
+  .decision-dashboard { display: flex; flex-direction: column; }
+  .dd-header { padding: 12px; color: white; font-size: 15px; font-weight: bold; text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .bg-red { background: linear-gradient(135deg, #d32f2f, #b71c1c); }
+  .bg-yellow { background: linear-gradient(135deg, #f57f17, #f9a825); }
+  .bg-green { background: linear-gradient(135deg, #388e3c, #2e7d32); }
+  .dd-body { padding: 15px; background: #fff; }
+  .dd-score-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; border-bottom: 1px dashed #eee; padding-bottom: 12px; }
+  .dd-score-circle { width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 900; background: #f8f9fa; box-shadow: inset 0 2px 5px rgba(0,0,0,0.1); }
+  .tx-red { color: #d32f2f; border: 2px solid #d32f2f; }
+  .tx-yellow { color: #f57f17; border: 2px solid #f57f17; }
+  .tx-green { color: #388e3c; border: 2px solid #388e3c; }
+  .dd-level-text b { font-size: 15px; color: #333; }
+  .dd-section-title { font-size: 12px; font-weight: bold; color: #666; margin-bottom: 5px; margin-top: 10px; display: flex; align-items: center; gap: 5px; }
+  .dd-desc { font-size: 12px; color: #444; line-height: 1.5; background: #f0f7ff; padding: 10px; border-radius: 8px; border-left: 3px solid #004080; }
+  .dd-action-box { font-size: 12px; color: #000; line-height: 1.6; background: #fff3cd; padding: 10px; border-radius: 8px; border: 1px solid #ffeeba; font-weight: 500; }
   
   #aiDashboard { margin-top: 10px; display: none; animation: fadeIn 0.3s; }
   .ai-dash-filters { display: flex; gap: 5px; overflow-x: auto; margin-bottom: 10px; padding-bottom: 5px; }
+  .ai-dash-filters::-webkit-scrollbar { height: 0px; }
   .ai-filter-btn { padding: 4px 8px; border-radius: 12px; border: 1px solid #ddd; background: #fff; font-size: 11px; white-space: nowrap; cursor: pointer; color: #555; }
-  .ai-filter-btn.active { background: #9b59b6; color: white; border-color: #9b59b6; }
-  .ai-list-item { padding: 8px; border-bottom: 1px dashed #eee; font-size: 12px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: background 0.2s; }
-  .ai-list-item:hover { background: #fdf2fe; }
-  .ai-score-badge { font-weight: bold; color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 10px; }
-  .badge-high { background: #9b59b6; }
-  .badge-med { background: #e67e22; }
-  .ai-report-header { background: linear-gradient(135deg, #8e44ad, #9b59b6); color: white; padding: 12px; font-weight: bold; font-size: 14px; display: flex; align-items: center; gap: 8px; border-radius: 8px 8px 0 0; }
-  .ai-report-body { padding: 15px; font-size: 13px; color: #333; line-height: 1.6; }
-  .ai-stat-row { display: flex; justify-content: space-between; border-bottom: 1px dashed #eee; padding: 5px 0; }
-  .ai-stat-val { font-weight: bold; color: #8e44ad; }
-  .ai-advice-box { background: #fdf2fe; border-left: 4px solid #9b59b6; padding: 10px; margin-top: 10px; font-size: 12px; color: #555; }
-
+  .ai-filter-btn.active { background: #004080; color: white; border-color: #004080; }
+  .ai-list-item { padding: 10px 8px; border-bottom: 1px dashed #eee; font-size: 13px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: background 0.2s; }
+  .ai-list-item:hover { background: #f5faff; }
+  .badge-red { background: #d32f2f; color: white; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 11px; }
+  .badge-yellow { background: #f57f17; color: white; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 11px; }
+  .badge-green { background: #388e3c; color: white; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 11px; }
   /* === AI 隱私編輯器樣式 === */
   #privacyEditorModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 99999; flex-direction: column; }
   .pe-header { height: 50px; background: #111; color: white; display: flex; justify-content: space-between; align-items: center; padding: 0 15px; font-weight: bold; }
@@ -1340,21 +1360,23 @@
     <div style="padding:20px; font-size:14px; line-height:1.6; color:#333; max-height:70vh; overflow-y:auto;">
       <p>系統自動分析歷史與即時通報的案件，計算該路段的潛在風險指數，滿分為 100 分：</p>
       <div style="background:#f9f9f9; padding:10px; border-radius:6px; margin:10px 0;">
-        <b style="color:#8e44ad;">1. 基礎分數與頻率加權：</b><br>
-        起算分數 60 分。同地點（50公尺內）每發生過一次重複通報或維修，加 10 分。
+        <b style="color:#8e44ad;">1. 山區專屬複合型演算法配比：</b><br>
+        系統融合歷史工程與最新民眾通報，基礎起算 40 分：<br>
+        • 🌳 <b>植被倒伏</b> (每次+15分)：如倒竹/倒樹，最高權重。<br>
+        • ⛰️ <b>邊坡泥濘</b> (每次+10分)：如土石滑落/泥濘，易致災。<br>
+        • 🌊 <b>排水掏空</b> (每次+7分)：如水溝清淤/掏空。<br>
+        • 🛣️ <b>路面老化</b> (每次+3分)：單純坑洞或附屬設施。
       </div>
       <div style="background:#f9f9f9; padding:10px; border-radius:6px; margin:10px 0;">
-        <b style="color:#8e44ad;">2. 損壞類型加權：</b><br>
-        • <b>土木結構 (x1.5倍)</b>：擋土牆、路基、崩塌。<br>
-        • <b>路面老化 (x1.2倍)</b>：AC鋪面、坑洞、混凝土。<br>
-        • <b>環境植被 (x1.0倍)</b>：雜草、路樹、其他。
+        <b style="color:#8e44ad;">2. 即時災情預警加權：</b><br>
+        若該點位包含「最新即時民眾通報」，系統判定災情正在發生或擴大，總分額外 <b>+10 分</b> 進行緊急預警。
       </div>
       <div style="background:#f9f9f9; padding:10px; border-radius:6px; margin:10px 0;">
-        <b style="color:#8e44ad;">3. 風險等級判定：</b><br>
-        • <span style="background:#9b59b6; color:white; padding:2px 6px; border-radius:4px; font-size:12px;">極高風險 (>90分)</span>：建議優先安排現勘與結構重建。<br>
-        • <span style="background:#e67e22; color:white; padding:2px 6px; border-radius:4px; font-size:12px;">中高風險 (70~89分)</span>：建議納入後續巡檢與改善觀察名單。
-      </div>
-    </div>
+        <b style="color:#8e44ad;">3. 首長決策 SOP：</b><br>
+        • <span style="background:#d32f2f; color:white; padding:2px 6px; border-radius:4px; font-size:12px;">🔴 紅燈警戒 (>80分)</span>：預防性封路 / 源頭工程整治。<br>
+        • <span style="background:#f57f17; color:white; padding:2px 6px; border-radius:4px; font-size:12px;">🟡 黃燈關注 (50~79分)</span>：防汛期前預先指派開口契約清淤。<br>
+        • <span style="background:#388e3c; color:white; padding:2px 6px; border-radius:4px; font-size:12px;">🟢 綠燈常態 (<50分)</span>：授權承辦人派工，全民監督驗收。
+      </div>    </div>
   </div>
 </div>
 
@@ -1491,6 +1513,9 @@
             <img id="imgPreview2">
             <input type="file" id="fileInput2" accept="image/*" capture="environment" style="display:none;" onchange="previewImage(this, 2)">
           </div>
+        </div>
+        <div style="text-align:center; margin-bottom: 10px;">
+          <button onclick="downloadMyPhotos()" style="background:#e2e8f0; color:#333; border:none; padding:8px 16px; border-radius:8px; font-weight:bold; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.1);"><i class="fas fa-download"></i> 下載照片至手機備份</button>
         </div>
         <div style="font-size:12px; color:#94a3b8; text-align:center; margin-bottom: 15px;">※ 支援 AI 隱私去識別化與手動遮蔽功能</div>
         <button class="wizard-nav-btn" onclick="goToWizardStep(2)">➡ 下一步：描述案情</button>
@@ -1806,9 +1831,11 @@
       <div id="aiDashboard">
         <div class="ai-dash-filters">
           <div class="ai-filter-btn active" onclick="filterAiResults('all', this)">全部</div>
-          <div class="ai-filter-btn" onclick="filterAiResults('high', this)">極高風險</div>
-          <div class="ai-filter-btn" onclick="filterAiResults('road', this)">土木結構</div>
-          <div class="ai-filter-btn" onclick="filterAiResults('tree', this)">環境植被</div>
+          <div class="ai-filter-btn" onclick="filterAiResults('slide', this)">⛰️土石滑落</div>
+          <div class="ai-filter-btn" onclick="filterAiResults('tree', this)">🌳樹木災害</div>
+          <div class="ai-filter-btn" onclick="filterAiResults('slip', this)">⚠️路面易滑</div>
+          <div class="ai-filter-btn" onclick="filterAiResults('drain', this)">🌊排水結構</div>
+          <div class="ai-filter-btn" onclick="filterAiResults('road', this)">🛣️路面修復</div>
         </div>
         <div id="aiResultList" style="max-height:200px; overflow-y:auto; border:1px solid #eee; border-radius:6px; background:#fafafa;">
         </div>
@@ -4783,18 +4810,222 @@ window.zoomToAiMarker = function(lat, lng) {
   });
 };
 
+// === 【V17 精準熱區版】智慧演算 (同類型>=2次才觸發 + 排除不用列計 + 30m範圍) ===
+function toggleAiRiskLayer(checkbox) {
+  if (typeof aiRiskLayer !== 'undefined') aiRiskLayer.clearLayers(); 
+  if (window.aiPureLayer) {
+     window.aiPureLayer.clearLayers();
+     if (map.hasLayer(window.aiPureLayer)) map.removeLayer(window.aiPureLayer);
+  }
+  document.getElementById('aiDashboard').style.display = 'none'; 
+  
+  if(!checkbox.checked) return;
+  
+  let hasData = false; 
+  Object.keys(REPAIR_DATA_CACHE).forEach(key => { 
+    if(REPAIR_DATA_CACHE[key].features && REPAIR_DATA_CACHE[key].features.length > 0) hasData = true; 
+  });
+  if(realtimeLayer.getLayers().length > 0) hasData = true;
+  
+  if(!hasData) { 
+    alert("⚠️ 無法進行 AI 分析！\n系統尚未載入任何歷史或即時案件資料。"); 
+    checkbox.checked = false; 
+    return; 
+  }
+
+  window.aiPureLayer = L.featureGroup().addTo(map);
+  document.getElementById('aiLoading').style.display = 'block';
+  
+  setTimeout(() => {
+    let allPoints = [];
+    const isShanshangDistrict = (lat, lng) => !isNaN(lat) && !isNaN(lng) && lat > 23.06 && lat < 23.13 && lng > 120.31 && lng < 120.40;
+
+    // 【新增】嚴格對應 CSV 類別，並標記「不用列計」項目
+    const getRiskCategory = (typeStr) => {
+        if (!typeStr) return 'other';
+        const t = typeStr;
+        // 1. 排除不用列計的項目
+        if (/土尾|看板|暫置|交通錐|待命|沙包|油料/.test(t)) return 'exclude';
+        // 2. 土石滑落類型 (高危)
+        if (/邊坡|擋土牆|崩塌|土石滑落/.test(t)) return 'slide';
+        // 3. 路面易滑類型 (含竹葉、積草等)
+        if (/泥濘|積土|土石清除|竹葉|種子|積草|落葉|積水/.test(t)) return 'slip';
+        // 4. 樹木災害類型
+        if (/樹|竹|蕉|牧草|雜草/.test(t)) return 'tree';
+        // 5. 排水結構物類型
+        if (/排水|集水井|清淤|掏空填補|蓄水池|橋底/.test(t)) return 'drain';
+        // 6. 路面修復類型
+        if (/坑洞|下陷|掏空修補/.test(t)) return 'road';
+        
+        return 'other';
+    };
+
+    // 1. 抓取與過濾資料 (直接將 exclude 剔除)
+    const processFeature = (lat, lng, props, isRealtime) => {
+        if (isShanshangDistrict(lat, lng)) {
+            const cat = getRiskCategory(props['搶修類型'] || '');
+            if (cat !== 'exclude') {
+                allPoints.push({ lat, lng, type: props['搶修類型'] || '未分類', cat: cat, props: props, isRealtime: isRealtime });
+            }
+        }
+    };
+
+    Object.keys(REPAIR_DATA_CACHE).forEach(key => {
+      if(REPAIR_DATA_CACHE[key].features) {
+        REPAIR_DATA_CACHE[key].features.forEach(f => {
+          if(f.geometry.type === 'Point') {
+            processFeature(Number(f.geometry.coordinates[1]), Number(f.geometry.coordinates[0]), f.properties, false);
+          }
+        });
+      }
+    });
+    realtimeLayer.eachLayer(layer => {
+       if(layer.customData && layer.customData.props) {
+          processFeature(Number(layer.getLatLng().lat), Number(layer.getLatLng().lng), layer.customData.props, true);
+       }
+    });
+    
+    // 2. 叢集運算 (【縮小範圍】改為半徑 30 公尺)
+    let clusters = [];
+    allPoints.forEach(p => {
+      let added = false;
+      for(let c of clusters) {
+        if(L.latLng(p.lat, p.lng).distanceTo(L.latLng(c.lat, c.lng)) <= 30) {
+          c.points.push(p);
+          added = true; 
+          break;
+        }
+      }
+      if(!added) clusters.push({ lat: p.lat, lng: p.lng, points: [p] });
+    });
+    
+    let riskResults = [];
+    clusters.forEach(c => {
+      let counts = { slide: 0, tree: 0, slip: 0, drain: 0, road: 0, other: 0 };
+      let hasRealtime = false;
+      
+      c.points.forEach(p => {
+        if(p.isRealtime) hasRealtime = true;
+        if(counts[p.cat] !== undefined) counts[p.cat]++;
+      });
+      
+      // 找出發生最多次的主因
+      let maxCat = 'road';
+      let maxCount = 0;
+      ['slide', 'tree', 'slip', 'drain', 'road'].forEach(key => {
+         if (counts[key] > maxCount) {
+             maxCount = counts[key];
+             maxCat = key;
+         }
+      });
+      
+      // 【核心邏輯：同類災害必須 >= 2 次才視為系統性熱點，否則略過】
+      if (maxCount < 2) return; 
+      
+      // 計分系統 (因為已經是>=2的累犯，給予基礎分50起跳，按災害嚴重性疊加)
+      let score = 40 + (counts.slide * 20) + (counts.tree * 15) + (counts.slip * 10) + (counts.drain * 8) + (counts.road * 5);
+      if(hasRealtime) score += 10; 
+      score = Math.min(100, score);
+      
+      let dominantType = '', filterClass = maxCat;
+      if(maxCat === 'slide') dominantType = '⛰️土石崩塌滑落';
+      else if(maxCat === 'tree') dominantType = '🌳樹木反覆致災';
+      else if(maxCat === 'slip') dominantType = '⚠️路面易滑熱區';
+      else if(maxCat === 'drain') dominantType = '🌊排水失效掏空';
+      else dominantType = '🛣️路面結構劣化';
+
+      let level = '', markerClass = '', advice = '', action = '', circleColor = '';
+      if(score >= 80) {
+         level = '紅燈警戒區'; markerClass = 'ai-radar-red'; circleColor = '#d32f2f';
+         advice = `此處已反覆發生 ${maxCount} 次「${dominantType}」，屬系統性致災熱區，極易阻斷交通。`;
+         action = '<b>【颱風/防汛】</b><br>建議實施預防性封路。<br><b>【年度預算】</b><br>提報一般工程進行大規模源頭整治。';
+      } else if(score >= 55) {
+         level = '黃燈關注區'; markerClass = 'ai-radar-yellow'; circleColor = '#f57f17';
+         advice = `此處已累積 ${maxCount} 次「${dominantType}」，屬維護不良高風險區。`;
+         action = '<b>【預防性派工】</b><br>汛期前預先指派開口契約廠商，針對此類災害進行預先排除。';
+      } else {
+         level = '綠燈常態區'; markerClass = 'ai-radar-green'; circleColor = '#388e3c';
+         advice = `此處發生 ${maxCount} 次「${dominantType}」，為偶發性重複損壞。`;
+         action = '<b>【常態修復】</b><br>持續觀察並由承辦人逕行派工。';
+      }
+
+      // 畫出真實的 30公尺 範圍圈
+      const areaCircle = L.circle([c.lat, c.lng], {
+        radius: 30, color: circleColor, fillColor: circleColor, fillOpacity: 0.1, weight: 2, dashArray: '5, 5', interactive: false 
+      });
+      window.aiPureLayer.addLayer(areaCircle);
+
+      const marker = L.marker([c.lat, c.lng], {
+        icon: L.divIcon({ className: 'ai-radar-wrapper', html: `<div class="${markerClass}"><span>${score}</span></div>`, iconSize: [36, 36], iconAnchor: [18,18] })
+      });
+      
+      const popupHtml = `
+         <div class="decision-dashboard">
+            <div class="dd-header ${score>=80?'bg-red':(score>=55?'bg-yellow':'bg-green')}">
+              <i class="fas fa-chart-line"></i> 首長決策輔助儀表板
+            </div>
+            <div class="dd-body">
+              <div class="dd-score-row">
+                <div class="dd-score-circle ${score>=80?'tx-red':(score>=55?'tx-yellow':'tx-green')}">${score}</div>
+                <div class="dd-level-text"><b>${level}</b><br><span style="font-size:12px;color:#666;">主因：${dominantType}</span></div>
+              </div>
+              <div class="dd-section-title"><i class="fas fa-history"></i> 災情面貌剖析 (半徑 30m 內)</div>
+              <div class="dd-desc">
+                同類重複次數：${maxCount} 次。<br>${advice}
+              </div>
+              ${hasRealtime ? '<div style="color:#d32f2f; font-weight:bold; font-size:12px; margin-top:8px; padding-left:2px;"><i class="fas fa-exclamation-triangle"></i> 此處有最新通報，災情可能正在擴大！</div>' : ''}
+              <div class="dd-section-title"><i class="fas fa-lightbulb"></i> 機關決策建議 (SOP)</div>
+              <div class="dd-action-box">${action}</div>
+            </div>
+         </div>
+      `;
+      
+      marker.bindPopup(popupHtml, {className:'custom-popup dashboard-popup', maxWidth: 320});
+      window.aiPureLayer.addLayer(marker);
+      
+      riskResults.push({ score, filterClass, level, lat: c.lat, lng: c.lng, dominantType, count: c.points.length, hasRealtime });
+    });
+    
+    riskResults.sort((a,b) => b.score - a.score);
+    document.getElementById('aiResultList').innerHTML = riskResults.length === 0 ? '<div style="padding:10px;text-align:center;color:#666;">經分析，山上區目前無「反覆發生」之風險熱點。</div>' : 
+       riskResults.map(p => `
+         <div class="ai-list-item" data-type="${p.filterClass}" onclick="zoomToAiMarker(${p.lat}, ${p.lng})">
+           <div style="display:flex; align-items:center; gap:8px;">
+             <span class="ai-score-badge ${p.score>=80?'badge-red':(p.score>=55?'badge-yellow':'badge-green')}">${p.score}分</span>
+             <span style="font-weight:bold; color:#333;">${p.dominantType}</span>
+           </div>
+           <div style="text-align:right;">
+             ${p.hasRealtime ? '<div style="color:#d32f2f; font-size:10px; font-weight:bold; animation:pulse-red 1.5s infinite;">有新通報</div>' : ''}
+             <div style="color:#666; font-size:11px;">共 ${p.count} 案</div>
+           </div>
+         </div>
+       `).join('');
+       
+    document.getElementById('aiDashboard').style.display = 'block'; 
+    document.getElementById('aiLoading').style.display = 'none';
+  }, 800); 
+}
+
+window.zoomToAiMarker = function(lat, lng) {
+  if(window.innerWidth <= 768) document.body.classList.remove('sidebar-open');
+  map.flyTo([lat, lng], 18, {duration: 1.2});
+  setTimeout(() => {
+    if (window.aiPureLayer) {
+       window.aiPureLayer.eachLayer(l => {
+         if(l instanceof L.Marker && Math.abs(l.getLatLng().lat - lat) < 0.000001 && Math.abs(l.getLatLng().lng - lng) < 0.000001) l.openPopup();
+       });
+    }
+  }, 1200);
+};
+
 window.filterAiResults = function(filter, btn) {
   document.querySelectorAll('.ai-list-item').forEach(item => {
-    if(filter === 'all' || (filter === 'high' && item.getAttribute('data-level') === 'high') || (filter === 'road' && item.getAttribute('data-type') === 'road') || (filter === 'tree' && item.getAttribute('data-type') === 'tree')) {
-      item.style.display = 'flex';
-    } else {
-      item.style.display = 'none';
-    }
+    if(filter === 'all' || item.getAttribute('data-type') === filter) item.style.display = 'flex';
+    else item.style.display = 'none';
   });
   document.querySelectorAll('.ai-filter-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
 };
-
 // === 【V9 修復】修復時間軸與十字路口統計 (降維拆解法，徹底解決 Turf.js 報錯) ===
 function showTimeline(routeLayer) {
   const cont = document.getElementById('timelineContainer');
@@ -5300,6 +5531,29 @@ function exportOpenDataCSV() {
   URL.revokeObjectURL(url);
 }
 // ======================================
+// === 新增：前端手動下載照片備份機制 ===
+window.downloadMyPhotos = function() {
+  let downloaded = 0;
+  // 檢查兩張照片框是否有照片
+  [1, 2].forEach(id => {
+      const img = document.getElementById(`imgPreview${id}`);
+      if (img && img.src && img.src.startsWith('data:')) {
+          const link = document.createElement('a');
+          link.href = img.src;
+          link.download = `山上區通報照片_${id}_${new Date().getTime()}.jpg`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          downloaded++;
+      }
+  });
+  
+  if(downloaded === 0) {
+      alert("⚠️ 您尚未拍攝或上傳任何照片喔！");
+  } else {
+      alert(`✅ 已成功觸發下載 ${downloaded} 張照片至您的裝置中。`);
+  }
+};
 </script>
 </body>
 </html>

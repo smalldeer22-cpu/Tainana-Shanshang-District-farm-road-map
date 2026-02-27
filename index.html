@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0226_V8)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0227_V1)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -1358,24 +1358,26 @@
       <button onclick="closeAiLogicModal()" style="background:none; border:none; color:white; font-size:18px; cursor:pointer;"><i class="fas fa-times"></i></button>
     </div>
     <div style="padding:20px; font-size:14px; line-height:1.6; color:#333; max-height:70vh; overflow-y:auto;">
-      <p>系統自動分析歷史與即時通報的案件，計算該路段的潛在風險指數，滿分為 100 分：</p>
+      <p>為精準找出潛在致災熱區，系統會自動排除不具系統性風險的雜項（如沙包、交通錐等），並進行嚴格篩選：</p>
       <div style="background:#f9f9f9; padding:10px; border-radius:6px; margin:10px 0;">
-        <b style="color:#8e44ad;">1. 山區專屬複合型演算法配比：</b><br>
-        系統融合歷史工程與最新民眾通報，基礎起算 40 分：<br>
-        • 🌳 <b>植被倒伏</b> (每次+15分)：如倒竹/倒樹，最高權重。<br>
-        • ⛰️ <b>邊坡泥濘</b> (每次+10分)：如土石滑落/泥濘，易致災。<br>
-        • 🌊 <b>排水掏空</b> (每次+7分)：如水溝清淤/掏空。<br>
-        • 🛣️ <b>路面老化</b> (每次+3分)：單純坑洞或附屬設施。
+        <b style="color:#8e44ad;">1. 熱點啟動門檻 (過濾單一偶發事件)：</b><br>
+        AI 僅會鎖定<b>「半徑 30 公尺內，反覆發生同類型災害達 2 次 (含) 以上」</b>的地點，判定為系統性致災熱區並啟動評分。
       </div>
       <div style="background:#f9f9f9; padding:10px; border-radius:6px; margin:10px 0;">
-        <b style="color:#8e44ad;">2. 即時災情預警加權：</b><br>
-        若該點位包含「最新即時民眾通報」，系統判定災情正在發生或擴大，總分額外 <b>+10 分</b> 進行緊急預警。
+        <b style="color:#8e44ad;">2. 災害嚴重度加權 (基礎起算 40 分)：</b><br>
+        依據山上區環境特性，針對不同主因給予疊加權重：<br>
+        • ⛰️ <b>土石滑落</b> (每次+20分)：邊坡或擋土牆崩塌。<br>
+        • 🌳 <b>樹木災害</b> (每次+15分)：危樹/危竹倒伏阻斷。<br>
+        • ⚠️ <b>路面易滑</b> (每次+10分)：泥濘/積土/落葉阻礙。<br>
+        • 🌊 <b>排水結構</b> (每次+8分)：清淤/排水溝掏空。<br>
+        • 🛣️ <b>路面修復</b> (每次+5分)：坑洞/下陷修補。<br>
+        *(若包含「最新即時民眾通報」，系統判定災情可能正在擴大，總分額外 <b>+10 分</b> 緊急加權)*
       </div>
       <div style="background:#f9f9f9; padding:10px; border-radius:6px; margin:10px 0;">
-        <b style="color:#8e44ad;">3. 首長決策 SOP：</b><br>
-        • <span style="background:#d32f2f; color:white; padding:2px 6px; border-radius:4px; font-size:12px;">🔴 紅燈警戒 (>80分)</span>：預防性封路 / 源頭工程整治。<br>
-        • <span style="background:#f57f17; color:white; padding:2px 6px; border-radius:4px; font-size:12px;">🟡 黃燈關注 (50~79分)</span>：防汛期前預先指派開口契約清淤。<br>
-        • <span style="background:#388e3c; color:white; padding:2px 6px; border-radius:4px; font-size:12px;">🟢 綠燈常態 (<50分)</span>：授權承辦人派工，全民監督驗收。
+        <b style="color:#8e44ad;">3. 機關決策 SOP：</b><br>
+        • <span style="background:#d32f2f; color:white; padding:2px 6px; border-radius:4px; font-size:12px;">🔴 紅燈警戒 (≥ 80分)</span>：系統性致災熱區，建議實施預防性封路，或提報一般工程進行源頭整治。<br>
+        • <span style="background:#f57f17; color:white; padding:2px 6px; border-radius:4px; font-size:12px;">🟡 黃燈關注 (55~79分)</span>：維護不良高風險區，建議防汛期前預先指派開口契約排除。<br>
+        • <span style="background:#388e3c; color:white; padding:2px 6px; border-radius:4px; font-size:12px;">🟢 綠燈常態 (< 55分)</span>：偶發性重複損壞，持續觀察並授權承辦人逕行派工。
       </div>    </div>
   </div>
 </div>
@@ -3236,8 +3238,40 @@ async function submitReport() {
     
     if (result.result === "success") { 
       saveMyHistory(result.caseId);
-      alert(`✅ 案件通報成功！\n\n案件編號：${result.caseId}\n已自動儲存至「我的歷史通報」。`); 
-      closeReport(); 
+      
+      // 取得成功立案的編號
+      const caseId = result.caseId;
+      
+      // ⚠️【注意】請將下方的 @123abcde 換成公所 LINE 官方帳號的「專屬 ID」 (要包含 @ 符號)
+      const lineBotId = "@898ruary"; 
+      
+      const bindMessage = encodeURIComponent("【綁定案件】" + caseId);
+      const lineDeepLink = `https://line.me/R/oaMessage/${lineBotId}/?${bindMessage}`;
+
+      // 彈出包含 LINE 按鈕的客製化成功視窗
+      document.body.insertAdjacentHTML('beforeend', `
+        <div id="successModal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:99999; display:flex; align-items:center; justify-content:center;">
+          <div style="background:#fff; padding:30px; border-radius:15px; text-align:center; max-width:90%; width:400px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+            <i class="fas fa-check-circle" style="color:#28a745; font-size:60px; margin-bottom:15px;"></i>
+            <h2 style="color:#004080; margin-top:0; font-size:24px;">通報上傳成功！</h2>
+            <p style="font-size:18px; color:#333;">您的案件編號為：<br><b style="font-size:22px; color:#d32f2f;">${caseId}</b></p>
+            <p style="font-size:12px; color:#666;">(已自動儲存至「我的歷史通報」)</p>
+            
+            <div style="background:#e8f5e9; border-left:5px solid #2e7d32; padding:15px; margin:20px 0; border-radius:5px; text-align:left;">
+              <p style="color:#2e7d32; margin:0; font-size:15px; font-weight:bold;"><i class="fas fa-bell"></i> 啟用進度通知服務</p>
+              <p style="color:#555; margin:5px 0 0 0; font-size:14px;">強烈建議您點擊下方按鈕，未來案件若有<b>「派工」</b>或<b>「完工」</b>，將自動透過 LINE 傳送通知給您！</p>
+            </div>
+            
+            <a href="${lineDeepLink}" style="display:block; width:100%; box-sizing:border-box; padding:15px; background:#06C755; color:white; font-size:18px; font-weight:bold; text-decoration:none; border-radius:10px; box-shadow:0 4px 6px rgba(0,0,0,0.2); transition: 0.3s;">
+              <i class="fab fa-line" style="font-size:22px; vertical-align:middle; margin-right:8px;"></i> <span style="vertical-align:middle;">點我用 LINE 接收進度</span>
+            </a>
+            
+            <div style="margin-top:20px;">
+              <button onclick="document.getElementById('successModal').remove(); closeReport(); location.reload();" style="padding:10px 20px; border:none; background:#f1f1f1; color:#666; font-size:16px; border-radius:5px; cursor:pointer; width:100%;">先不用，關閉視窗</button>
+            </div>
+          </div>
+        </div>
+      `);
     } else { 
       alert("❌ 上傳失敗: " + (result.error || "未知錯誤")); 
     }

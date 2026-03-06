@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0227_V1)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0303_V2)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -1526,7 +1526,16 @@
       <div class="wizard-step" id="step2">
         <div style="font-weight:bold; color:#333; margin-bottom:10px; font-size: 16px;">請簡述路況或損壞情形</div>
         <textarea id="reportDesc" class="report-textarea" maxlength="500" placeholder="(例如：路面坑洞)。最多500字。可以點擊下方麥克風用語音輸入！"></textarea>
-        <div class="huge-mic-wrapper">
+        
+        <div style="text-align: center; margin-top: 10px;">
+          <span style="font-size: 14px; font-weight: bold; color: #666;">麥克風收聽語言：</span>
+          <select id="voiceLangSelect" style="padding: 5px 10px; border-radius: 8px; border: 1px solid #004080; font-size: 14px; font-weight: bold; color: #004080; background: #f0f7ff; cursor: pointer;">
+            <option value="zh-TW">國語 (預設)</option>
+            <option value="nan-TW">台灣閩南語 (台語)</option>
+          </select>
+        </div>
+
+        <div class="huge-mic-wrapper" style="margin-top: 15px;">
           <button class="huge-mic-btn" id="voiceBtnReportHuge"><i class="fas fa-microphone"></i></button>
           <div class="recording-hint" id="recordingHintText">🔴 正在聆聽，請說話...</div>
         </div>
@@ -2773,7 +2782,12 @@ function setupVoiceInput(triggerId, targetId, hintId = null) {
 
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   const recognition = new SpeechRecognition();
-  recognition.lang = 'zh-TW'; 
+  
+  // 新增：每次啟動語音前，去檢查長輩選的是國語還是台語
+  // 如果找不到下拉選單，預設就聽國語 (zh-TW)
+  const langSelect = document.getElementById('voiceLangSelect');
+  recognition.lang = langSelect ? langSelect.value : 'zh-TW'; 
+
   recognition.continuous = false; 
   recognition.interimResults = false;
 

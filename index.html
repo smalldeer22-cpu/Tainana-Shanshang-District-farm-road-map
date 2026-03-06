@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0303_V2)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0304_V1)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -2644,7 +2644,8 @@ async function submitChatComment() {
       comment: text, 
       nickname: nickname, 
       siteUrl: window.location.href, 
-      uid: getUserID() 
+      uid: getUserID(),
+      appKey: "TainanMap2026_SecureKey_v1" 
     };
     const response = await fetch(GOOGLE_SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) });
     const result = await response.json();

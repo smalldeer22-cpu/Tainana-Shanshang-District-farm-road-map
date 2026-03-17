@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0304_V1)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0316_V9)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -1338,6 +1338,154 @@
   }
   .file-upload-label { display: inline-block; background: #f1f5f9; color: #004080; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: bold; }
   .file-upload-label input { display: none; }
+/* === 巡檢專區專用樣式 === */
+#inspectionPwdOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 4000; justify-content: center; align-items: center; }
+.pwd-box { background: white; padding: 30px; border-radius: 12px; width: 90%; max-width: 350px; text-align: center; }
+.pwd-box input { width: 100%; padding: 10px; margin: 15px 0; font-size: 16px; text-align: center; border: 1px solid #ccc; border-radius: 8px; }
+#inspectionFormModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f0f2f5; z-index: 3500; overflow-y: auto; padding: 20px 10px; box-sizing: border-box; }
+.inspection-container { background: #fff; max-width: 800px; margin: 0 auto; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+.inspection-title { text-align: center; color: #004080; font-size: 24px; margin-bottom: 20px; font-weight: bold; }
+.insp-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; }
+.insp-col { flex: 1; min-width: 150px; display: flex; align-items: center; gap: 5px; }
+.insp-col input, .insp-col select { flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+.insp-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
+.insp-table th, .insp-table td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+.insp-table th { background: #e9ecef; }
+.insp-table input[type="text"] { width: 90%; padding: 4px; border: 1px solid #ccc; border-radius: 4px; }
+/* 照片區 */
+.insp-photos { display: flex; flex-wrap: wrap; gap: 15px; margin-top: 20px; }
+.insp-photo-box { width: 100%; max-width: 300px; border: 2px dashed #ccc; border-radius: 8px; padding: 10px; text-align: center; position: relative; background: #fafafa; }
+.insp-photo-box img { max-width: 100%; max-height: 200px; display: none; margin-bottom: 10px; border-radius: 4px; }
+.remove-photo-btn { position: absolute; top: -10px; right: -10px; background: #dc3545; color: white; border: 2px solid #fff; border-radius: 50%; width: 32px; height: 32px; font-size: 16px; font-weight: bold; cursor: pointer; display: none; align-items: center; justify-content: center; z-index: 10; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
+.add-photo-btn { font-size: 40px; color: #ccc; cursor: pointer; display: block; margin: 20px 0; }
+
+/* 產製 PDF 列印專用隱藏樣式 */
+@media print {
+  #inspectionFormModal { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #fff !important; z-index: 9999; padding: 0; overflow: visible; }
+  .inspection-container { box-shadow: none !important; border: none !important; max-width: 100%; margin: 0; padding: 0; background: #fff !important; }
+  .no-print, button, .add-slot-btn, .remove-photo-btn, .download-btn, #actionSheetOverlay { display: none !important; }
+  input, select { border: none !important; appearance: none; -webkit-appearance: none; background: transparent !important; color: #000; padding: 0; margin: 0; }
+  input[type="radio"] { display: inline-block !important; }
+  body * { visibility: hidden; }
+  #inspectionFormModal, #inspectionFormModal * { visibility: visible; }
+}
+.add-slot-btn { width: 100%; max-width: 300px; border: 2px dashed #17a2b8; color: #17a2b8; background: #e0f7fa; font-size: 20px; font-weight: bold; cursor: pointer; border-radius: 8px; display: flex; justify-content: center; align-items: center; padding: 20px; }
+.download-btn { background: #28a745; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; display: none; width: 100%; }
+/* Action Sheet */
+#actionSheetOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 5000; align-items: flex-end; justify-content: center; }
+.action-sheet { background: #f9f9f9; width: 100%; max-width: 400px; border-radius: 12px 12px 0 0; overflow: hidden; animation: slideUp 0.3s; }
+.action-btn { width: 100%; background: #fff; border: none; padding: 18px; font-size: 18px; color: #007bff; border-bottom: 1px solid #eee; cursor: pointer; }
+.action-btn.cancel { color: red; border-bottom: none; margin-top: 5px; }
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+/* =========================================
+   廠商完工回報專區 - 全新表格與相機選單樣式
+   ========================================= */
+.vendor-table-wrapper {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+.vendor-table-title {
+    background: #e8f4f8;
+    padding: 10px 15px;
+    font-weight: bold;
+    color: #004080;
+    border-bottom: 1px solid #ddd;
+    font-size: 16px;
+}
+.vendor-report-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+.vendor-report-table td {
+    border-bottom: 1px solid #eee;
+    padding: 8px;
+    vertical-align: middle;
+}
+.vendor-report-table tr:last-child td {
+    border-bottom: none;
+}
+.td-label {
+    width: 75px;
+    background: #fafafa;
+    color: #555;
+    font-weight: bold;
+    text-align: center;
+    border-right: 1px solid #eee;
+    line-height: 1.2;
+}
+.td-input input {
+    width: 100%;
+    border: 1px solid #ccc;
+    padding: 8px;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 14px;
+}
+.td-photo {
+    width: 120px;
+    text-align: center;
+    border-left: 1px solid #eee;
+    background: #fafafa;
+}
+.v-photo-box {
+    width: 100%;
+    height: 160px;
+    background: #fff;
+    border: 2px dashed #bbb;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: background 0.2s;
+}
+.v-photo-box:active {
+    background: #f0f0f0;
+}
+.v-photo-box i.fa-plus {
+    font-size: 30px;
+    color: #aaa;
+}
+.v-photo-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    position: absolute;
+    top: 0;
+    left: 0;
+    background: #000;
+}
+.v-delete-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: rgba(220, 53, 69, 0.9);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 26px;
+    height: 26px;
+    font-size: 14px;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+/* 底部選單滑出動畫 */
+@keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+}
 </style>
 </head>
 <body>
@@ -1389,20 +1537,26 @@
       <p>請選擇您的使用模式</p>
     </div>
     <div class="entry-actions">
-      <button class="entry-btn lite" onclick="selectMode('lite')">
-        <i class="fas fa-camera"></i>
-        <span>案件通報<br><small>(輕量版)</small></span>
-      </button>
-      <button class="entry-btn full" onclick="selectMode('full')">
-        <i class="fas fa-search-location"></i>
-        <span>公開查詢<br><small>(完整版)</small></span>
-      </button>
-<button class="entry-btn vendor" onclick="openVendorModal()" style="background: linear-gradient(135deg, #2e7d32, #1b5e20); color: white;">
-        <i class="fas fa-hard-hat"></i>
-        <span>廠商回報<br><small>(施工完工上傳)</small></span>
-      </button>
-    </div>
-  </div>
+     <button class="entry-btn lite" onclick="selectMode('lite')">
+       <i class="fas fa-camera"></i>
+       <span>案件通報<br><small>(輕量版)</small></span>
+     </button>
+     <button class="entry-btn full" onclick="selectMode('full')">
+       <i class="fas fa-search-location"></i>
+       <span>公開查詢<br><small>(完整版)</small></span>
+     </button>
+     <button class="entry-btn vendor" onclick="openVendorModal()" style="background: linear-gradient(135deg, #2e7d32, #1b5e20); color: white;">
+       <i class="fas fa-hard-hat"></i>
+       <span>廠商回報<br><small>(施工完工上傳)</small></span>
+     </button>
+     
+     <button class="entry-btn vendor" onclick="showInspectionPwd()" style="background: linear-gradient(135deg, #0277bd, #01579b); color: white;">
+       <i class="fas fa-clipboard-check"></i>
+       <span>巡檢廠商回報<br><small>(道路巡查填報)</small></span>
+     </button>
+     
+   </div>
+ </div>
 </div>
 
 <div id="voiceOverlay">
@@ -1524,10 +1678,26 @@
       </div>
 
       <div class="wizard-step" id="step2">
+        <div style="background:#fff5f5; color:#d32f2f; padding:12px; border-radius:6px; font-size:14px; line-height:1.6; margin-bottom:15px; border-left:5px solid #d32f2f; text-align:left;">
+          <strong style="font-size:15px;"><i class="fas fa-exclamation-triangle"></i> 通報受理範圍提醒：</strong><br>
+          本系統通報案件僅處理：<br>
+          1. 供公眾通行道路本體坑洞及損壞<br>
+          2. 供公眾通行道路旁側溝排水問題<br>
+          3. 供公眾通行道路旁擋土牆及邊坡崩塌、土石滑落等影響公眾通行<br>
+          4. 樹木災害影響公眾通行道路通行問題<br>
+          <div style="margin-top:8px; padding-top:8px; border-top:1px dashed #ffcdd2; font-weight:bold;">
+            ※ 其餘非與供公眾通行道路結構安全或影響通行外之衛生或路燈故障案件，不予受理通報。
+          </div>
+        </div>
+
         <div style="font-weight:bold; color:#333; margin-bottom:10px; font-size: 16px;">請簡述路況或損壞情形</div>
         <textarea id="reportDesc" class="report-textarea" maxlength="500" placeholder="(例如：路面坑洞)。最多500字。可以點擊下方麥克風用語音輸入！"></textarea>
         
-        
+        <div style="display: none;">
+          <select id="voiceLangSelect">
+            <option value="zh-TW" selected>國語 (預設)</option>
+          </select>
+        </div>
 
         <div class="huge-mic-wrapper" style="margin-top: 15px;">
           <button class="huge-mic-btn" id="voiceBtnReportHuge"><i class="fas fa-microphone"></i></button>
@@ -1584,13 +1754,22 @@
         ※ 本專區僅供機關授權之承攬廠商使用
       </div>
       
-      <div class="vendor-input-group">
-        <input type="password" id="vendorPwd" placeholder="請輸入廠商授權密碼">
-      </div>
-      <div class="vendor-input-group">
-        <input type="text" id="vendorCaseId" placeholder="請輸入案件編號 (例:1130520001)">
-        <button class="vendor-btn" onclick="fetchVendorCase()"><i class="fas fa-search"></i> 載入資料</button>
-      </div>
+      <div id="vendorStage1">
+       <div class="vendor-input-group" style="display:flex; gap:10px;">
+         <input type="password" id="vendorPwd" placeholder="請輸入廠商授權密碼" style="flex:1;">
+         <button class="vendor-btn" onclick="verifyVendorPwd()" style="background:#0056b3; width:auto; padding:10px 15px;"><i class="fas fa-key"></i> 登入</button>
+       </div>
+     </div>
+     
+     <div id="vendorStage2" style="display:none;">
+       <div class="vendor-input-group">
+         <input type="text" id="vendorCaseId" placeholder="請輸入案件編號 (例:1130520001)">
+         <button class="vendor-btn" onclick="fetchVendorCase()"><i class="fas fa-search"></i> 載入資料</button>
+       </div>
+       <div style="text-align:right; margin-top:-10px; margin-bottom:10px;">
+         <a href="#" onclick="logoutVendor()" style="font-size:13px; color:#d32f2f; text-decoration:underline;">切換帳號 / 登出</a>
+       </div>
+     </div>
 
       <div class="vendor-info-box" id="vendorInfoBox">
         <div style="font-weight:bold; color:#1b5e20; margin-bottom:5px;">案件已尋獲，請確認資訊：</div>
@@ -1599,34 +1778,121 @@
       </div>
 
       <div id="vendorUploadBlocks" style="display:none;">
-        <div style="font-size:12px; color:#666; margin-bottom:10px;">請依施工階段上傳照片 (每區最多20張)</div>
-        
-        <div class="vendor-upload-section">
-          <div class="vendor-upload-title">
-            <span>一、施工前照片</span>
-            <label class="file-upload-label"><input type="file" multiple accept="image/*" onchange="handleVendorFiles(this, 'Before')"><i class="fas fa-plus"></i> 選擇照片</label>
-          </div>
-          <div class="vendor-photo-grid" id="gridBefore"></div>
-        </div>
+    <div style="background:#e8f5e9; padding:10px; border-radius:8px; margin-bottom:15px; font-weight:bold; color:#2e7d32; display:flex; justify-content:space-between; align-items:center; border: 1px solid #c8e6c9;">
+        <span>目前已暫存：<span id="vendorCartCount" style="color:#d32f2f; font-size:18px;">0</span> 張照片</span>
+    </div>
+<div id="vendorTabsContainer" style="display:flex; gap:8px; margin-top:15px; margin-bottom:15px; overflow-x:auto; padding-bottom:5px;"></div>
 
-        <div class="vendor-upload-section">
-          <div class="vendor-upload-title">
-            <span>二、施工中照片 (機具/交維)</span>
-            <label class="file-upload-label"><input type="file" multiple accept="image/*" onchange="handleVendorFiles(this, 'During')"><i class="fas fa-plus"></i> 選擇照片</label>
-          </div>
-          <div class="vendor-photo-grid" id="gridDuring"></div>
-        </div>
+    <div class="vendor-table-wrapper">
+        <table class="vendor-report-table">
+            <tr>
+                <td class="td-label">拍照日期</td>
+                <td class="td-input"><input type="date" id="vDate1"></td>
+                <td class="td-photo" rowspan="5">
+                    <div class="v-photo-box" id="vPhotoBox1" onclick="openVendorActionSheet('1')">
+                        <i class="fas fa-plus"></i>
+                        <img id="vImg1" style="display:none;">
+                        <button class="v-delete-btn" id="vDel1" onclick="clearVendorPhoto('1', event)"><i class="fas fa-times"></i></button>
+                    </div>
+                </td>
+            </tr>
+            <tr><td class="td-label">施工位置</td><td class="td-input"><input type="text" id="vLoc1" placeholder="輸入位置"></td></tr>
+            <tr><td class="td-label">工程項目</td><td class="td-input"><input type="text" id="vItem1" placeholder="輸入項目"></td></tr>
+            <tr>
+                <td class="td-label">照片說明</td>
+                <td class="td-input">
+                    <select id="vDesc1" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px; font-size:14px;">
+                        <option value="施工前">施工前</option>
+                        <option value="施工中">施工中</option>
+                        <option value="施工後">施工後</option>
+                    </select>
+                </td>
+            </tr>
+            <tr><td class="td-label">備註</td><td class="td-input"><input type="text" id="vNote1" placeholder="輸入備註"></td></tr>
+        </table>
+    </div>
 
-        <div class="vendor-upload-section">
-          <div class="vendor-upload-title">
-            <span>三、施工後照片 (完工成果)</span>
-            <label class="file-upload-label"><input type="file" multiple accept="image/*" onchange="handleVendorFiles(this, 'After')"><i class="fas fa-plus"></i> 選擇照片</label>
-          </div>
-          <div class="vendor-photo-grid" id="gridAfter"></div>
-        </div>
+    <div class="vendor-table-wrapper">
+        <table class="vendor-report-table">
+            <tr>
+                <td class="td-label">拍照日期</td>
+                <td class="td-input"><input type="date" id="vDate2"></td>
+                <td class="td-photo" rowspan="5">
+                    <div class="v-photo-box" id="vPhotoBox2" onclick="openVendorActionSheet('2')">
+                        <i class="fas fa-plus"></i>
+                        <img id="vImg2" style="display:none;">
+                        <button class="v-delete-btn" id="vDel2" onclick="clearVendorPhoto('2', event)"><i class="fas fa-times"></i></button>
+                    </div>
+                </td>
+            </tr>
+            <tr><td class="td-label">施工位置</td><td class="td-input"><input type="text" id="vLoc2" placeholder="輸入位置"></td></tr>
+            <tr><td class="td-label">工程項目</td><td class="td-input"><input type="text" id="vItem2" placeholder="輸入項目"></td></tr>
+            <tr>
+                <td class="td-label">照片說明</td>
+                <td class="td-input">
+                    <select id="vDesc2" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px; font-size:14px;">
+                        <option value="施工前">施工前</option>
+                        <option value="施工中">施工中</option>
+                        <option value="施工後">施工後</option>
+                    </select>
+                </td>
+            </tr>
+            <tr><td class="td-label">備註</td><td class="td-input"><input type="text" id="vNote2" placeholder="輸入備註"></td></tr>
+        </table>
+    </div>
 
-        <button class="vendor-btn" style="width:100%; margin-top:10px; background:#e65100;" onclick="submitVendorReport()" id="btnSubmitVendor"><i class="fas fa-cloud-upload-alt"></i> 確認上傳回報</button>
-      </div>
+    <div class="vendor-table-wrapper">
+        <table class="vendor-report-table">
+            <tr>
+                <td class="td-label">拍照日期</td>
+                <td class="td-input"><input type="date" id="vDate3"></td>
+                <td class="td-photo" rowspan="5">
+                    <div class="v-photo-box" id="vPhotoBox3" onclick="openVendorActionSheet('3')">
+                        <i class="fas fa-plus"></i>
+                        <img id="vImg3" style="display:none;">
+                        <button class="v-delete-btn" id="vDel3" onclick="clearVendorPhoto('3', event)"><i class="fas fa-times"></i></button>
+                    </div>
+                </td>
+            </tr>
+            <tr><td class="td-label">施工位置</td><td class="td-input"><input type="text" id="vLoc3" placeholder="輸入位置"></td></tr>
+            <tr><td class="td-label">工程項目</td><td class="td-input"><input type="text" id="vItem3" placeholder="輸入項目"></td></tr>
+            <tr>
+                <td class="td-label">照片說明</td>
+                <td class="td-input">
+                    <select id="vDesc3" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px; font-size:14px;">
+                        <option value="施工前">施工前</option>
+                        <option value="施工中">施工中</option>
+                        <option value="施工後">施工後</option>
+                    </select>
+                </td>
+            </tr>
+            <tr><td class="td-label">備註</td><td class="td-input"><input type="text" id="vNote3" placeholder="輸入備註"></td></tr>
+        </table>
+    </div>
+
+    <div style="display:flex; gap:10px; margin-top:20px;">
+       <button class="vendor-btn" style="flex:1; background:#0056b3;" id="btnVendorSave" onclick="saveVendorCartData()"><i class="fas fa-save"></i> 暫存</button>
+       <button class="vendor-btn" style="flex:1; background:#ccc; color:#fff; cursor:not-allowed;" id="btnVendorNext" onclick="nextVendorGroup()" disabled><i class="fas fa-layer-group"></i> 上傳其他照片</button>
+   </div>
+   <div style="display:flex; gap:10px; margin-top:10px;">
+       <button class="vendor-btn" style="flex:1; background:#ccc; color:#fff; cursor:not-allowed;" id="btnSubmitVendor" onclick="submitVendorCart()" disabled><i class="fas fa-cloud-upload-alt"></i> 送出/上傳</button>
+       <button class="vendor-btn" style="flex:1; background:#ccc; color:#fff; cursor:not-allowed;" id="btnVendorPrint" onclick="confirmBackupPDF()" disabled><i class="fas fa-file-pdf"></i> 備份PDF檔</button>
+   </div>
+   <div style="display:none; margin-top:15px;" id="btnVendorCancelBlock">
+       <button class="vendor-btn" style="width:100%; background:#d32f2f; color:#fff;" onclick="logoutVendor()"><i class="fas fa-times"></i> 取消 (退回首頁)</button>
+   </div>
+
+    <input type="file" id="vendorHiddenCamera" accept="image/*" capture="environment" style="display:none;" onchange="handleVendorImageSelect(this)">
+    <input type="file" id="vendorHiddenAlbum" accept="image/*" style="display:none;" onchange="handleVendorImageSelect(this)">
+</div>
+
+<div id="vendorActionSheet" onclick="closeVendorActionSheet(event)" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:999999; align-items:flex-end; justify-content:center;">
+    <div style="background:#f9f9f9; width:100%; max-width:600px; border-radius:12px 12px 0 0; overflow:hidden; animation:slideUp 0.3s; display:flex; flex-direction:column;">
+        <button onclick="executeVendorAction('camera')" style="width:100%; background:#fff; border:none; padding:18px; font-size:18px; color:#007bff; border-bottom:1px solid #eee; cursor:pointer;">📸 拍攝照片</button>
+        <button onclick="executeVendorAction('album')" style="width:100%; background:#fff; border:none; padding:18px; font-size:18px; color:#007bff; border-bottom:1px solid #eee; cursor:pointer;">🖼️ 從相簿挑選</button>
+        <button onclick="closeVendorActionSheet(event)" style="width:100%; background:#fff; border:none; padding:18px; font-size:18px; color:red; cursor:pointer; margin-top:5px;">取消</button>
+    </div>
+</div>
     </div>
   </div>
 </div>
@@ -1998,6 +2264,114 @@
 <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
 <script src="https://unpkg.com/topojson-client@3"></script>
 <script src="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol/dist/L.Control.Locate.min.js"></script>
+<div class="overlay" id="inspectionPwdOverlay" style="display:none; z-index:9999; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); align-items:center; justify-content:center;">
+  
+  <div class="modal-content" style="padding:0; overflow:hidden; max-width:800px; width:90%; height:85vh; display:flex; flex-direction:column; background:#fff; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.15);">
+    
+    <div style="background:#004080; color:white; padding:15px 20px; display:flex; justify-content:space-between; align-items:center;">
+      <h3 style="margin:0; font-size:18px;"><i class="fas fa-search-location"></i> 巡檢廠商專區</h3>
+      <button onclick="cancelInspectionPwd()" style="background:none; border:none; color:white; font-size:24px; cursor:pointer;"><i class="fas fa-times"></i></button>
+    </div>
+    
+    <div style="padding:30px; overflow-y:auto; flex:1; background:#f8f9fa; display:flex; flex-direction:column; align-items:flex-start; justify-content:flex-start;">
+      
+      <div style="width:100%; text-align:left;">
+        <div style="color:#d32f2f; font-size:14px; font-weight:bold; margin-bottom:15px;">
+          ※ 本專區僅供機關授權之巡檢廠商使用
+        </div>
+        <div style="display:flex; gap:10px; max-width:500px;">
+          <input type="password" id="inspPwdInput" placeholder="請輸入巡檢授權密碼" style="flex:1; padding: 10px; border: 1px solid #004080; border-radius: 6px; font-size: 15px; outline:none; box-shadow: 0 2px 5px rgba(0,0,0,0.1); background:#fff;">
+          <button onclick="verifyInspectionPwd()" style="background:#004080; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer;"><i class="fas fa-key"></i> 登入</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div id="actionSheetOverlay" onclick="closeActionSheet(event)">
+  <div class="action-sheet">
+    <button class="action-btn" onclick="triggerInspFileInput('camera')">📸 拍攝照片</button>
+    <button class="action-btn" onclick="triggerInspFileInput('album')">🖼️ 從相簿挑選</button>
+    <button class="action-btn cancel" onclick="closeActionSheet(event)">取消</button>
+  </div>
+</div>
+
+<div id="inspectionFormModal">
+  <div class="inspection-container">
+    <div style="display:flex; justify-content:flex-end; margin-bottom: 10px;">
+      <button onclick="closeInspectionForm()" style="background:#dc3545; color:white; border:none; padding:8px 15px; border-radius:5px;">關閉表單</button>
+    </div>
+    <div style="text-align: center; font-size: 26px; font-weight: bold; margin-bottom: 20px; color: #000; letter-spacing: 2px;">道路巡查報告表</div>
+    
+    <div style="margin-bottom: 10px; font-size: 16px; color: #000; line-height: 2;">
+      <div>道路編號/名稱：<input type="text" id="inspRoadName" style="border:none; border-bottom:1px solid #000; outline:none; width:300px; font-size:16px; background:transparent;"></div>
+      <div>日期：<input type="date" id="inspDate" style="border:none; border-bottom:1px solid #000; outline:none; font-size:16px; background:transparent;"></div>
+      <div>天氣狀況(晴/陰/雨)：
+        <select id="inspWeather" style="border:none; border-bottom:1px solid #000; outline:none; font-size:16px; background:transparent;">
+          <option>晴</option><option>陰</option><option>雨</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="overflow-x: auto;">
+      <table class="insp-table" style="border: 2px solid #000; color: #000; margin-top: 0; width: 100%;">
+        <thead>
+          <tr>
+            <th colspan="8" style="text-align: left; font-weight: normal; padding: 10px; background: #fff; border-bottom: 2px solid #000; border-top: 2px solid #000;">
+              <div style="display: flex; justify-content: space-between; flex-wrap: wrap;">
+                <span>巡查單位：<input type="text" id="inspUnit" value="廠商" style="border:none; border-bottom:1px solid #000; outline:none; font-size:16px; width:200px; background:transparent;"></span>
+                <span>巡查類別：
+                  <select id="inspType" style="border:none; outline:none; font-size:16px; background:transparent; cursor:pointer;">
+                    <option value="經常/定期">■經常/定期 □特別</option>
+                    <option value="特別">□經常/定期 ■特別</option>
+                  </select>
+                </span>
+              </div>
+            </th>
+          </tr>
+          <tr>
+            <th rowspan="2" style="width: 70px;">主分類</th>
+            <th rowspan="2" style="width: 70px;">次分類</th>
+            <th rowspan="2">巡查項目</th>
+            <th colspan="2">是否有此項目</th>
+            <th rowspan="2">狀況說明</th>
+            <th rowspan="2">辦理<br>改善意見</th>
+            <th rowspan="2">辦理情形及<br>完成時間</th>
+          </tr>
+          <tr>
+            <th style="min-width: 40px;">是</th>
+            <th style="min-width: 40px;">否</th>
+          </tr>
+        </thead>
+        <tbody id="inspTableBody">
+          </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="8" style="text-align: left; padding: 15px 10px; white-space: nowrap; background: #fff;">
+              <div style="display: flex; justify-content: space-between; width: 100%;">
+                <span>巡查人員：<input type="text" id="inspSign1" style="border:none; border-bottom:1px solid #000; outline:none; width:120px; background:transparent;"></span>
+                <span>承辦人：<input type="text" id="inspSign2" style="border:none; width:120px; background:transparent;" disabled></span>
+                <span>單位主管：<input type="text" id="inspSign3" style="border:none; width:120px; background:transparent;" disabled></span>
+              </div>
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <hr style="margin: 20px 0;">
+    <h3 style="color:#004080;">📷 巡查現場照片</h3>
+    
+    <div class="insp-photos" id="inspPhotoContainer">
+      </div>
+
+    <div style="display: flex; gap: 10px; margin-top: 30px;" class="no-print">
+      <button id="btnInspSubmit" onclick="submitInspectionReport()" class="entry-btn" style="background:#28a745; flex:1; padding:15px; font-size:18px; color:white; border:none; border-radius:8px; cursor:pointer;">🚀 送出巡查報告</button>
+      <button id="btnInspPrint" onclick="window.print()" class="entry-btn" style="background:#ccc; flex:1; padding:15px; font-size:18px; color:white; border:none; border-radius:8px; cursor:not-allowed;" disabled>🖨️ 儲存/列印 PDF 備份</button>
+    </div>
+  </div>
+</div>
 <script>
 // === 視窗控制與安全過濾 ===
 function openAiLogicModal() { document.getElementById('aiLogicModal').style.display = 'flex'; }
@@ -2778,7 +3152,10 @@ function setupVoiceInput(triggerId, targetId, hintId = null) {
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   const recognition = new SpeechRecognition();
   
-  recognition.lang = 'zh-TW'; 
+  // 新增：每次啟動語音前，去檢查長輩選的是國語還是台語
+  // 如果找不到下拉選單，預設就聽國語 (zh-TW)
+  const langSelect = document.getElementById('voiceLangSelect');
+  recognition.lang = langSelect ? langSelect.value : 'zh-TW'; 
 
   recognition.continuous = false; 
   recognition.interimResults = false;
@@ -5305,138 +5682,628 @@ window.switchTab = function(tabId) {
     isNewsLoaded = true; // 記錄已載入，避免每次點都重新抓
   }
 };
-// === 新增：廠商完工回報前端邏輯 ===
-let vendorPhotoData = { Before: [], During: [], After: [] };
+// === 新增：廠商完工回報前端邏輯 (2026 自由下拉選單修復版) ===
+let vendorCart = [];
+    let currentEditIndex = -1; 
+    let isEditMode = false;
+    let hasModified = false;
 
-function openVendorModal() {
-  document.getElementById('entryModal').style.display = 'none';
-  document.getElementById('vendorOverlay').style.display = 'flex';
-  document.getElementById('vendorUploadBlocks').style.display = 'none';
-  document.getElementById('vendorInfoBox').style.display = 'none';
-  document.getElementById('vendorCaseId').value = '';
-}
-
-function closeVendorModal() {
-  document.getElementById('vendorOverlay').style.display = 'none';
-  vendorPhotoData = { Before: [], During: [], After: [] };
-  ['Before', 'During', 'After'].forEach(type => document.getElementById(`grid${type}`).innerHTML = '');
-}
-
-async function fetchVendorCase() {
-  const caseId = document.getElementById('vendorCaseId').value.trim();
-  if(!caseId) return alert("請輸入案件編號！");
-  
-  const btn = document.querySelector('#vendorCaseId + button');
-  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-  btn.disabled = true;
-
-  try {
-    const res = await fetch(`${GOOGLE_SCRIPT_URL}?action=getCaseDetail&caseId=${caseId}`);
-    const json = await res.json();
-    if(json.result === "success") {
-      document.getElementById('vendorCoord').innerText = `座標：${json.data.twd97 || '無紀錄'}`;
-      document.getElementById('vendorDesc').innerText = `案情：${json.data.description || '無紀錄'}`;
-      document.getElementById('vendorInfoBox').style.display = 'block';
-      document.getElementById('vendorUploadBlocks').style.display = 'block';
-    } else {
-      alert("❌ 查無此案件，請確認編號是否正確！");
-      document.getElementById('vendorInfoBox').style.display = 'none';
-      document.getElementById('vendorUploadBlocks').style.display = 'none';
-    }
-  } catch(e) {
-    alert("連線失敗，請稍後再試");
-  } finally {
-    btn.innerHTML = '<i class="fas fa-search"></i> 載入資料';
-    btn.disabled = false;
-  }
-}
-
-// --- 處理廠商照片選取 ---
-async function handleVendorFiles(input, type) {
-  const files = input.files;
-  if(files.length === 0) return;
-  
-  if(vendorPhotoData[type].length + files.length > 20) {
-    return alert(`每區塊最多只能上傳 20 張照片！目前已選 ${vendorPhotoData[type].length} 張。`);
-  }
-
-  for(let i=0; i<files.length; i++) {
-    const file = files[i];
-    // 客戶端壓縮照片 (寬度1280px, 畫質0.8) 避免上傳過慢
-    compressImage(file, 1280, 0.8, (dataUrl) => {
-      vendorPhotoData[type].push(dataUrl); // 存入陣列
-      renderVendorPhotoGrid(type); // 重新繪製該區塊的預覽圖
-    });
-  }
-  input.value = ""; // 清空選取，允許重複選相同的檔案
-}
-
-// --- 繪製預覽圖與刪除按鈕 ---
-function renderVendorPhotoGrid(type) {
-  const grid = document.getElementById(`grid${type}`);
-  grid.innerHTML = ''; // 清空畫面
-  
-  vendorPhotoData[type].forEach((dataUrl, index) => {
-    const div = document.createElement('div');
-    div.className = 'vendor-photo-item';
-    div.innerHTML = `
-      <img src="${dataUrl}">
-      <button class="vendor-photo-delete-btn" onclick="removeVendorPhoto('${type}', ${index})" title="移除這張照片">
-        <i class="fas fa-times"></i>
-      </button>
-    `;
-    grid.appendChild(div);
-  });
-}
-
-// --- 刪除特定照片 ---
-window.removeVendorPhoto = function(type, index) {
-  vendorPhotoData[type].splice(index, 1); // 從陣列中把該照片抽出剔除
-  renderVendorPhotoGrid(type); // 重新繪製剩下的預覽圖
-};
-
-async function submitVendorReport() {
-  const pwd = document.getElementById('vendorPwd').value.trim();
-  const caseId = document.getElementById('vendorCaseId').value.trim();
-  
-  if(!pwd) return alert("請輸入廠商授權密碼！");
-  if(vendorPhotoData.Before.length === 0 && vendorPhotoData.During.length === 0 && vendorPhotoData.After.length === 0) {
-    return alert("請至少上傳一張照片！");
-  }
-  if(!confirm(`確定要為案件 ${caseId} 送出完工照片嗎？\n資料送出後需較長處理時間，請耐心等候。`)) return;
-
-  const btn = document.getElementById('btnSubmitVendor');
-  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 上傳處理中，請勿關閉視窗...';
-  btn.disabled = true;
-
-  try {
-    const payload = {
-      action: "vendorReport",
-appKey: "TainanMap2026_SecureKey_v1",
-      vendorPassword: pwd,
-      caseId: caseId,
-      photosBefore: vendorPhotoData.Before,
-      photosDuring: vendorPhotoData.During,
-      photosAfter: vendorPhotoData.After
+    // 階段一：驗證密碼邏輯
+    window.verifyVendorPwd = function() {
+        const pwd = document.getElementById('vendorPwd').value.trim();
+        if(!pwd) return alert("請輸入廠商授權密碼！");
+        if(pwd === "Admin2026Vendor") {
+            document.getElementById('vendorStage1').style.display = 'none';
+            document.getElementById('vendorStage2').style.display = 'block';
+        } else {
+            alert("❌ 密碼錯誤！請確認授權密碼。");
+        }
     };
 
-    const response = await fetch(GOOGLE_SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) });
-    const result = await response.json();
+    /// 階段二：退回搜尋畫面 (不清除密碼，解決重登困擾)
+    window.backToVendorSearch = function() {
+        document.getElementById('vendorCaseId').value = '';
+        document.getElementById('vendorUploadBlocks').style.display = 'none';
+        document.getElementById('vendorInfoBox').style.display = 'none';
+        vendorCart = [];
+        currentEditIndex = -1;
+        isEditMode = false;
+        hasModified = false;
+        document.getElementById('vendorCartCount').innerText = '0';
+        const tabs = document.getElementById('vendorTabsContainer');
+        if (tabs) tabs.innerHTML = '';
+        ['1', '2', '3'].forEach(t => clearVendorPhoto(t, null));
+    };
 
-    if(result.result === "success") {
-      alert("✅ 完工照片上傳成功！驗收資料已同步至後台。");
-      closeVendorModal();
-      document.getElementById('entryModal').style.display = 'flex'; // 回到主畫面
-    } else {
-      alert("❌ 上傳失敗: " + (result.error || "授權碼錯誤或伺服器異常"));
+    // 登出：完全清除包含密碼 (供切換帳號用)
+    window.logoutVendor = function() {
+        document.getElementById('vendorPwd').value = '';
+        document.getElementById('vendorStage1').style.display = 'block';
+        document.getElementById('vendorStage2').style.display = 'none';
+        window.backToVendorSearch();
+    };
+
+// === 補回遺失的分流三開關功能 ===
+    window.openVendorModal = function() {
+        if(document.getElementById('entryModal')) document.getElementById('entryModal').style.display = 'none';
+        const overlay = document.getElementById('vendorOverlay');
+        if(overlay) {
+            overlay.style.display = 'flex';
+            overlay.style.zIndex = '9999';
+            document.getElementById('vendorUploadBlocks').style.display = 'none';
+            document.getElementById('vendorInfoBox').style.display = 'none';
+            const pwd = document.getElementById('vendorPwd').value.trim();
+            if (pwd === "Admin2026Vendor") {
+                document.getElementById('vendorStage1').style.display = 'none';
+                document.getElementById('vendorStage2').style.display = 'block';
+            } else {
+                document.getElementById('vendorStage1').style.display = 'block';
+                document.getElementById('vendorStage2').style.display = 'none';
+            }
+        }
+    };
+
+    window.closeVendorModal = function() {
+        const overlay = document.getElementById('vendorOverlay');
+        if(overlay) overlay.style.display = 'none';
+        if(document.getElementById('entryModal')) document.getElementById('entryModal').style.display = 'flex';
+        document.getElementById('vendorCaseId').value = '';
+    };
+    // ===============================
+
+
+    // 🌟 轉換 Google Drive 網址的輔助函式 (突破 Google 最新防盜鏈限制)
+    window.getDriveDirectUrlVendor = function(url) {
+        if (!url) return '';
+        let finalUrl = url.trim();
+        let fileId = "";
+        
+        // 精準抓取 Google Drive 的檔案 ID
+        if (finalUrl.includes('drive.google.com/open?id=')) {
+            fileId = finalUrl.split('open?id=')[1].split('&')[0];
+        } else if (finalUrl.includes('drive.google.com/file/d/')) {
+            fileId = finalUrl.split('/file/d/')[1].split('/')[0];
+        } else if (finalUrl.includes('id=')) {
+            fileId = finalUrl.split('id=')[1].split('&')[0];
+        }
+
+        // 如果成功抓到 ID，改用 thumbnail API 強制渲染 (保證能顯示，且不破壞比例)
+        if (fileId) {
+            return 'https://drive.google.com/thumbnail?id=' + fileId + '&sz=w1000';
+        }
+        return finalUrl;
+    };
+
+    // 🌟 安全解析網址 (支援 JSON 與逗號字串雙軌制)
+    window.parseVendorUrls = function(urlData) {
+        if (!urlData) return [];
+        try {
+            let parsed = JSON.parse(urlData);
+            if (Array.isArray(parsed)) return parsed;
+        } catch(e) {}
+        if (typeof urlData === 'string') {
+            return urlData.split(',').map(u => u.trim()).filter(u => u !== '');
+        }
+        return [];
+    };
+
+    // 查詢案件與歷史資料載入 (終極強化版)
+    window.fetchVendorCase = async function() {
+        const caseId = document.getElementById('vendorCaseId').value.trim();
+        const pwd = document.getElementById('vendorPwd').value.trim();
+        if(!caseId || !pwd) return alert("請輸入廠商授權密碼與案件編號！");
+
+        const btn = document.querySelector('#vendorStage2 .vendor-btn');
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 查詢中...';
+        btn.disabled = true;
+
+        try {
+            const res = await fetch(`${GOOGLE_SCRIPT_URL}?action=getCaseDetail&caseId=${caseId}`);
+            const json = await res.json();
+            if(json.result === "success") {
+                document.getElementById('vendorCoord').innerText = `座標：${json.data.twd97 || '無紀錄'}`;
+                document.getElementById('vendorDesc').innerText = `案情：${json.data.description || '無紀錄'}`;
+
+                let hasHistory = false;
+                let parsedDetails = [];
+                try {
+                    if (json.data.vendorDetailsJSON && json.data.vendorDetailsJSON.length > 5) {
+                        parsedDetails = JSON.parse(json.data.vendorDetailsJSON);
+                        if (parsedDetails.length > 0) hasHistory = true;
+                    }
+                } catch(e) {}
+
+                // 🌟 新增：還原顯示 3 個區塊
+                const wrappers = document.querySelectorAll('.vendor-table-wrapper');
+                wrappers.forEach(w => w.style.display = 'block');
+                
+                // 🌟 讀取舊照片並進行防呆轉換
+                let urlsBefore = window.parseVendorUrls(json.data.photosVendorBefore);
+                let urlsDuring = window.parseVendorUrls(json.data.photosVendorDuring);
+                let urlsAfter  = window.parseVendorUrls(json.data.photosVendorAfter);
+                
+                // 🌟 極舊案件救援：如果沒有 X 欄明細，但有照片網址，自動生出預設明細
+                if (!hasHistory && (urlsBefore.length > 0 || urlsDuring.length > 0 || urlsAfter.length > 0)) {
+                    urlsBefore.forEach(() => parsedDetails.push({category: '施工前', date: '', loc: '', item: '', desc: '施工前', note: ''}));
+                    urlsDuring.forEach(() => parsedDetails.push({category: '施工中', date: '', loc: '', item: '', desc: '施工中', note: ''}));
+                    urlsAfter.forEach(() => parsedDetails.push({category: '施工後', date: '', loc: '', item: '', desc: '施工後', note: ''}));
+                    hasHistory = true;
+                }
+
+                if (hasHistory) {
+                    if (confirm("⚠️ 此案件之前已經上傳過照片，請問是否要進行「修改」？\n(點選「確定」進入編輯模式載入舊資料，點選「取消」將退回)")) {
+                        isEditMode = true;
+                        hasModified = false;
+                        
+                        let flatHistory = parsedDetails.map(d => {
+                            let url = "";
+                            if (d.category === '施工前' && urlsBefore.length > 0) url = urlsBefore.shift();
+                            else if (d.category === '施工中' && urlsDuring.length > 0) url = urlsDuring.shift();
+                            else if (d.category === '施工後' && urlsAfter.length > 0) url = urlsAfter.shift();
+                            
+                            // 🌟 轉址核心：把 Google Drive 網址變成圖片顯示網址
+                            let directUrl = window.getDriveDirectUrlVendor(url);
+                            
+                            return { ...d, fullBase64: directUrl, base64: url };
+                        });
+
+                        // 🌟 智能分組：每 3 個歷史照片綁成 1 組
+                        vendorCart = [];
+                        for(let i=0; i<flatHistory.length; i+=3) {
+                            vendorCart.push(flatHistory.slice(i, i+3));
+                        }
+                    } else {
+                        window.backToVendorSearch();
+                        return;
+                    }
+                } else {
+                    isEditMode = false;
+                    hasModified = false;
+                    vendorCart = [];
+                }
+
+                document.getElementById('vendorInfoBox').style.display = 'block';
+                document.getElementById('vendorUploadBlocks').style.display = 'block';
+
+                bindVendorModifications();
+                if (isEditMode) {
+                    renderVendorTabs();
+                    loadTab(0);
+                } else {
+                    nextVendorGroup();
+                }
+
+            } else {
+                alert("❌ 查無此案件！");
+            }
+        } catch(e) {
+            alert("連線失敗");
+        } finally {
+            btn.innerHTML = '<i class="fas fa-search"></i> 載入資料';
+            btn.disabled = false;
+        }
+    };
+
+    // 監聽變更
+    function bindVendorModifications() {
+        ['1', '2', '3'].forEach(t => {
+            ['vDate', 'vLoc', 'vItem', 'vDesc', 'vNote'].forEach(prefix => {
+                let el = document.getElementById(prefix + t);
+                if(el) {
+                    el.addEventListener('input', () => { hasModified = true; updateVendorButtonStates(); });
+                    el.addEventListener('change', () => { hasModified = true; updateVendorButtonStates(); });
+                }
+            });
+        });
     }
-  } catch(e) {
-    alert("❌ 連線逾時或發生錯誤，請稍後再試。");
-  } finally {
-    btn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> 確認上傳回報';
-    btn.disabled = false;
-  }
-}
+
+    // 🌟 控制按鈕與鼠標 (手指 pointer / 禁止 not-allowed)
+    window.updateVendorButtonStates = function() {
+        const btnSave = document.getElementById('btnVendorSave');
+        const btnNext = document.getElementById('btnVendorNext');
+        const btnSubmit = document.getElementById('btnSubmitVendor');
+        const btnPrint = document.getElementById('btnVendorPrint');
+        const cancelBlock = document.getElementById('btnVendorCancelBlock');
+
+        if(!btnSave || !btnNext || !btnSubmit || !btnPrint) return;
+
+        const disableBtn = (btn) => {
+            btn.disabled = true;
+            btn.style.background = "#ccc";
+            btn.style.color = "#fff";
+            btn.style.cursor = "not-allowed";
+        };
+        const enableBtn = (btn, bg, color) => {
+            btn.disabled = false;
+            btn.style.background = bg;
+            btn.style.color = color || "#fff";
+            btn.style.cursor = "pointer";
+        };
+
+        disableBtn(btnSave);
+        btnSave.innerHTML = `<i class="fas fa-save"></i> ${isEditMode ? "修改" : "暫存"}`;
+        disableBtn(btnNext);
+        disableBtn(btnSubmit);
+        disableBtn(btnPrint);
+
+        if(cancelBlock) {
+            cancelBlock.style.display = isEditMode ? "block" : "none";
+            const cancelBtn = cancelBlock.querySelector('button');
+            if(cancelBtn) cancelBtn.onclick = window.backToVendorSearch;
+        }
+
+        if (vendorCart.length === 0) {
+            enableBtn(btnSave, "#0056b3");
+        } else {
+            if (isEditMode) {
+                if (hasModified) {
+                    enableBtn(btnSave, "#0056b3");
+                    enableBtn(btnNext, "#f0ad4e", "#333");
+                    enableBtn(btnSubmit, "#2e7d32");
+                }
+            } else {
+                enableBtn(btnSave, "#0056b3");
+                enableBtn(btnNext, "#f0ad4e", "#333");
+                enableBtn(btnSubmit, "#2e7d32");
+            }
+        }
+    };
+
+    window.renderVendorTabs = function() {
+        const container = document.getElementById('vendorTabsContainer');
+        if(!container) return;
+        container.innerHTML = '';
+        vendorCart.forEach((item, index) => {
+            const btn = document.createElement('button');
+            btn.innerText = `第 ${index + 1} 組`;
+            btn.style.padding = "5px 12px";
+            btn.style.border = "2px solid #004080";
+            btn.style.background = currentEditIndex === index ? "#004080" : "#fff";
+            btn.style.color = currentEditIndex === index ? "#fff" : "#004080";
+            btn.style.borderRadius = "6px";
+            btn.style.fontWeight = "bold";
+            btn.style.cursor = "pointer";
+            btn.onclick = () => loadTab(index);
+            container.appendChild(btn);
+        });
+    };
+
+    // 載入該頁籤的 3 個欄位資料到畫面上
+    window.loadTab = function(index) {
+        if (index < 0 || index >= vendorCart.length) return;
+        currentEditIndex = index;
+        const groupData = vendorCart[index];
+
+        ['1', '2', '3'].forEach((t, i) => {
+            const data = groupData[i];
+            if (data) {
+                document.getElementById('vDate' + t).value = data.date || '';
+                document.getElementById('vLoc' + t).value = data.loc || data.location || '';
+                document.getElementById('vItem' + t).value = data.item || '';
+                document.getElementById('vDesc' + t).value = data.desc || data.category || '施工前';
+                document.getElementById('vNote' + t).value = data.note || '';
+
+                const img = document.getElementById('vImg' + t);
+                if (data.fullBase64 && data.fullBase64.length > 5) {
+                    img.src = data.fullBase64;
+                    img.style.display = 'block';
+                    document.querySelector('#vPhotoBox' + t + ' i.fa-plus').style.display = 'none';
+                    document.getElementById('vDel' + t).style.display = 'flex';
+                } else {
+                    clearVendorPhoto(t, null);
+                }
+            } else {
+                document.getElementById('vDate' + t).value = '';
+                document.getElementById('vLoc' + t).value = '';
+                document.getElementById('vItem' + t).value = '';
+                document.getElementById('vDesc' + t).selectedIndex = 0;
+                document.getElementById('vNote' + t).value = '';
+                clearVendorPhoto(t, null);
+            }
+        });
+        hasModified = false;
+        renderVendorTabs();
+        updateVendorButtonStates();
+    };
+
+    window.openVendorActionSheet = function(type) {
+        currentVendorPhotoType = type;
+        document.getElementById('vendorActionSheet').style.display = 'flex';
+    };
+    window.closeVendorActionSheet = function(e) {
+        document.getElementById('vendorActionSheet').style.display = 'none';
+    };
+    window.executeVendorAction = function(action) {
+        closeVendorActionSheet();
+        if (action === 'camera') document.getElementById('vendorHiddenCamera').click();
+        if (action === 'album') document.getElementById('vendorHiddenAlbum').click();
+    };
+
+    window.handleVendorImageSelect = function(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('vImg' + currentVendorPhotoType).src = e.target.result;
+                document.getElementById('vImg' + currentVendorPhotoType).style.display = 'block';
+                document.querySelector('#vPhotoBox' + currentVendorPhotoType + ' i.fa-plus').style.display = 'none';
+                document.getElementById('vDel' + currentVendorPhotoType).style.display = 'flex';
+                hasModified = true;
+                updateVendorButtonStates();
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+        input.value = ''; 
+    };
+
+    window.clearVendorPhoto = function(type, event) {
+        if(event) event.stopPropagation();
+        const img = document.getElementById('vImg' + type);
+        if (img) {
+            img.src = '';
+            img.style.display = 'none';
+        }
+        const box = document.querySelector('#vPhotoBox' + type + ' i.fa-plus');
+        if (box) box.style.display = 'block';
+        const delBtn = document.getElementById('vDel' + type);
+        if (delBtn) delBtn.style.display = 'none';
+        hasModified = true;
+        if(typeof updateVendorButtonStates === "function") updateVendorButtonStates();
+    };
+
+    window.saveVendorCartData = function() {
+        let currentGroup = [];
+        let hasPhoto = false;
+
+        ['1', '2', '3'].forEach(t => {
+            const img = document.getElementById('vImg' + t);
+            if (img && img.src && img.style.display !== 'none') {
+                hasPhoto = true;
+                currentGroup.push({
+                    category: document.getElementById('vDesc' + t).value,
+                    fullBase64: img.src,
+                    base64: img.src.includes('base64,') ? img.src.split('base64,')[1] : img.src,
+                    date: document.getElementById('vDate' + t).value,
+                    location: document.getElementById('vLoc' + t).value,
+                    item: document.getElementById('vItem' + t).value,
+                    desc: document.getElementById('vDesc' + t).value,
+                    note: document.getElementById('vNote' + t).value
+                });
+            }
+        });
+
+        if (!hasPhoto) return alert("⚠️ 此組請至少拍攝或上傳一張照片！");
+
+        if (isEditMode && currentEditIndex >= 0) {
+            vendorCart[currentEditIndex] = currentGroup;
+            alert(`✅ 第 ${currentEditIndex + 1} 組已修改儲存！`);
+        } else {
+            vendorCart.push(currentGroup);
+            currentEditIndex = vendorCart.length - 1;
+            alert(`✅ 已成功暫存！目前共 ${vendorCart.length} 組。`);
+        }
+
+        hasModified = true;
+        let totalPhotos = 0;
+        vendorCart.forEach(g => totalPhotos += g.length);
+        document.getElementById('vendorCartCount').innerText = totalPhotos;
+        renderVendorTabs();
+        updateVendorButtonStates();
+    };
+
+    window.nextVendorGroup = function() {
+        currentEditIndex = -1; // 準備新增
+        ['1', '2', '3'].forEach(t => {
+            document.getElementById('vDate' + t).value = '';
+            document.getElementById('vLoc' + t).value = '';
+            document.getElementById('vItem' + t).value = '';
+            document.getElementById('vDesc' + t).selectedIndex = 0;
+            document.getElementById('vNote' + t).value = '';
+            clearVendorPhoto(t, null);
+        });
+        hasModified = false; 
+        renderVendorTabs();
+        updateVendorButtonStates();
+        alert("畫面已清空，請繼續拍攝「下一組」照片");
+    };
+
+    window.submitVendorCart = function() {
+        const caseId = document.getElementById('vendorCaseId').value.trim();
+        if (vendorCart.length === 0) return alert("請先暫存資料！");
+
+        const submitBtn = document.getElementById('btnSubmitVendor');
+        submitBtn.disabled = true;
+        submitBtn.innerText = "⏳ 上傳中...";
+        submitBtn.style.cursor = "not-allowed";
+
+        let pBefore = [], pDuring = [], pAfter = [];
+        let detailsPack = [];
+
+        vendorCart.forEach(group => {
+            group.forEach(photo => {
+                if(photo.category === '施工前') pBefore.push(photo.base64);
+                if(photo.category === '施工中') pDuring.push(photo.base64);
+                if(photo.category === '施工後') pAfter.push(photo.base64);
+                detailsPack.push({
+                    category: photo.category,
+                    date: photo.date,
+                    loc: photo.location,
+                    item: photo.item,
+                    desc: photo.desc,
+                    note: photo.note
+                });
+            });
+        });
+
+        const secureKey = (typeof APP_KEY !== 'undefined') ? APP_KEY : "TainanMap2026_SecureKey_v1";
+
+        fetch(GOOGLE_SCRIPT_URL, {
+            method: "POST",
+            body: JSON.stringify({
+                action: "vendorReport",
+                appKey: secureKey,
+                caseId: caseId,
+                vendorPassword: document.getElementById('vendorPwd').value,
+                photosBefore: pBefore,
+                photosDuring: pDuring,
+                photosAfter: pAfter,
+                vendorDetails: detailsPack
+            })
+        })
+        .then(res => res.json())
+        .then(res => {
+            submitBtn.innerText = "送出/上傳"; // 🌟 復原文字
+            if(res.result === "success") {
+                if (confirm("✅ 上傳成功！請問是否要產製「備份PDF檔」？\n(點選「確定」將亮起備份按鈕，點選「取消」將退回)")) {
+                    hasModified = false;
+                    isEditMode = false;
+                    updateVendorButtonStates(); // 全關
+                    const btnPrint = document.getElementById('btnVendorPrint');
+                    btnPrint.disabled = false;
+                    btnPrint.style.background = "#17a2b8";
+                    btnPrint.style.color = "#fff";
+                    btnPrint.style.cursor = "pointer";
+                } else {
+                    window.backToVendorSearch();
+                }
+            } else {
+                alert("❌ 失敗：" + res.error);
+                submitBtn.disabled = false;
+                submitBtn.style.cursor = "pointer";
+            }
+        }).catch(e => {
+            alert("連線失敗，請稍後再試！");
+            submitBtn.disabled = false;
+            submitBtn.innerText = "送出/上傳";
+            submitBtn.style.cursor = "pointer";
+        });
+    };
+
+    window.confirmBackupPDF = function() {
+        printVendorPDF();
+        setTimeout(() => { window.backToVendorSearch(); }, 1500);
+    };
+
+window.printVendorPDF = function() {
+    const caseId = document.getElementById('vendorCaseId').value.trim() || '未輸入編號';
+    const twd97Text = document.getElementById('vendorCoord').innerText.replace('座標：', '').trim();
+    const descText = document.getElementById('vendorDesc').innerText.replace('案情：', '').trim();
+
+    // 檢查是否有暫存照片
+    if (vendorCart.length === 0) {
+        alert("請至少拍攝並「儲存」一張照片後再產製 PDF 驗收單！");
+        return;
+    }
+
+    // 產生 QR Code 連結 (與後端一致)
+    const scriptUrl = "https://script.google.com/macros/s/AKfycbwrS_ENVFM0kTvlHDwwTiIx3KzExZh-QhXdowFlHMYHXPajqBm1_g3tcpq1AQeUlL8i/exec";
+    const singleCaseUrl = scriptUrl + "?action=batchAcceptance&ids=" + caseId;
+    const qrImgSrc = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&margin=1&data=" + encodeURIComponent(singleCaseUrl);
+
+    let fullHtml = '<div id="tempPrintArea">';
+
+    // 1. 第一頁：封面與基本資訊
+    fullHtml += 
+      '<div class="acceptance-page page-break">' +
+      '<div style="display: flex; align-items: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 15px;">' +
+        '<div style="width: 90px;"></div>' +
+        '<div style="flex: 1; text-align: center;"><h2 style="color:#000; margin: 0; font-size: 24px;">臺南市山上區公所 工程完工驗收佐證</h2></div>' +
+        '<div style="width: 90px; text-align: center;">' +
+          '<img src="' + qrImgSrc + '" style="width: 70px; height: 70px; border: 1px solid #ccc; padding: 2px; background: #fff;" alt="QR">' +
+          '<div style="font-size: 10px; font-weight: bold; color: #333; margin-top: 4px;">掃碼防偽查核</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="info-grid">' +
+        '<div class="info-item"><span class="info-label">案件編號</span> <span class="info-value">' + caseId + '</span></div>' +
+        '<div class="info-item"><span class="info-label">施工廠商</span> <span class="info-value">依合約</span></div>' +
+        '<div class="info-item"><span class="info-label">TWD97</span> <span class="info-value">' + twd97Text + '</span></div>' +
+        '<div class="info-item" style="grid-column: 1 / -1;"><span class="info-label">案情描述</span> <span class="info-value">' + descText + '</span></div>' +
+      '</div>' +
+      '<div class="section-title">通報原況照片 (基準)</div>' +
+      '<div class="empty-msg">※ 此為廠商端獨立產製系統，原況照片請以機關後台查驗為主 ※</div>' +
+      '</div>';
+
+    // 2. 第二頁以後：廠商施工照片相連表格 (每 3 組斷頁)
+    const pageHeaderHtml = 
+      '<div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 12px;">' +
+        '<div>' +
+           '<h3 style="margin: 0; color:#000; font-size: 18px;">案件編號：' + caseId + '</h3>' +
+           '<div style="color: #444; font-size: 13px; margin-top: 4px; font-weight: bold;">TWD97：' + twd97Text + '</div>' +
+        '</div>' +
+        '<div>' +
+           '<img src="' + qrImgSrc + '" style="width: 50px; height: 50px; border: 1px solid #ccc; padding: 2px; background: #fff;" alt="QR">' +
+        '</div>' +
+      '</div>';
+
+    let chunkedPhotos = [];
+    for (let idx = 0; idx < vendorCart.length; idx += 3) {
+        chunkedPhotos.push(vendorCart.slice(idx, idx + 3));
+    }
+
+    chunkedPhotos.forEach(function(chunk) {
+        let pageContent = '<div class="acceptance-page page-break">' + pageHeaderHtml;
+        pageContent += '<table class="vendor-photo-table"><tbody>';
+        
+        chunk.forEach(function(vp) {
+            pageContent += '<tr>' +
+               '<td style="padding:0; width: 35%;">' +
+                  '<table class="vp-inner-table">' +
+                     '<tr><td class="vp-label">拍照日期</td><td class="vp-value">' + (vp.date || '') + '</td></tr>' +
+                     '<tr><td class="vp-label">施工位置</td><td class="vp-value">' + (vp.location || '') + '</td></tr>' +
+                     '<tr><td class="vp-label">工程項目</td><td class="vp-value">' + (vp.item || '') + '</td></tr>' +
+                     '<tr><td class="vp-label" style="color: #004080;">照片說明</td><td class="vp-value" style="color: #004080; font-weight:bold;">' + (vp.category || '') + '</td></tr>' +
+                     '<tr><td class="vp-label">備註</td><td class="vp-value">' + (vp.note || '') + '</td></tr>' +
+                  '</table>' +
+               '</td>' +
+               '<td class="vp-img-cell">' +
+                  '<img src="' + vp.fullBase64 + '">' +
+               '</td>' +
+            '</tr>';
+        });
+
+        pageContent += '</tbody></table></div>';
+        fullHtml += pageContent;
+    });
+
+    fullHtml += '</div>';
+
+    // 建立臨時隱藏的列印專用樣式 (確保雙端排版 100% 相同)
+    const printStyle = document.createElement('style');
+    printStyle.id = "tempPrintStyle";
+    printStyle.innerHTML = `
+      @media print {
+        body * { visibility: hidden; }
+        #tempPrintArea, #tempPrintArea * { visibility: visible; }
+        #tempPrintArea { position: absolute; left: 0; top: 0; width: 100%; background: #fff; }
+        .acceptance-page { box-shadow: none; border: none; padding: 0; margin: 0; width: 100%; }
+        .page-break { page-break-after: always; break-after: page; }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #e9ecef; }
+        .info-item { font-size: 15px; font-family: "Microsoft JhengHei", sans-serif; }
+        .info-label { font-weight: bold; color: #666; display: inline-block; width: 80px; }
+        .info-value { color: #333; font-weight: bold; }
+        .section-title { border: 1px solid #000; background: #eee !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; padding: 8px 15px; border-left: 5px solid #000; font-weight: bold; font-size: 16px; margin-bottom: 10px; font-family: "Microsoft JhengHei", sans-serif; }
+        .vendor-photo-table { width: 100%; border-collapse: collapse; margin-bottom: 0; border: 2px solid #000; font-family: "Microsoft JhengHei", sans-serif; }
+        .vendor-photo-table > tbody > tr > td { border: 1px solid #000; padding: 0; vertical-align: stretch; }
+        .vp-inner-table { width: 100%; height: 100%; border-collapse: collapse; }
+        .vp-inner-table td { border-bottom: 1px solid #000; padding: 12px 8px; font-size: 14px; }
+        .vp-inner-table tr:last-child td { border-bottom: none; }
+        .vp-label { width: 90px; background: #eee !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; font-weight: bold; text-align: center; border-right: 1px solid #000; }
+        .vp-value { text-align: center; }
+        .vp-img-cell { width: 65%; text-align: center; padding: 5px !important; }
+        .vp-img-cell img { width: 100%; max-height: 280px; object-fit: contain; display: block; margin: 0 auto; }
+        .empty-msg { color: #999; padding: 10px 15px; background: #f8f9fa; border-radius: 4px; margin-bottom: 10px; font-weight: bold; font-family: "Microsoft JhengHei", sans-serif; }
+      }
+    `;
+
+    document.body.appendChild(printStyle);
+    document.body.insertAdjacentHTML('beforeend', fullHtml);
+
+    // 等待 0.5 秒讓圖片及 DOM 渲染完成後啟動列印對話框
+    setTimeout(() => {
+        window.print();
+        document.getElementById('tempPrintArea').remove();
+        document.getElementById('tempPrintStyle').remove();
+    }, 500);
+};
 // === 新增：開放資料 (Open Data) CSV 下載功能 ===
 function exportOpenDataCSV() {
   // 1. 定義要公開的欄位 (這裡已經過濾掉 Email 與民眾暱稱等個資)
@@ -5594,6 +6461,257 @@ window.downloadMyPhotos = function() {
       alert(`✅ 已成功觸發下載 ${downloaded} 張照片至您的裝置中。`);
   }
 };
+// =====================================
+// =====================================
+// === 新增：巡檢廠商回報專區邏輯 (2026/03/11 終極修復版) ===
+
+// 1. 入口控制
+function showInspectionPwd() {
+  document.getElementById('entryModal').style.display = 'none';
+  const pwdOverlay = document.getElementById('inspectionPwdOverlay');
+  pwdOverlay.style.display = 'flex';
+  pwdOverlay.style.zIndex = '9999';
+}
+
+function cancelInspectionPwd() {
+  document.getElementById('inspectionPwdOverlay').style.display = 'none';
+  document.getElementById('entryModal').style.display = 'flex'; 
+}
+
+// 2. 驗證與初始化
+function verifyInspectionPwd() {
+  const pwd = document.getElementById('inspPwdInput').value;
+  if(pwd === "Admin2026Vendor") { 
+    document.getElementById('inspectionPwdOverlay').style.display = 'none';
+    document.getElementById('inspPwdInput').value = '';
+    
+    // 每次進入重置按鈕狀態
+    const submitBtn = document.getElementById('btnInspSubmit');
+    if(submitBtn) {
+      submitBtn.style.display = 'block';
+      submitBtn.innerHTML = "🚀 送出巡查報告";
+      submitBtn.disabled = false;
+      submitBtn.style.background = "#28a745";
+    }
+    const pdfBtn = document.getElementById('btnInspPrint');
+    if(pdfBtn) {
+      pdfBtn.style.background = '#ccc';
+      pdfBtn.style.cursor = 'not-allowed'; // 加上禁止手勢
+      pdfBtn.disabled = true;
+    }
+
+    document.getElementById('inspDate').value = new Date().toISOString().split('T')[0];
+    initInspectionTable();
+    
+    // 初始化照片區
+    document.getElementById('inspPhotoContainer').innerHTML = '';
+    addInspectionPhotoSlot();
+    addInspectionPhotoSlot();
+    
+    const addBtn = document.createElement('div');
+    addBtn.className = 'add-slot-btn';
+    addBtn.innerHTML = '+ 新增照片欄位';
+    addBtn.onclick = addInspectionPhotoSlot;
+    document.getElementById('inspPhotoContainer').appendChild(addBtn);
+
+    document.getElementById('inspectionFormModal').style.display = 'block';
+  } else {
+    alert("密碼錯誤！");
+  }
+}
+
+function closeInspectionForm() {
+  if(confirm("確定要關閉嗎？未送出的資料將會遺失。")) {
+    document.getElementById('inspectionFormModal').style.display = 'none';
+    document.getElementById('entryModal').style.display = 'flex';
+  }
+}
+
+// 3. 表格初始化 (確保與 Word 格式一致)
+function initInspectionTable() {
+  const tbody = document.getElementById('inspTableBody');
+  if(!tbody) return;
+  tbody.innerHTML = `
+    <tr>
+      <td rowspan="4" style="font-size:12px; vertical-align:middle;">路基及邊坡</td>
+      <td style="font-size:12px;">自然邊坡</td>
+      <td rowspan="4" style="text-align:left; font-size:12px;">1、路面塌陷、落石<br>2、邊坡滑動、掏空</td>
+      <td><input type="radio" name="insp_yn_1" value="是"></td><td><input type="radio" name="insp_yn_1" value="否" checked></td>
+      <td><input type="text" id="insp_s_1"></td><td><input type="text" id="insp_a_1"></td><td><input type="text" id="insp_r_1"></td>
+    </tr>
+    <tr><td style="font-size:12px;">柔性護坡</td><td><input type="radio" name="insp_yn_2" value="是"></td><td><input type="radio" name="insp_yn_2" value="否" checked></td><td><input type="text" id="insp_s_2"></td><td><input type="text" id="insp_a_2"></td><td><input type="text" id="insp_r_2"></td></tr>
+    <tr><td style="font-size:12px;">剛性護坡</td><td><input type="radio" name="insp_yn_3" value="是"></td><td><input type="radio" name="insp_yn_3" value="否" checked></td><td><input type="text" id="insp_s_3"></td><td><input type="text" id="insp_a_3"></td><td><input type="text" id="insp_r_3"></td></tr>
+    <tr><td style="font-size:12px;">擋土牆</td><td><input type="radio" name="insp_yn_4" value="是"></td><td><input type="radio" name="insp_yn_4" value="否" checked></td><td><input type="text" id="insp_s_4"></td><td><input type="text" id="insp_a_4"></td><td><input type="text" id="insp_r_4"></td></tr>
+    <tr>
+      <td rowspan="2" style="font-size:12px; vertical-align:middle;">鋪面</td>
+      <td style="font-size:12px;">柔性鋪面</td>
+      <td style="text-align:left; font-size:12px;">1、路面坑洞、破裂<br>2、車轍、變形推擠</td>
+      <td><input type="radio" name="insp_yn_5" value="是"></td><td><input type="radio" name="insp_yn_5" value="否" checked></td>
+      <td><input type="text" id="insp_s_5"></td><td><input type="text" id="insp_a_5"></td><td><input type="text" id="insp_r_5"></td>
+    </tr>
+    <tr><td style="font-size:12px;">剛性鋪面</td><td>1、坑洞、破(龜)裂<br>2、人手孔損壞</td><td><input type="radio" name="insp_yn_6" value="是"></td><td><input type="radio" name="insp_yn_6" value="否" checked></td><td><input type="text" id="insp_s_6"></td><td><input type="text" id="insp_a_6"></td><td><input type="text" id="insp_r_6"></td></tr>
+    <tr><td>排水設施</td><td>道路側溝</td><td>1、頂蓋版損壞、遺失<br>2、阻礙水路暢流</td><td><input type="radio" name="insp_yn_7" value="是"></td><td><input type="radio" name="insp_yn_7" value="否" checked></td><td><input type="text" id="insp_s_7"></td><td><input type="text" id="insp_a_7"></td><td><input type="text" id="insp_r_7"></td></tr>
+  `;
+}
+
+// 4. 照片處理 (含動態 Slot 紀錄)
+let currentPhotoSlotId = 0;
+let targetSlotIdForAction = null;
+
+function addInspectionPhotoSlot() {
+  currentPhotoSlotId++;
+  const slotId = currentPhotoSlotId;
+  const div = document.createElement('div');
+  div.className = 'insp-photo-box';
+  div.id = `inspSlot_${slotId}`;
+  div.innerHTML = `
+    <button class="remove-photo-btn" id="inspRmBtn_${slotId}" onclick="removeInspPhoto(${slotId})">✖</button>
+    <div class="add-photo-btn" id="inspAddBtn_${slotId}" onclick="openActionSheet(${slotId})">➕</div>
+    <img id="inspImg_${slotId}">
+    <input type="file" id="inspFile_${slotId}" accept="image/*" style="display:none;" onchange="previewInspImage(event, ${slotId})">
+    <input type="text" id="inspDesc_${slotId}" placeholder="照片說明..." style="width:90%; border:none; border-bottom:1px solid #ccc; outline:none; display:none;" class="no-print">
+    <button class="download-btn" id="inspDlBtn_${slotId}" onclick="downloadInspPhoto(${slotId})">⬇️ 下載</button>
+  `;
+  const container = document.getElementById('inspPhotoContainer');
+  container.insertBefore(div, container.lastElementChild);
+}
+
+function openActionSheet(id) { targetSlotIdForAction = id; document.getElementById('actionSheetOverlay').style.display = 'flex'; }
+function closeActionSheet(e) { if(e.target.id === 'actionSheetOverlay' || e.target.classList.contains('cancel')) document.getElementById('actionSheetOverlay').style.display = 'none'; }
+function triggerInspFileInput(type) {
+  const fileInput = document.getElementById(`inspFile_${targetSlotIdForAction}`);
+  if(type === 'camera') fileInput.setAttribute('capture', 'environment');
+  else fileInput.removeAttribute('capture');
+  fileInput.click();
+  document.getElementById('actionSheetOverlay').style.display = 'none';
+}
+
+function previewInspImage(event, slotId) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const img = new Image();
+    img.src = e.target.result;
+    img.onload = function() {
+      const canvas = document.createElement('canvas');
+      const MAX_WIDTH = 1024;
+      let width = img.width, height = img.height;
+      if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+      canvas.width = width; canvas.height = height;
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
+      document.getElementById(`inspImg_${slotId}`).src = dataUrl;
+      document.getElementById(`inspImg_${slotId}`).style.display = 'block';
+      document.getElementById(`inspAddBtn_${slotId}`).style.display = 'none';
+      document.getElementById(`inspDesc_${slotId}`).style.display = 'block';
+      document.getElementById(`inspDlBtn_${slotId}`).style.display = 'block';
+      document.getElementById(`inspRmBtn_${slotId}`).style.display = 'flex';
+    };
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeInspPhoto(id) {
+  if(confirm("確定刪除照片？")) {
+    const img = document.getElementById(`inspImg_${id}`);
+    img.style.display = 'none'; 
+    img.src = '';
+    
+    // 關鍵新增：徹底清空檔案選取器，讓同一張照片能重複被選取
+    const fileInput = document.getElementById(`inspFile_${id}`);
+    if(fileInput) fileInput.value = ''; 
+    
+    document.getElementById(`inspAddBtn_${id}`).style.display = 'block';
+    document.getElementById(`inspRmBtn_${id}`).style.display = 'none';
+    document.getElementById(`inspDesc_${id}`).style.display = 'none';
+    document.getElementById(`inspDlBtn_${id}`).style.display = 'none'; // 同時隱藏下載按鈕
+  }
+}
+
+function downloadInspPhoto(id) {
+  const src = document.getElementById(`inspImg_${id}`).src;
+  if(!src) return;
+  const a = document.createElement('a'); a.href = src; a.download = '巡檢備份.jpg'; a.click();
+}
+
+// 5. 核心送出函式 (已修復 reportData 定義問題)
+// 5. 核心送出函式 (改用 fetch 以支援 localhost 測試)
+function submitInspectionReport() {
+  try {
+    const roadName = document.getElementById('inspRoadName').value;
+    if(!roadName) { alert("請輸入道路編號/名稱！"); return; }
+
+    const submitBtn = document.getElementById('btnInspSubmit');
+    submitBtn.innerHTML = "⏳ 正在上傳中...";
+    submitBtn.disabled = true;
+
+    // 定義資料包 (加入 action 與 appKey 給 fetch 使用)
+    const reportData = {
+      action: "submitInspection", 
+      appKey: "TainanMap2026_SecureKey_v1",
+      roadName: roadName,
+      date: document.getElementById('inspDate').value,
+      weather: document.getElementById('inspWeather').value,
+      unit: document.getElementById('inspUnit').value,
+      type: document.getElementById('inspType').value,
+      inspector: document.getElementById('inspSign1') ? document.getElementById('inspSign1').value : "",
+      items: [],
+      photos: []
+    };
+
+    // 收集表格
+    for(let i = 1; i <= 7; i++) {
+      const radio = document.querySelector(`input[name="insp_yn_${i}"]:checked`);
+      reportData.items.push({
+        hasItem: radio ? radio.value : "否",
+        statusDesc: document.getElementById(`insp_s_${i}`).value || "",
+        advice: document.getElementById(`insp_a_${i}`).value || "",
+        result: document.getElementById(`insp_r_${i}`).value || ""
+      });
+    }
+
+    // 收集照片
+    for(let i = 1; i <= currentPhotoSlotId; i++) {
+      const img = document.getElementById(`inspImg_${i}`);
+      const desc = document.getElementById(`inspDesc_${i}`);
+      if(img && img.src && img.style.display !== 'none') {
+        reportData.photos.push({ base64: img.src.split(',')[1], desc: desc ? desc.value : "" });
+      }
+    }
+
+    // 正式通訊 (使用 fetch 支援 localhost)
+    console.log("資料打包完成，準備傳送...", reportData);
+    
+    fetch(GOOGLE_SCRIPT_URL, {
+      method: "POST",
+      body: JSON.stringify(reportData)
+    })
+    .then(res => res.json())
+    .then(res => {
+      if(res.result === "success") {
+        alert("✅ 巡查報告提交成功！");
+        submitBtn.style.display = 'none'; 
+        const pdfBtn = document.getElementById('btnInspPrint');
+        if(pdfBtn) { pdfBtn.style.background = '#17a2b8'; pdfBtn.style.cursor = 'pointer'; pdfBtn.disabled = false; }
+      } else {
+        alert("❌ 上傳失敗：" + (res.error || "未知錯誤"));
+        submitBtn.innerHTML = "🚀 送出巡查報告"; 
+        submitBtn.disabled = false;
+      }
+    })
+    .catch(err => {
+      alert("❌ 系統連線錯誤：" + err.message);
+      submitBtn.innerHTML = "🚀 送出巡查報告"; 
+      submitBtn.disabled = false;
+    });
+
+  } catch (error) {
+    alert("❌ 程式執行錯誤：" + error.message);
+    const submitBtn = document.getElementById('btnInspSubmit');
+    if(submitBtn) { submitBtn.innerHTML = "🚀 送出巡查報告"; submitBtn.disabled = false; }
+  }
+}
 </script>
 </body>
 </html>

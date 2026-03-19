@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0316_V9)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0319_V3)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -2279,9 +2279,9 @@
         <div style="color:#d32f2f; font-size:14px; font-weight:bold; margin-bottom:15px;">
           ※ 本專區僅供機關授權之巡檢廠商使用
         </div>
-        <div style="display:flex; gap:10px; max-width:500px;">
-          <input type="password" id="inspPwdInput" placeholder="請輸入巡檢授權密碼" style="flex:1; padding: 10px; border: 1px solid #004080; border-radius: 6px; font-size: 15px; outline:none; box-shadow: 0 2px 5px rgba(0,0,0,0.1); background:#fff;">
-          <button onclick="verifyInspectionPwd()" style="background:#004080; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer;"><i class="fas fa-key"></i> 登入</button>
+        <div style="display:flex; gap:10px; max-width:500px; width:100%;">
+          <input type="password" id="inspPwdInput" placeholder="請輸入巡檢授權密碼" style="flex:1; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; outline:none; box-sizing:border-box;">
+          <button onclick="verifyInspectionPwd()" style="background:#004080; color: white; border: none; padding: 12px 20px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; white-space: nowrap;"><i class="fas fa-key"></i> 登入</button>
         </div>
       </div>
 
@@ -6528,29 +6528,34 @@ function closeInspectionForm() {
 }
 
 // 3. 表格初始化 (確保與 Word 格式一致)
+// 3. 表格初始化 (自動長高文字框優化版)
 function initInspectionTable() {
   const tbody = document.getElementById('inspTableBody');
   if(!tbody) return;
+
+  // 定義通用的自動長高樣式與邏輯
+  const areaStyle = `style="width: 100%; min-height: 50px; overflow-y: hidden; resize: none; border: 1px solid #ccc; border-radius: 4px; padding: 5px; box-sizing: border-box; font-size: 14px; display: block;" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"`;
+
   tbody.innerHTML = `
     <tr>
       <td rowspan="4" style="font-size:12px; vertical-align:middle;">路基及邊坡</td>
       <td style="font-size:12px;">自然邊坡</td>
       <td rowspan="4" style="text-align:left; font-size:12px;">1、路面塌陷、落石<br>2、邊坡滑動、掏空</td>
       <td><input type="radio" name="insp_yn_1" value="是"></td><td><input type="radio" name="insp_yn_1" value="否" checked></td>
-      <td><input type="text" id="insp_s_1"></td><td><input type="text" id="insp_a_1"></td><td><input type="text" id="insp_r_1"></td>
+      <td><textarea id="insp_s_1" ${areaStyle}></textarea></td><td><textarea id="insp_a_1" ${areaStyle}></textarea></td><td><textarea id="insp_r_1" ${areaStyle}></textarea></td>
     </tr>
-    <tr><td style="font-size:12px;">柔性護坡</td><td><input type="radio" name="insp_yn_2" value="是"></td><td><input type="radio" name="insp_yn_2" value="否" checked></td><td><input type="text" id="insp_s_2"></td><td><input type="text" id="insp_a_2"></td><td><input type="text" id="insp_r_2"></td></tr>
-    <tr><td style="font-size:12px;">剛性護坡</td><td><input type="radio" name="insp_yn_3" value="是"></td><td><input type="radio" name="insp_yn_3" value="否" checked></td><td><input type="text" id="insp_s_3"></td><td><input type="text" id="insp_a_3"></td><td><input type="text" id="insp_r_3"></td></tr>
-    <tr><td style="font-size:12px;">擋土牆</td><td><input type="radio" name="insp_yn_4" value="是"></td><td><input type="radio" name="insp_yn_4" value="否" checked></td><td><input type="text" id="insp_s_4"></td><td><input type="text" id="insp_a_4"></td><td><input type="text" id="insp_r_4"></td></tr>
+    <tr><td style="font-size:12px;">柔性護坡</td><td><input type="radio" name="insp_yn_2" value="是"></td><td><input type="radio" name="insp_yn_2" value="否" checked></td><td><textarea id="insp_s_2" ${areaStyle}></textarea></td><td><textarea id="insp_a_2" ${areaStyle}></textarea></td><td><textarea id="insp_r_2" ${areaStyle}></textarea></td></tr>
+    <tr><td style="font-size:12px;">剛性護坡</td><td><input type="radio" name="insp_yn_3" value="是"></td><td><input type="radio" name="insp_yn_3" value="否" checked></td><td><textarea id="insp_s_3" ${areaStyle}></textarea></td><td><textarea id="insp_a_3" ${areaStyle}></textarea></td><td><textarea id="insp_r_3" ${areaStyle}></textarea></td></tr>
+    <tr><td style="font-size:12px;">擋土牆</td><td><input type="radio" name="insp_yn_4" value="是"></td><td><input type="radio" name="insp_yn_4" value="否" checked></td><td><textarea id="insp_s_4" ${areaStyle}></textarea></td><td><textarea id="insp_a_4" ${areaStyle}></textarea></td><td><textarea id="insp_r_4" ${areaStyle}></textarea></td></tr>
     <tr>
       <td rowspan="2" style="font-size:12px; vertical-align:middle;">鋪面</td>
       <td style="font-size:12px;">柔性鋪面</td>
       <td style="text-align:left; font-size:12px;">1、路面坑洞、破裂<br>2、車轍、變形推擠</td>
       <td><input type="radio" name="insp_yn_5" value="是"></td><td><input type="radio" name="insp_yn_5" value="否" checked></td>
-      <td><input type="text" id="insp_s_5"></td><td><input type="text" id="insp_a_5"></td><td><input type="text" id="insp_r_5"></td>
+      <td><textarea id="insp_s_5" ${areaStyle}></textarea></td><td><textarea id="insp_a_5" ${areaStyle}></textarea></td><td><textarea id="insp_r_5" ${areaStyle}></textarea></td>
     </tr>
-    <tr><td style="font-size:12px;">剛性鋪面</td><td>1、坑洞、破(龜)裂<br>2、人手孔損壞</td><td><input type="radio" name="insp_yn_6" value="是"></td><td><input type="radio" name="insp_yn_6" value="否" checked></td><td><input type="text" id="insp_s_6"></td><td><input type="text" id="insp_a_6"></td><td><input type="text" id="insp_r_6"></td></tr>
-    <tr><td>排水設施</td><td>道路側溝</td><td>1、頂蓋版損壞、遺失<br>2、阻礙水路暢流</td><td><input type="radio" name="insp_yn_7" value="是"></td><td><input type="radio" name="insp_yn_7" value="否" checked></td><td><input type="text" id="insp_s_7"></td><td><input type="text" id="insp_a_7"></td><td><input type="text" id="insp_r_7"></td></tr>
+    <tr><td style="font-size:12px;">剛性鋪面</td><td>1、坑洞、破(龜)裂<br>2、人手孔損壞</td><td><input type="radio" name="insp_yn_6" value="是"></td><td><input type="radio" name="insp_yn_6" value="否" checked></td><td><textarea id="insp_s_6" ${areaStyle}></textarea></td><td><textarea id="insp_a_6" ${areaStyle}></textarea></td><td><textarea id="insp_r_6" ${areaStyle}></textarea></td></tr>
+    <tr><td>排水設施</td><td>道路側溝</td><td>1、頂蓋版損壞、遺失<br>2、阻礙水路暢流</td><td><input type="radio" name="insp_yn_7" value="是"></td><td><input type="radio" name="insp_yn_7" value="否" checked></td><td><textarea id="insp_s_7" ${areaStyle}></textarea></td><td><textarea id="insp_a_7" ${areaStyle}></textarea></td><td><textarea id="insp_r_7" ${areaStyle}></textarea></td></tr>
   `;
 }
 
@@ -6690,10 +6695,24 @@ function submitInspectionReport() {
     .then(res => res.json())
     .then(res => {
       if(res.result === "success") {
-        alert("✅ 巡查報告提交成功！");
+        alert(" ✅  巡查報告提交成功！");
         submitBtn.style.display = 'none'; 
         const pdfBtn = document.getElementById('btnInspPrint');
-        if(pdfBtn) { pdfBtn.style.background = '#17a2b8'; pdfBtn.style.cursor = 'pointer'; pdfBtn.disabled = false; }
+        if(pdfBtn) { 
+          pdfBtn.style.background = '#17a2b8'; 
+          pdfBtn.style.cursor = 'pointer'; 
+          pdfBtn.disabled = false; 
+          
+          // 🌟 關鍵修正：讓廠商直接開啟後台的列印引擎，確保版面與專屬 QR Code 100% 完全相同
+          pdfBtn.onclick = function() {
+              if (res.row) {
+                  // 開啟與機關後台完全相同的列印網址
+                  window.open(GOOGLE_SCRIPT_URL + "?action=printInspection&row=" + res.row, "_blank");
+              } else {
+                  alert("無法取得驗證列號，請聯繫管理員。");
+              }
+          };
+        }
       } else {
         alert("❌ 上傳失敗：" + (res.error || "未知錯誤"));
         submitBtn.innerHTML = "🚀 送出巡查報告"; 
@@ -6711,6 +6730,175 @@ function submitInspectionReport() {
     const submitBtn = document.getElementById('btnInspSubmit');
     if(submitBtn) { submitBtn.innerHTML = "🚀 送出巡查報告"; submitBtn.disabled = false; }
   }
+}
+// === 新增：廠商自存 PDF 產製 Function (與機關後台完美統一) ===
+function exportInspectionPDF() {
+    // 1. 抓取廠商剛填寫的表單資料
+    const roadName = document.getElementById('inspRoadName') ? document.getElementById('inspRoadName').value : "未命名道路";
+    const date = document.getElementById('inspDate') ? document.getElementById('inspDate').value : "";
+    const weather = document.getElementById('inspWeather') ? document.getElementById('inspWeather').value : "";
+    const unit = document.getElementById('inspUnit') ? document.getElementById('inspUnit').value : "廠商";
+    const type = document.getElementById('inspType') ? document.getElementById('inspType').value : "經常/定期";
+    const inspector = document.getElementById('inspSign1') ? document.getElementById('inspSign1').value : "";
+
+    // 2. 收集表格 1~7 項內容
+    let itemsHtml = "";
+    const mainClasses = ['自然邊坡','柔性護坡','剛性護坡','擋土牆','柔性鋪面','剛性鋪面','道路側溝'];
+    const subClasses = [
+        '1、路面塌陷、落石<br>2、邊坡滑動、掏空','','','',
+        '1、路面坑洞、破裂<br>2、車轍、變形推擠',
+        '1、坑洞、破裂<br>2、人手孔損壞',
+        '1、頂蓋版損壞、遺失<br>2、阻礙水路暢流'
+    ];
+    
+    for (let i = 1; i <= 7; i++) {
+        const ynEl = document.querySelector(`input[name="insp_yn_${i}"]:checked`);
+        const hasItem = ynEl ? ynEl.value : "否";
+        const s = document.getElementById(`insp_s_${i}`) ? document.getElementById(`insp_s_${i}`).value : "";
+        const a = document.getElementById(`insp_a_${i}`) ? document.getElementById(`insp_a_${i}`).value : "";
+        const r = document.getElementById(`insp_r_${i}`) ? document.getElementById(`insp_r_${i}`).value : "";
+
+        let rowspanHtml = "";
+        if(i === 1) rowspanHtml = '<td rowspan="4">路基及邊坡</td>';
+        if(i === 5) rowspanHtml = '<td rowspan="2">鋪面</td>';
+        if(i === 7) rowspanHtml = '<td>排水設施</td>';
+
+        itemsHtml += `
+            <tr>
+                ${rowspanHtml}
+                <td>${mainClasses[i-1]}</td>
+                <td class="text-left">${subClasses[i-1]}</td>
+                <td>${hasItem === '是' ? '有' : '無'}</td>
+                <td class="dynamic-text">${s}</td>
+                <td class="dynamic-text">${a}</td>
+                <td class="dynamic-text">${r}</td>
+            </tr>
+        `;
+    }
+
+    // 3. 收集照片資料 (直接讀取畫面上已預覽的圖片)
+    let photosHtml = "";
+    let photos = [];
+    let maxPhotos = typeof currentPhotoSlotId !== 'undefined' ? currentPhotoSlotId : 10; 
+    for(let i = 1; i <= maxPhotos; i++) {
+        const img = document.getElementById(`inspImg_${i}`);
+        const desc = document.getElementById(`inspDesc_${i}`);
+        if(img && img.src && img.style.display !== 'none' && !img.src.includes('camera-icon')) {
+            photos.push({ url: img.src, desc: desc ? desc.value : "現場狀況" });
+        }
+    }
+
+    // 4. 產製每頁兩張的照片版面 (一頁兩張，橫版直版自動貼齊不變形)
+    if (photos.length > 0) {
+        for (let i = 0; i < photos.length; i += 2) {
+            const p1 = photos[i];
+            const p2 = photos[i+1];
+            photosHtml += `
+            <div class="a4-page">
+                <div class="page-header">
+                    <div class="header-left-text"><strong>巡查現場照片紀錄</strong><br>道路編號/名稱：${roadName}</div>
+                </div>
+                <div class="photo-main-container">
+                    <div class="photo-slot">
+                        <div class="photo-img-wrapper"><img src="${p1.url}"></div>
+                        <div class="photo-label">照片(一)說明：${p1.desc}</div>
+                    </div>
+                    ${p2 ? `
+                    <div class="photo-slot">
+                        <div class="photo-img-wrapper"><img src="${p2.url}"></div>
+                        <div class="photo-label">照片(二)說明：${p2.desc}</div>
+                    </div>` : `<div class="photo-slot" style="border:none;"></div>`}
+                </div>
+            </div>`;
+        }
+    }
+
+    // 5. 動態產生完美列印視窗
+    const printWindow = window.open('', '_blank');
+    const finalHtml = `
+    <!DOCTYPE html>
+    <html lang="zh-TW">
+    <head>
+        <meta charset="UTF-8">
+        <title>${roadName}_道路巡查報告表</title> <style>
+           body { font-family: "Microsoft JhengHei", sans-serif; background: #f0f2f5; margin: 0; padding: 20px; }
+           @media print {
+             body { background: white !important; padding: 0 !important; margin: 0 !important; }
+             .a4-page { box-shadow: none !important; margin: 0 !important; width: 21cm !important; height: 29.7cm !important; page-break-after: always !important; overflow: hidden !important; border: none !important; }
+           }
+           .a4-page { width: 21cm; height: 29.7cm; background: white; margin: 0 auto 20px auto; padding: 1cm 1.5cm; box-sizing: border-box; box-shadow: 0 0 10px rgba(0,0,0,0.2); position: relative; display: flex; flex-direction: column; }
+           #auto-scale-content { transform-origin: top left; width: 100%; height: 100%; }
+           .page-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #000; padding-bottom: 5px; margin-bottom: 15px; height: 80px; }
+           .header-left-text { font-size: 16px; font-weight: bold; line-height: 1.5; color: #000; }
+           .header-title { text-align: center; font-size: 24px; font-weight: bold; margin-bottom: 15px; letter-spacing: 2px; }
+           .header-info { line-height: 1.6; font-size: 15px; margin-bottom: 5px; }
+           table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: center; table-layout: fixed; }
+           th, td { border: 1px solid #000; padding: 6px; vertical-align: middle; word-wrap: break-word; overflow: hidden; }
+           th { background-color: #f9f9f9; }
+           .text-left { text-align: left; padding-left: 5px; }
+           .dynamic-text { white-space: pre-wrap; text-align: left; font-size: 13px; line-height: 1.4; }
+           .signature-area { display: flex; justify-content: space-around; margin-top: auto; padding-bottom: 20px; font-size: 16px; border-top: 1px solid #000; padding-top: 10px; }
+           .signature-box { width: 33%; text-align: left; font-weight: bold; }
+           .photo-main-container { flex: 1; display: flex; flex-direction: column; gap: 15px; }
+           .photo-slot { height: 11.5cm; border: 1px solid #000; display: flex; flex-direction: column; overflow: hidden; box-sizing: border-box; }
+           .photo-img-wrapper { flex: 1; display: flex; align-items: center; justify-content: center; background: #fff; overflow: hidden; padding: 0; }
+           .photo-img-wrapper img { width: 100%; height: 100%; object-fit: contain; }
+           .photo-label { background: #f9f9f9; border-top: 1px solid #000; padding: 8px 12px; font-size: 14px; font-weight: bold; min-height: 35px; }
+        </style>
+    </head>
+    <body>
+        <div class="a4-page">
+            <div id="auto-scale-content">
+                <div class="header-title">道路巡查報告表</div>
+                <div class="header-info">
+                    <div>道路編號/名稱：${roadName}</div>
+                    <div>日期：${date}</div>
+                    <div style="display:flex; justify-content:space-between;">
+                        <div>天氣狀況(晴/陰/雨)：${weather}</div>
+                        <div style="margin-right:150px;">巡查類別：${type === '特別' ? '□經常/定期 ■特別' : '■經常/定期 □特別'}</div>
+                    </div>
+                    <div>巡查單位：${unit}</div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th width="10%">主分類</th><th width="12%">次分類</th><th width="28%">巡查項目</th>
+                            <th width="8%">是否有</th><th width="14%">狀況說明</th><th width="14%">改善意見</th><th width="14%">辦理情形</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${itemsHtml}
+                    </tbody>
+                </table>
+                <div class="signature-area">
+                    <div class="signature-box">巡查人員：${inspector}</div>
+                    <div class="signature-box">承辦人：</div>
+                    <div class="signature-box">單位主管：</div>
+                </div>
+            </div>
+        </div>
+        ${photosHtml}
+
+        <script>
+            // 🌟 自動縮放第一頁確保不超過 A4，並呼叫列印
+            setTimeout(() => {
+                const el = document.getElementById('auto-scale-content');
+                const box = el.parentElement;
+                const scale = (box.clientHeight - 80) / el.scrollHeight;
+                if (scale < 1) {
+                    el.style.transform = \`scale(\${scale})\`;
+                    el.style.width = (100 / scale) + "%";
+                }
+                setTimeout(() => { window.print(); }, 300);
+            }, 100);
+        <\/script>
+    </body>
+    </html>
+    `;
+
+    printWindow.document.open();
+    printWindow.document.write(finalHtml);
+    printWindow.document.close();
 }
 </script>
 </body>

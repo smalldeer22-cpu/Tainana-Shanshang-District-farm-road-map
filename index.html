@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0319_V7)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0319_V5)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -2264,27 +2264,22 @@
 <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
 <script src="https://unpkg.com/topojson-client@3"></script>
 <script src="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol/dist/L.Control.Locate.min.js"></script>
-<div class="overlay" id="inspectionPwdOverlay" style="display:none; z-index:9999; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); align-items:center; justify-content:center;">
-  
-  <div class="modal-content" style="padding:0; overflow:hidden; max-width:800px; width:90%; height:85vh; display:flex; flex-direction:column; background:#fff; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.15);">
-    
-    <div style="background:#004080; color:white; padding:15px 20px; display:flex; justify-content:space-between; align-items:center;">
+<div id="inspectionPwdOverlay" style="display: none; position: fixed; inset: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 9999; background: #f8f9fa !important; transform: none !important; margin: 0 !important; padding: 0 !important;">
+  <div style="width: 100% !important; height: 100% !important; max-width: none !important; border-radius: 0 !important; box-shadow: none !important; display: flex; flex-direction: column; overflow: hidden; background: #f8f9fa;">
+    <div style="background: #004080; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center;">
       <h3 style="margin:0; font-size:18px;"><i class="fas fa-search-location"></i> 巡檢廠商專區</h3>
       <button onclick="cancelInspectionPwd()" style="background:none; border:none; color:white; font-size:24px; cursor:pointer;"><i class="fas fa-times"></i></button>
     </div>
-    
-    <div style="padding:30px; overflow-y:auto; flex:1; background:#f8f9fa; display:flex; flex-direction:column; align-items:flex-start; justify-content:flex-start;">
-      
-      <div style="width:100%; text-align:left;">
+    <div style="padding: 20px; overflow-y:auto; flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-start;">
+      <div style="width:100%; max-width: 600px; text-align:left; margin-top: 10px;">
         <div style="color:#d32f2f; font-size:14px; font-weight:bold; margin-bottom:15px;">
           ※ 本專區僅供機關授權之巡檢廠商使用
         </div>
-        <div style="display:flex; gap:10px; max-width:500px; width:100%;">
-          <input type="password" id="inspPwdInput" placeholder="請輸入巡檢授權密碼" style="flex:1; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; outline:none; box-sizing:border-box;">
+        <div style="display:flex; gap:10px; width:100%;">
+          <input type="password" id="inspPwdInput" placeholder="請輸入巡檢授權密碼" style="flex:1; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; outline:none; box-sizing:border-box; background: white;">
           <button onclick="verifyInspectionPwd()" style="background:#004080; color: white; border: none; padding: 12px 20px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; white-space: nowrap;"><i class="fas fa-key"></i> 登入</button>
         </div>
       </div>
-
     </div>
   </div>
 </div>
@@ -2297,11 +2292,11 @@
   </div>
 </div>
 
-<div id="inspectionFormModal" style="display: none; position: fixed; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 10000; background: white !important; overflow-y: auto; transform: none !important;">
- <div class="inspection-container" style="width: 100% !important; max-width: 100% !important; min-height: 100vh !important; margin: 0 !important; border-radius: 0 !important; box-shadow: none !important; padding: 15px; box-sizing: border-box; background: white !important; transform: none !important;">
-   <div style="display:flex; justify-content:flex-end; margin-bottom: 10px;">
-     <button onclick="closeInspectionForm()" style="background:#dc3545; color:white; border:none; padding:8px 15px; border-radius:5px; font-weight:bold;">✖ 關閉表單</button>
-   </div>
+<div id="inspectionFormModal">
+  <div class="inspection-container">
+    <div style="display:flex; justify-content:flex-end; margin-bottom: 10px;">
+      <button onclick="closeInspectionForm()" style="background:#dc3545; color:white; border:none; padding:8px 15px; border-radius:5px;">關閉表單</button>
+    </div>
     <div style="text-align: center; font-size: 26px; font-weight: bold; margin-bottom: 20px; color: #000; letter-spacing: 2px;">道路巡查報告表</div>
     
     <div style="margin-bottom: 10px; font-size: 16px; color: #000; line-height: 2;">

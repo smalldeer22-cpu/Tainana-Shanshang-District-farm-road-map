@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0319_V5)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0319_V6)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -1743,13 +1743,13 @@
   </div>
 </div>
 
-<div id="vendorOverlay">
-  <div class="vendor-card">
-    <div class="vendor-header">
-      <span><i class="fas fa-hard-hat"></i> 廠商完工回報專區</span>
-      <button onclick="closeVendorModal()" style="background:none;border:none;color:white;font-size:24px;cursor:pointer;"><i class="fas fa-times"></i></button>
-    </div>
-    <div class="vendor-body">
+<div id="vendorOverlay" style="display: none; position: fixed; inset: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 9999; background: #f8f9fa !important; margin: 0 !important; padding: 0 !important; transform: none !important;">
+ <div class="vendor-card" style="width: 100% !important; max-width: none !important; height: 100% !important; max-height: none !important; margin: 0 !important; border-radius: 0 !important; box-shadow: none !important; display: flex; flex-direction: column; background: #f8f9fa !important;">
+   <div class="vendor-header" style="background:#2e7d32; color:white; padding:15px 20px; display:flex; justify-content:space-between; align-items:center;">
+     <span style="font-size: 18px; font-weight: bold; margin: 0;"><i class="fas fa-hard-hat"></i> 廠商完工回報專區</span>
+     <button onclick="closeVendorModal()" style="background:none;border:none;color:white;font-size:24px;cursor:pointer;"><i class="fas fa-times"></i></button>
+   </div>
+   <div class="vendor-body" style="padding: 20px; overflow-y: auto; flex: 1;">
       <div style="color: #d32f2f; font-size: 12px; margin-bottom: 15px; font-weight: bold;">
         ※ 本專區僅供機關授權之承攬廠商使用
       </div>

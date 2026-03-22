@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0322_V1)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0322_V2)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -6150,8 +6150,24 @@ let vendorCart = [];
     };
 
     window.submitVendorCart = function() {
-        const caseId = document.getElementById('vendorCaseId').value.trim();
-        if (vendorCart.length === 0) return alert("請先暫存資料！");
+       const caseId = document.getElementById('vendorCaseId').value.trim();
+       if (vendorCart.length === 0) return alert("請先暫存資料！");
+
+       // === 新增：施工後防呆警告機制 ===
+       let hasAfterPhoto = false;
+       vendorCart.forEach(group => {
+           group.forEach(photo => {
+               if(photo.category === '施工後') hasAfterPhoto = true;
+           });
+       });
+
+       if (hasAfterPhoto) {
+           const confirmFinish = confirm("⚠️ 注意：您上傳的照片中包含「施工後」的類別！\n\n送出後，系統將會「自動結案」並「立即發送完工通知給通報民眾」。\n\n請問確定要送出上傳嗎？");
+           if (!confirmFinish) {
+               return; // 廠商點擊取消，終止上傳程序
+           }
+       }
+       // ===================================
 
         const submitBtn = document.getElementById('btnSubmitVendor');
         submitBtn.disabled = true;

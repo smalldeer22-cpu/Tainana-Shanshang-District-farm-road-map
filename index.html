@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0322_V2)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0322_V3)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -1789,14 +1789,28 @@
      </div>
      
      <div id="vendorStage2" style="display:none;">
-       <div class="vendor-input-group">
-         <input type="text" id="vendorCaseId" placeholder="請輸入案件編號 (例:1130520001)">
-         <button class="vendor-btn" onclick="fetchVendorCase()"><i class="fas fa-search"></i> 載入資料</button>
-       </div>
-       <div style="text-align:right; margin-top:-10px; margin-bottom:10px;">
-         <a href="#" onclick="logoutVendor()" style="font-size:13px; color:#d32f2f; text-decoration:underline;">切換帳號 / 登出</a>
-       </div>
-     </div>
+    <div style="text-align:right; margin-bottom:10px;">
+        <a href="#" onclick="logoutVendor()" style="font-size:13px; color:#d32f2f; text-decoration:underline; font-weight:bold;">切換帳號 / 登出 <i class="fas fa-sign-out-alt"></i></a>
+    </div>
+    
+    <div id="vendorPendingListBlock" style="margin-bottom: 20px;">
+        <div style="font-size:15px; font-weight:bold; color:#004080; margin-bottom:10px; border-bottom:2px solid #004080; padding-bottom:5px;">
+            <i class="fas fa-list-ol"></i> 您的派工中案件 (點擊即可編輯)
+        </div>
+        <div id="vendorPendingListContent" style="max-height: 250px; overflow-y: auto; background: #fff; border: 1px solid #ddd; border-radius: 8px;">
+            <div style="padding:15px; text-align:center; color:#666;"><i class="fas fa-spinner fa-spin"></i> 正在載入派工清單...</div>
+        </div>
+        <div style="font-size:12px; color:#666; background:#fff3cd; padding:8px; border-radius:6px; margin-top:8px; border-left:3px solid #ffc107;">
+            💡 提示：若案件過去已上傳「施工後」照片並結案，將不在上方清單中。若需查詢，請直接從下方窗格輸入編號。
+        </div>
+    </div>
+
+    <div style="font-size:14px; font-weight:bold; color:#555; margin-bottom:5px;">或者手動輸入案件編號：</div>
+    <div class="vendor-input-group">
+        <input type="text" id="vendorCaseId" placeholder="請輸入案件編號 (例:1130520001)">
+        <button class="vendor-btn" onclick="fetchVendorCase()"><i class="fas fa-search"></i> 載入資料</button>
+    </div>
+</div>
 
       <div class="vendor-info-box" id="vendorInfoBox">
         <div style="font-weight:bold; color:#1b5e20; margin-bottom:5px;">案件已尋獲，請確認資訊：</div>
@@ -1902,9 +1916,12 @@
        <button class="vendor-btn" style="flex:1; background:#ccc; color:#fff; cursor:not-allowed;" id="btnVendorNext" onclick="nextVendorGroup()" disabled><i class="fas fa-layer-group"></i> 上傳其他照片</button>
    </div>
    <div style="display:flex; gap:10px; margin-top:10px;">
-       <button class="vendor-btn" style="flex:1; background:#ccc; color:#fff; cursor:not-allowed;" id="btnSubmitVendor" onclick="submitVendorCart()" disabled><i class="fas fa-cloud-upload-alt"></i> 送出/上傳</button>
-       <button class="vendor-btn" style="flex:1; background:#ccc; color:#fff; cursor:not-allowed;" id="btnVendorPrint" onclick="confirmBackupPDF()" disabled><i class="fas fa-file-pdf"></i> 備份PDF檔</button>
-   </div>
+    <button class="vendor-btn" style="flex:1; background:#ccc; color:#fff; cursor:not-allowed;" id="btnSubmitVendor" onclick="submitVendorCart()" disabled><i class="fas fa-cloud-upload-alt"></i> 送出/上傳</button>
+    <button class="vendor-btn" style="flex:1; background:#ccc; color:#fff; cursor:not-allowed;" id="btnVendorPrint" onclick="confirmBackupPDF()" disabled><i class="fas fa-file-pdf"></i> 備份PDF檔</button>
+</div>
+<div style="display:flex; gap:10px; margin-top:10px;">
+    <button class="vendor-btn" style="flex:1; background:#17a2b8; color:#fff;" onclick="downloadVendorPhotos()"><i class="fas fa-download"></i> 下載當前照片備份</button>
+</div>
    <div style="display:none; margin-top:15px;" id="btnVendorCancelBlock">
        <button class="vendor-btn" style="width:100%; background:#d32f2f; color:#fff;" onclick="logoutVendor()"><i class="fas fa-times"></i> 取消 (退回首頁)</button>
    </div>
@@ -5733,15 +5750,17 @@ let vendorCart = [];
 
     // 階段一：驗證密碼邏輯
     window.verifyVendorPwd = function() {
-        const pwd = document.getElementById('vendorPwd').value.trim();
-        if(!pwd) return alert("請輸入廠商授權密碼！");
-        if(pwd === "Admin2026Vendor") {
-            document.getElementById('vendorStage1').style.display = 'none';
-            document.getElementById('vendorStage2').style.display = 'block';
-        } else {
-            alert("❌ 密碼錯誤！請確認授權密碼。");
-        }
-    };
+    const pwd = document.getElementById('vendorPwd').value.trim();
+    if(!pwd) return alert("請輸入廠商授權密碼！");
+    if(pwd === "Admin2026Vendor") {
+        document.getElementById('vendorStage1').style.display = 'none';
+        document.getElementById('vendorStage2').style.display = 'block';
+        // 第二項需求：登入成功後，立刻連動後台抓取清單
+        fetchVendorPendingList(pwd);
+    } else {
+        alert(" ❌  密碼錯誤！請確認授權密碼。");
+    }
+};
 
     /// 階段二：退回搜尋畫面 (不清除密碼，解決重登困擾)
     window.backToVendorSearch = function() {
@@ -5760,11 +5779,76 @@ let vendorCart = [];
 
     // 登出：完全清除包含密碼 (供切換帳號用)
     window.logoutVendor = function() {
-        document.getElementById('vendorPwd').value = '';
-        document.getElementById('vendorStage1').style.display = 'block';
-        document.getElementById('vendorStage2').style.display = 'none';
-        window.backToVendorSearch();
-    };
+    document.getElementById('vendorPwd').value = '';
+    document.getElementById('vendorStage1').style.display = 'block';
+    document.getElementById('vendorStage2').style.display = 'none';
+    window.backToVendorSearch();
+};
+
+// === 第一項需求：下載廠商目前編輯中的照片 ===
+window.downloadVendorPhotos = function() {
+    let downloaded = 0;
+    ['1', '2', '3'].forEach(t => {
+        const img = document.getElementById('vImg' + t);
+        if (img && img.src && img.style.display !== 'none' && !img.src.includes('camera-icon')) {
+            const link = document.createElement('a');
+            link.href = img.src;
+            link.download = `廠商備份照片_${t}_${new Date().getTime()}.jpg`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            downloaded++;
+        }
+    });
+    if (downloaded === 0) {
+        alert(" ⚠ ️ 目前沒有可以下載的照片！");
+    } else {
+        alert(` ✅ 已成功下載 ${downloaded} 張照片備份。`);
+    }
+};
+
+// === 第二項需求：連動後台抓取派工清單 ===
+window.fetchVendorPendingList = async function(pwd) {
+    const listContent = document.getElementById('vendorPendingListContent');
+    listContent.innerHTML = '<div style="padding:15px; text-align:center; color:#666;"><i class="fas fa-spinner fa-spin"></i> 正在載入派工清單...</div>';
+    try {
+        const res = await fetch(`${GOOGLE_SCRIPT_URL}?action=getVendorPendingList&pwd=${pwd}`);
+        const json = await res.json();
+        if (json.result === "success") {
+            const data = json.data;
+            if (data.length === 0) {
+                listContent.innerHTML = '<div style="padding:15px; text-align:center; color:#28a745; font-weight:bold;">🎉 目前沒有待處理的派工案件！</div>';
+                return;
+            }
+            let html = '';
+            data.forEach(item => {
+                // 判斷狀態與顏色：如果有照片就顯示藍色(過去已上傳但需編輯)，沒有就顯示綠色(可新增上傳)
+                let statusTag = item.hasPhotos ? 
+                    '<span style="background:#17a2b8; color:#fff; padding:3px 8px; border-radius:12px; font-size:11px;">編輯 (已暫存/上傳)</span>' : 
+                    '<span style="background:#28a745; color:#fff; padding:3px 8px; border-radius:12px; font-size:11px;">新案件 (可新增上傳)</span>';
+                
+                html += `
+                <div style="padding:12px; border-bottom:1px dashed #eee; cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='#f0f7ff'" onmouseout="this.style.background='transparent'" onclick="document.getElementById('vendorCaseId').value='${item.caseId}'; fetchVendorCase();">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+                        <span style="font-weight:bold; color:#004080; font-size:15px;"><i class="fas fa-clipboard-check"></i> ${item.caseId}</span>
+                        ${statusTag}
+                    </div>
+                    <div style="font-size:12px; color:#666; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                        通報時間：${item.time}
+                    </div>
+                    <div style="font-size:12px; color:#444; margin-top:4px; line-height:1.4;">
+                        案情：${item.description}
+                    </div>
+                </div>`;
+            });
+            listContent.innerHTML = html;
+        } else {
+            listContent.innerHTML = `<div style="padding:15px; text-align:center; color:#d32f2f;">載入失敗：${json.error}</div>`;
+        }
+    } catch (e) {
+        listContent.innerHTML = `<div style="padding:15px; text-align:center; color:#d32f2f;">連線異常，請檢查網路</div>`;
+    }
+};
 
 // === 補回遺失的分流三開關功能 ===
     window.openVendorModal = function() {
@@ -5969,8 +6053,9 @@ let vendorCart = [];
         disableBtn(btnSubmit);
         disableBtn(btnPrint);
 
+        // 第三項需求：無論是不是編輯舊資料，都強制顯示「取消」按鈕，讓廠商可以退回清單畫面
         if(cancelBlock) {
-            cancelBlock.style.display = isEditMode ? "block" : "none";
+            cancelBlock.style.display = "block"; 
             const cancelBtn = cancelBlock.querySelector('button');
             if(cancelBtn) cancelBtn.onclick = window.backToVendorSearch;
         }

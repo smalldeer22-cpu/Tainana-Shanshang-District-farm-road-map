@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0319_V6)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0322_V1)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -1139,8 +1139,15 @@
   @keyframes bounce-border { 0%, 100% { border-color: #cbd5e1; transform: scale(1); } 50% { border-color: var(--primary-color); transform: scale(1.02); } }
   .bounce-hint { animation: bounce-border 1.5s infinite; background: #fffde7; }
 /* 步驟 2：描述 */
-  .report-textarea { width: 100%; height: 120px; resize: none; border: 2px solid #cbd5e1; border-radius: 12px; padding: 15px; font-size: 16px; box-sizing: border-box; font-family: inherit; transition: border-color 0.2s; }
-  .report-textarea:focus { border-color: var(--primary-color); outline: none; }
+.report-textarea { width: 100%; min-height: 120px; max-height: 250px; overflow-y: auto; resize: none; border: 2px solid #cbd5e1; border-radius: 12px; padding: 15px; font-size: 16px; box-sizing: border-box; font-family: inherit; transition: border-color 0.2s; }
+.report-textarea:focus { border-color: var(--primary-color); outline: none; }
+
+/* 案情通報類型複選按鈕 */
+.report-type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+.report-type-btn { background: #f1f5f9; border: 2px solid #e2e8f0; border-radius: 12px; padding: 10px; text-align: left; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; justify-content: center; color: #64748b; }
+.report-type-btn.active { background: var(--primary-color); border-color: var(--primary-color); color: white; box-shadow: 0 4px 10px rgba(0, 64, 128, 0.2); }
+.rt-main { font-size: 15px; font-weight: bold; margin-bottom: 4px; }
+.rt-sub { font-size: 11px; line-height: 1.3; opacity: 0.9; }
   .huge-mic-wrapper { text-align: center; margin: 30px 0; }
   .huge-mic-btn { width: 100px; height: 100px; border-radius: 50%; background: #fff; border: 4px solid #cbd5e1; color: #64748b; font-size: 40px; display: flex; align-items: center; justify-content: center; margin: 0 auto; cursor: pointer; transition: all 0.3s; box-shadow: 0 8px 20px rgba(0,0,0,0.05); }
   .huge-mic-btn.listening { border-color: #d32f2f; color: #d32f2f; background: #ffebee; animation: mic-pulse 1.5s infinite; }
@@ -1690,8 +1697,28 @@
           </div>
         </div>
 
-        <div style="font-weight:bold; color:#333; margin-bottom:10px; font-size: 16px;">請簡述路況或損壞情形</div>
-        <textarea id="reportDesc" class="report-textarea" maxlength="500" placeholder="(例如：路面坑洞)。最多500字。可以點擊下方麥克風用語音輸入！"></textarea>
+        <div style="font-weight:bold; color:#333; margin-bottom:10px; font-size: 16px;">請選擇案件類型 (可複選)</div>
+<div class="report-type-grid">
+    <button class="report-type-btn" onclick="toggleReportType(this, '供公眾通行道路本體坑洞及損壞')">
+        <div class="rt-main">路面損壞</div>
+        <div class="rt-sub">供公眾通行道路本體坑洞及損壞</div>
+    </button>
+    <button class="report-type-btn" onclick="toggleReportType(this, '供公眾通行道路旁側溝排水問題')">
+        <div class="rt-main">排水問題</div>
+        <div class="rt-sub">供公眾通行道路旁側溝排水問題</div>
+    </button>
+    <button class="report-type-btn" onclick="toggleReportType(this, '供公眾通行道路旁擋土牆及邊坡崩塌、土石滑落等影響公眾通行')">
+        <div class="rt-main">邊坡崩塌</div>
+        <div class="rt-sub">供公眾通行道路旁擋土牆及邊坡崩塌...</div>
+    </button>
+    <button class="report-type-btn" onclick="toggleReportType(this, '樹木災害影響公眾通行道路通行問題')">
+        <div class="rt-main">樹木災害</div>
+        <div class="rt-sub">樹木災害影響公眾通行道路通行問題</div>
+    </button>
+</div>
+
+<div style="font-weight:bold; color:#333; margin-bottom:10px; font-size: 16px;">補充簡述路況或損壞情形</div>
+<textarea id="reportDesc" class="report-textarea" maxlength="500" placeholder="(例如：路段細節、現場特徵)。最多500字。可以點擊下方麥克風用語音輸入！" oninput="this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px'"></textarea>
         
         <div style="display: none;">
           <select id="voiceLangSelect">
@@ -2397,6 +2424,17 @@ function initMathChallenge() {
   correctMathAnswer = n1 + n2;
   document.getElementById('mathQuestion').innerText = `${n1} + ${n2}`;
   document.getElementById('mathAnswer').value = '';
+}
+
+// === 案件類型複選邏輯 ===
+let selectedReportTypes = [];
+function toggleReportType(btn, fullName) {
+    btn.classList.toggle('active');
+    if (btn.classList.contains('active')) {
+        selectedReportTypes.push(fullName);
+    } else {
+        selectedReportTypes = selectedReportTypes.filter(t => t !== fullName);
+    }
 }
 
 // === 模式切換 ===
@@ -3209,12 +3247,12 @@ window.goToWizardStep = function(step) {
     }
   }
   if(step === 3 && currentWizardStep === 2) {
-    if(!document.getElementById('reportDesc').value.trim()) {
-      alert("請至少簡述一下案情或損壞情形喔！"); 
-      document.getElementById('reportDesc').focus();
-      return;
+        if(selectedReportTypes.length === 0 && !document.getElementById('reportDesc').value.trim()) {
+            alert("請至少選擇一項案件類型或簡述損壞情形喔！");
+            document.getElementById('reportDesc').focus();
+            return;
+        }
     }
-  }
 
   document.querySelectorAll('.wizard-tab').forEach((t, i) => t.classList.toggle('active', i+1 === step));
   document.querySelectorAll('.wizard-step').forEach((s, i) => s.classList.toggle('active', i+1 === step));
@@ -3525,11 +3563,14 @@ window.deletePhoto = function(id, e) {
   delBtn.style.display = 'none';
 }
 
-function resetReportForm() { 
-  deletePhoto(1); 
-  deletePhoto(2); 
-  document.getElementById('reportDesc').value = ""; 
-  document.getElementById('reportWgs84').innerText = "📍 正在為您精準定位中..."; 
+function resetReportForm() {
+    deletePhoto(1);
+    deletePhoto(2);
+    document.getElementById('reportDesc').value = "";
+    document.getElementById('reportDesc').style.height = ''; // 重置文字框高度
+    selectedReportTypes = []; // 清空已選擇的類型
+    document.querySelectorAll('.report-type-btn').forEach(btn => btn.classList.remove('active')); // 重置按鈕視覺
+    document.getElementById('reportWgs84').innerText = " 📍  正在為您精準定位中..."; 
   document.getElementById('reportTwd97').innerText = "定位中...";
   document.getElementById('subscribeToggle').checked = false;
   document.getElementById('emailInputArea').style.display = 'none';
@@ -3568,10 +3609,17 @@ async function submitReport() {
   }
   
   if (Date.now() - reportStartTime < 3000) return alert("請勿頻繁送出，請檢查資料後再試");
-  if (GOOGLE_SCRIPT_URL.includes("您的SCRIPT_ID")) return alert("請先設定 Google Apps Script URL！"); 
-  
-  const desc = sanitizeInput(document.getElementById('reportDesc').value.trim());
-  let email = "";
+  if (GOOGLE_SCRIPT_URL.includes("您的SCRIPT_ID")) return alert("請先設定 Google Apps Script URL！");
+
+    // 組合複選按鈕與文字框的內容
+    let rawDesc = document.getElementById('reportDesc').value.trim();
+    let combinedDesc = rawDesc;
+    if (selectedReportTypes.length > 0) {
+        combinedDesc = "【" + selectedReportTypes.join("、") + "】\n" + rawDesc;
+    }
+    
+    const desc = sanitizeInput(combinedDesc);
+    let email = "";
   if (document.getElementById('subscribeToggle').checked) {
     email = document.getElementById('subscriberEmail').value.trim();
     if(!email || !email.includes('@')) return alert("請輸入有效的 Email 以便訂閱通知。");

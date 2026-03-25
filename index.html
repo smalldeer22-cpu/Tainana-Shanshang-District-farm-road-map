@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0322_V3)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0325_V1)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -2341,6 +2341,16 @@
     <div style="display:flex; justify-content:flex-end; margin-bottom: 10px;">
       <button onclick="closeInspectionForm()" style="background:#dc3545; color:white; border:none; padding:8px 15px; border-radius:5px;">關閉表單</button>
     </div>
+
+<div id="patrolHistoryBlock" style="margin-bottom: 20px; padding: 15px; background: #fdfbfe; border: 2px solid #6f42c1; border-radius: 10px;">
+       <div style="font-size:16px; font-weight:bold; color:#6f42c1; margin-bottom:10px; border-bottom:1px solid #6f42c1; padding-bottom:5px;">
+           <i class="fas fa-history"></i> 最近 15 筆巡查上傳紀錄 (僅供參考)
+       </div>
+       <div id="patrolHistoryContent" style="max-height: 180px; overflow-y: auto; background: #fff; border: 1px solid #eee; border-radius: 5px;">
+           <div style="padding:15px; text-align:center; color:#666;"><i class="fas fa-spinner fa-spin"></i> 正在載入紀錄...</div>
+       </div>
+   </div>
+
     <div style="text-align: center; font-size: 26px; font-weight: bold; margin-bottom: 20px; color: #000; letter-spacing: 2px;">道路巡查報告表</div>
     
     <div style="margin-bottom: 10px; font-size: 16px; color: #000; line-height: 2;">
@@ -2855,15 +2865,33 @@ function createPopup(data) {
   let projectTypeStr = props['案件類型'];
   let sourceDisplay = (projectTypeStr && projectTypeStr.trim() !== '') ? projectTypeStr : (fileName || '來源未知');
 
-  let arrBefore = getPhotosFromProps({'施工前照片': props['施工前照片']});
-  let arrAfter = getPhotosFromProps({'施工後照片': props['施工後照片']});
-  if(arrBefore.length === 0 && props.photoUrl) {
-    arrBefore.push(getDirectDriveUrl(props.photoUrl));
-  }
-  
-  const renderImg = (src) => src ? `<img src="${src}" oncontextmenu="return false;">` : '<div style="width:100%;height:100%;background:#f1f5f9;display:flex;align-items:center;justify-content:center;color:#999;font-size:12px;">無影像</div>';
-
-  // --- 新增：處理廠商多張照片輪播邏輯 ---
+  // --- [修改後] 支援解析 M 欄的 1~2 張報案照片 (打開 JSON 百寶箱) ---
+ let arrBefore = [];
+ try {
+     let bParsed = JSON.parse(props['施工前照片'] || "[]");
+     if (Array.isArray(bParsed) && bParsed.length > 0) {
+         // 如果成功解開百寶箱，把每一張照片的網址都轉成可直接顯示的圖片連結
+         arrBefore = bParsed.map(url => typeof getDirectDriveUrl === 'function' ? getDirectDriveUrl(url) : url);
+     } else {
+         arrBefore = getPhotosFromProps({'施工前照片': props['施工前照片']});
+     }
+ } catch(e) {
+     // 如果不是 JSON (例如以前的舊案件)，就照舊處理
+     arrBefore = getPhotosFromProps({'施工前照片': props['施工前照片']});
+ }
+ 
+ let arrAfter = getPhotosFromProps({'施工後照片': props['施工後照片']});
+ if (arrBefore.length === 0 && props.photoUrl) {
+     arrBefore.push(getDirectDriveUrl(props.photoUrl)); 
+ }
+ // -----------------------------------------------------------------
+ 
+ // --- [修改後] 渲染泡泡窗上方圖片，並加入最高強度保護 (防另存、防拖曳、防點擊) ---
+ const renderImg = (src) => src ?
+ `<img src="${src}" style="pointer-events:none;" oncontextmenu="return false;" draggable="false">` : 
+ '<div style="width:100%;height:100%;background:#f1f5f9;display:flex;align-items:center;justify-content:center;color:#999;font-size:12px;">無影像</div>';
+ 
+ // --- 新增：處理廠商多張照片輪播邏輯 ---
   let vendorBefore = [];
   let vendorDuring = [];
   try {
@@ -2873,22 +2901,66 @@ function createPopup(data) {
 
   let processPhotosHtml = '';
   if (vendorBefore.length > 0 || vendorDuring.length > 0) {
-    let allProcessPhotos = [];
+    // --- [修改後] 整合全歷程照片陣列：民眾報案 -> 廠商前 -> 廠商中 -> 廠商後 ---
+  let allProcessPhotos = [];
+
+  // --- [修改後] 1. 加入民眾原始報案照 (支援單張舊網址，也支援多張新陣列) ---
+  if (props.beforePhoto) {
+    try {
+        let bArr = JSON.parse(props.beforePhoto);
+        if (Array.isArray(bArr)) {
+            bArr.forEach((pUrl, idx) => {
+                allProcessPhotos.push({url: pUrl, label: '原始報案照-' + (idx+1)});
+            });
+        }
+    } catch(e) {
+        // 如果解碼失敗，代表這是以前的舊案件（單純的網址字串）
+        allProcessPhotos.push({url: props.beforePhoto, label: '原始報案照(民眾)'});
+    }
+  }
+  // ----------------------------------------------------------------------
+
+  // 2. 加入廠商施工前
+  if (typeof vendorBefore !== 'undefined' && vendorBefore) {
     vendorBefore.forEach(url => allProcessPhotos.push({url: url, label: '施工前(廠商)'}));
+  }
+
+  // 3. 加入廠商施工中
+  if (typeof vendorDuring !== 'undefined' && vendorDuring) {
     vendorDuring.forEach(url => allProcessPhotos.push({url: url, label: '施工中(機具/交維)'}));
-    
-    processPhotosHtml = `
-    <div style="margin: 0 15px 10px 15px; border-top: 1px dashed #ccc; padding-top: 10px;">
-      <div style="font-size:12px; font-weight:bold; color:#004080; margin-bottom:5px;"><i class="fas fa-images"></i> 施工歷程照片 (左右滑動檢視)</div>
-      <div style="display:flex; overflow-x:auto; gap:8px; padding-bottom:8px;">
-        ${allProcessPhotos.map(p => `
-          <div style="min-width:120px; height:90px; position:relative; border-radius:4px; overflow:hidden; border:1px solid #ddd; flex-shrink:0;">
-            <img src="${getDirectDriveUrl(p.url)}" style="width:100%; height:100%; object-fit:cover;">
-            <div style="position:absolute; bottom:0; width:100%; background:rgba(0,0,0,0.6); color:white; font-size:10px; text-align:center; padding:2px 0;">${p.label}</div>
+  }
+
+  // 4. 加入廠商施工後 (從 N 欄 vendorAfter 抓取，並新增到輪播中)
+  if (props.vendorAfter) {
+    try {
+        let afterArr = JSON.parse(props.vendorAfter);
+        if(Array.isArray(afterArr)) {
+            afterArr.forEach(p => allProcessPhotos.push({url: p.url || p, label: '完工成果照(廠商)'}));
+        }
+    } catch(e) {
+        allProcessPhotos.push({url: props.vendorAfter, label: '完工成果照(廠商)'});
+    }
+  }
+   
+  processPhotosHtml = `
+  <div style="margin: 0 15px 10px 15px; border-top: 1px dashed #ccc; padding-top: 10px;">
+    <div style="font-size:12px; font-weight:bold; color:#004080; margin-bottom:5px;">
+      <i class="fas fa-images"></i> 施工全歷程照片 (左右滑動檢視)
+    </div>
+    <div style="display:flex; overflow-x:auto; gap:8px; padding-bottom:8px;">
+      ${allProcessPhotos.map(p => `
+        <div style="min-width:120px; height:90px; position:relative; border-radius:4px; overflow:hidden; border:1px solid #ddd; flex-shrink:0;">
+          <img src="${getDirectDriveUrl(p.url)}" 
+               oncontextmenu="return false;" 
+               draggable="false" 
+               style="width:100%; height:100%; object-fit:cover; pointer-events:none;">
+          <div style="position:absolute; bottom:0; width:100%; background:rgba(0,0,0,0.6); color:white; font-size:10px; text-align:center; padding:2px 0;">
+            ${p.label}
           </div>
-        `).join('')}
-      </div>
-    </div>`;
+        </div>
+      `).join('')}
+    </div>
+  </div>`;
   }
   // ------------------------------------
 
@@ -3257,12 +3329,16 @@ function closeReport() {
 }
 
 window.goToWizardStep = function(step) {
+  // --- 修改：強制要求至少上傳一張照片 ---
   if(step === 2 && currentWizardStep === 1) {
     const img1 = document.getElementById('imgPreview1').src;
+    // 檢查預覽圖是否為空的或是預設圖
     if(!img1 || !img1.startsWith('data:')) {
-      if(!confirm("您尚未上傳任何現況照片，確定要跳過直接進行文字描述嗎？")) return;
+      alert("⚠️ 請至少上傳一張「現場狀況照片」以供辨識位置，才能進行下一步！");
+      return; // 這裡直接擋住，不讓民眾進入 step 2
     }
   }
+  // ------------------------------------
   if(step === 3 && currentWizardStep === 2) {
         if(selectedReportTypes.length === 0 && !document.getElementById('reportDesc').value.trim()) {
             alert("請至少選擇一項案件類型或簡述損壞情形喔！");
@@ -6550,8 +6626,11 @@ function verifyInspectionPwd() {
     document.getElementById('inspPhotoContainer').appendChild(addBtn);
 
     document.getElementById('inspectionFormModal').style.display = 'block';
-  } else {
-    alert("密碼錯誤！");
+   // 補上這一行，讓視窗打開後立刻去抓資料
+   fetchPatrolList(); 
+  }
+else {
+   alert("密碼錯誤！");
   }
 }
 
@@ -6935,6 +7014,41 @@ function exportInspectionPDF() {
     printWindow.document.write(finalHtml);
     printWindow.document.close();
 }
+// === 分流四：連動後台抓取歷史巡查紀錄 ===
+window.fetchPatrolList = async function() {
+    const listContent = document.getElementById('patrolHistoryContent');
+    if(!listContent) return;
+    
+    listContent.innerHTML = '<div style="padding:15px; text-align:center; color:#666;"><i class="fas fa-spinner fa-spin"></i> 正在載入最新紀錄...</div>';
+    
+    try {
+        const res = await fetch(`${GOOGLE_SCRIPT_URL}?action=getPatrolList`);
+        const json = await res.json();
+        
+        if (json.result === "success") {
+            const data = json.data;
+            if (data.length === 0) {
+                listContent.innerHTML = '<div style="padding:15px; text-align:center; color:#666;">目前尚無巡查紀錄</div>';
+                return;
+            }
+            let html = '';
+            data.forEach(item => {
+                html += `
+                <div style="padding:10px; border-bottom:1px dashed #eee; font-size:13px; background:#fff;">
+                    <div style="color:#6f42c1; font-weight:bold;"><i class="far fa-clock"></i> ${item.time}</div>
+                    <div style="color:#333; margin:2px 0;"><strong>巡查員：</strong>${item.inspector}</div>
+                    <div style="color:#666; font-size:12px;"><strong>地點：</strong>${item.location}</div>
+                </div>`;
+            });
+            listContent.innerHTML = html;
+        } else {
+            listContent.innerHTML = `<div style="padding:15px; text-align:center; color:#d32f2f;">載入失敗：${json.error}</div>`;
+        }
+    } catch (e) {
+        listContent.innerHTML = `<div style="padding:15px; text-align:center; color:#d32f2f;">連線異常，請確認網路或後端部署</div>`;
+    }
+};
+
 </script>
 </body>
 </html>

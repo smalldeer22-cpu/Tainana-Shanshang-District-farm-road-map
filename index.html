@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0326_V6)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0326_V7)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -6055,10 +6055,8 @@ window.fetchVendorPendingList = async function(pwd) {
             }
             let html = '';
             data.forEach(item => {
-                // 判斷狀態與顏色：如果有照片就顯示藍色(過去已上傳但需編輯)，沒有就顯示綠色(可新增上傳)
-                let statusTag = item.hasPhotos ? 
-                    '<span style="background:#17a2b8; color:#fff; padding:3px 8px; border-radius:12px; font-size:11px;">編輯 (已暫存/上傳)</span>' : 
-                    '<span style="background:#28a745; color:#fff; padding:3px 8px; border-radius:12px; font-size:11px;">新案件 (可新增上傳)</span>';
+                // --- [修改] 放寬清單：只要是派工中，一律顯示為綠色可編輯狀態 ---
+               let statusTag = '<span style="background:#28a745; color:#fff; padding:3px 8px; border-radius:12px; font-size:11px;">進行中 (點擊增補)</span>';
                 
                 html += `
                 <div style="padding:12px; border-bottom:1px dashed #eee; cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='#f0f7ff'" onmouseout="this.style.background='transparent'" onclick="document.getElementById('vendorCaseId').value='${item.caseId}'; fetchVendorCase();">
@@ -6173,9 +6171,27 @@ window.fetchVendorPendingList = async function(pwd) {
                     }
                 } catch(e) {}
 
-                // 🌟 新增：還原顯示 3 個區塊
-                const wrappers = document.querySelectorAll('.vendor-table-wrapper');
-                wrappers.forEach(w => w.style.display = 'block');
+                // --- [新增] 檢查是否包含施工後照片，控制 PDF 按鈕 ---
+               let hasAfterPhotoInDb = false;
+               try {
+                   if (json.data.photosVendorAfter && json.data.photosVendorAfter !== '[]' && json.data.photosVendorAfter !== '') {
+                       hasAfterPhotoInDb = true;
+                   }
+               } catch(e){}
+
+               let pdfBtns = document.querySelectorAll('button[onclick*="downloadVendorPhotos"], button[onclick*="confirmBackupPDF"]');
+               pdfBtns.forEach(btn => {
+                   if (hasAfterPhotoInDb) {
+                       btn.disabled = false;
+                       btn.style.background = '#6f42c1'; // 紫色亮起
+                       btn.style.cursor = 'pointer';
+                   } else {
+                       btn.disabled = true;
+                       btn.style.background = '#ccc'; // 灰色反灰
+                       btn.style.cursor = 'not-allowed';
+                   }
+               });
+               // ----------------------------------------------------
                 
                 // 🌟 讀取舊照片並進行防呆轉換
                 let urlsBefore = window.parseVendorUrls(json.data.photosVendorBefore);
@@ -6529,20 +6545,20 @@ window.fetchVendorPendingList = async function(pwd) {
         .then(res => res.json())
         .then(res => {
             submitBtn.innerText = "送出/上傳"; // 🌟 復原文字
-            if(res.result === "success") {
-                if (confirm("✅ 上傳成功！請問是否要產製「備份PDF檔」？\n(點選「確定」將亮起備份按鈕，點選「取消」將退回)")) {
-                    hasModified = false;
-                    isEditMode = false;
-                    updateVendorButtonStates(); // 全關
-                    const btnPrint = document.getElementById('btnVendorPrint');
-                    btnPrint.disabled = false;
-                    btnPrint.style.background = "#17a2b8";
-                    btnPrint.style.color = "#fff";
-                    btnPrint.style.cursor = "pointer";
-                } else {
-                    window.backToVendorSearch();
-                }
-            } else {
+            // --- [修改] 上傳成功後不鎖死，允許繼續增補 ---
+           if(res.result === "success" || res.result === "成功") {
+               alert("✅ 上傳成功！資料已安全存入後台。\n\n若尚未完工，您可以繼續在下方增補照片；\n若剛才已上傳「施工後」照片，此案件稍後會自動從清單中結案。");
+               
+               // 復原送出按鈕為綠色可點擊狀態
+               submitBtn.disabled = false;
+               submitBtn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> 繼續增補上傳';
+               submitBtn.style.background = '#28a745';
+               submitBtn.style.cursor = 'pointer';
+
+               // 自動重新載入案件，實現「斷點續傳」並刷新 PDF 按鈕狀態
+               hasModified = false;
+               window.fetchVendorCase(); 
+           } else {
                 alert("❌ 失敗：" + res.error);
                 submitBtn.disabled = false;
                 submitBtn.style.cursor = "pointer";

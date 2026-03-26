@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0326_V3)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0326_V4)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -2862,7 +2862,7 @@ function createPopup(data) {
   let projectTypeStr = props['案件類型'];
   let sourceDisplay = (projectTypeStr && projectTypeStr.trim() !== '') ? projectTypeStr : (fileName || '來源未知');
 
-  // --- 1. [修正] 支援解析 M 欄的 1~2 張報案照片 (打開 JSON 百寶箱) ---
+  // --- 1. [修正] 支援解析 M 欄(報案照) 與 N 欄(完工照) 的 JSON 百寶箱 ---
   let arrBefore = [];
   try {
       let bParsed = JSON.parse(props['施工前照片'] || "[]");
@@ -2875,7 +2875,18 @@ function createPopup(data) {
       arrBefore = getPhotosFromProps({'施工前照片': props['施工前照片']});
   }
 
-  let arrAfter = getPhotosFromProps({'施工後照片': props['施工後照片']});
+  let arrAfter = [];
+  try {
+      let aParsed = JSON.parse(props['施工後照片'] || "[]");
+      if (Array.isArray(aParsed) && aParsed.length > 0) {
+          arrAfter = aParsed.map(url => typeof getDirectDriveUrl === 'function' ? getDirectDriveUrl(url) : url);
+      } else {
+          arrAfter = getPhotosFromProps({'施工後照片': props['施工後照片']});
+      }
+  } catch(e) {
+      arrAfter = getPhotosFromProps({'施工後照片': props['施工後照片']});
+  }
+
   if (arrBefore.length === 0 && props.photoUrl) {
       arrBefore.push(getDirectDriveUrl(props.photoUrl)); 
   }
@@ -2907,18 +2918,11 @@ function createPopup(data) {
   if (typeof vendorDuring !== 'undefined' && vendorDuring) {
       vendorDuring.forEach(url => allProcessPhotos.push({url: url, label: '施工中(機具/交維)'}));
   }
-  // (D) 廠商完工照加入輪播
-  if (props['施工後照片']) {
-      try {
-          let afterArr = JSON.parse(props['施工後照片']);
-          if(Array.isArray(afterArr)) {
-              afterArr.forEach(url => allProcessPhotos.push({url: url, label: '完工成果照(廠商)'}));
-          } else {
-              allProcessPhotos.push({url: props['施工後照片'], label: '完工成果照(廠商)'});
-          }
-      } catch(e) {
-          allProcessPhotos.push({url: props['施工後照片'], label: '完工成果照(廠商)'});
-      }
+  // (D) 廠商完工照加入輪播 (支援把多張完工照都塞進去！)
+  if (arrAfter.length > 0) {
+      arrAfter.forEach((url, idx) => {
+          allProcessPhotos.push({url: url, label: '完工成果照' + (arrAfter.length > 1 ? `-${idx+1}` : '')});
+      });
   }
 
   let processPhotosHtml = '';
@@ -2943,37 +2947,73 @@ function createPopup(data) {
       </div>`;
   }
 
-  // --- 4. [修正] 處理上方大圖的雙圖數字切換邏輯 ---
+  // --- 4. [修正] 處理上方大圖的動態多圖數字切換邏輯 (會自動偵測張數產生 1|2|3 按鈕) ---
+  // (A) 處理原始報案照 (arrBefore)
   let beforePhotoDesktopHtml = `<div id="d-before-1-${uid}" style="display:block; height:100%;">${renderImg(arrBefore[0])}</div>`;
   let beforePhotoMobileHtml  = `<div id="m-before-1-${uid}" style="display:block; height:100%;">${renderImg(arrBefore[0])}</div>`;
   
   if (arrBefore.length > 1) {
-      let toggleBtns = `
-      <div style="position:absolute; bottom:5px; left:0; width:100%; display:flex; justify-content:center; gap:8px; z-index:10;">
-          <div onclick="
-              if(document.getElementById('d-before-1-${uid}')) { document.getElementById('d-before-1-${uid}').style.display='block'; document.getElementById('d-before-2-${uid}').style.display='none'; }
-              if(document.getElementById('m-before-1-${uid}')) { document.getElementById('m-before-1-${uid}').style.display='block'; document.getElementById('m-before-2-${uid}').style.display='none'; }
-              this.style.background='#004080'; this.style.color='#fff'; this.nextElementSibling.style.background='rgba(255,255,255,0.8)'; this.nextElementSibling.style.color='#333';" 
-              style="width:20px; height:20px; border-radius:50%; background:#004080; color:white; font-size:12px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-weight:bold; box-shadow:0 2px 4px rgba(0,0,0,0.4); border:1px solid #fff;">1</div>
-          <div onclick="
-              if(document.getElementById('d-before-1-${uid}')) { document.getElementById('d-before-1-${uid}').style.display='none'; document.getElementById('d-before-2-${uid}').style.display='block'; }
-              if(document.getElementById('m-before-1-${uid}')) { document.getElementById('m-before-1-${uid}').style.display='none'; document.getElementById('m-before-2-${uid}').style.display='block'; }
-              this.style.background='#004080'; this.style.color='#fff'; this.previousElementSibling.style.background='rgba(255,255,255,0.8)'; this.previousElementSibling.style.color='#333';" 
-              style="width:20px; height:20px; border-radius:50%; background:rgba(255,255,255,0.8); color:#333; font-size:12px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-weight:bold; box-shadow:0 2px 4px rgba(0,0,0,0.4); border:1px solid #fff;">2</div>
-      </div>`;
+      let toggleBtns = `<div style="position:absolute; bottom:5px; left:0; width:100%; display:flex; justify-content:center; gap:8px; z-index:10;">`;
+      let desktopImgs = "";
+      let mobileImgs = "";
+      arrBefore.forEach((imgUrl, idx) => {
+          let i = idx + 1;
+          desktopImgs += `<div id="d-before-${i}-${uid}" style="display:${i===1?'block':'none'}; height:100%;">${renderImg(imgUrl)}</div>`;
+          mobileImgs += `<div id="m-before-${i}-${uid}" style="display:${i===1?'block':'none'}; height:100%;">${renderImg(imgUrl)}</div>`;
+          
+          toggleBtns += `<div onclick="
+              for(let j=1; j<=${arrBefore.length}; j++) {
+                  let d = document.getElementById('d-before-'+j+'-${uid}');
+                  let m = document.getElementById('m-before-'+j+'-${uid}');
+                  if(d) d.style.display = (j==${i}) ? 'block' : 'none';
+                  if(m) m.style.display = (j==${i}) ? 'block' : 'none';
+              }
+              for(let child of this.parentElement.children) {
+                 child.style.background = 'rgba(255,255,255,0.8)';
+                 child.style.color = '#333';
+              }
+              this.style.background = '#004080';
+              this.style.color = '#fff';
+          " style="width:20px; height:20px; border-radius:50%; background:${i===1 ? '#004080' : 'rgba(255,255,255,0.8)'}; color:${i===1 ? 'white' : '#333'}; font-size:12px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-weight:bold; box-shadow:0 2px 4px rgba(0,0,0,0.4); border:1px solid #fff;">${i}</div>`;
+      });
+      toggleBtns += `</div>`;
       
-      beforePhotoDesktopHtml = `
-        <div style="position:relative; width:100%; height:100%;">
-          <div id="d-before-1-${uid}" style="display:block; height:100%;">${renderImg(arrBefore[0])}</div>
-          <div id="d-before-2-${uid}" style="display:none; height:100%;">${renderImg(arrBefore[1])}</div>
-          ${toggleBtns}
-        </div>`;
-      beforePhotoMobileHtml = `
-        <div style="position:relative; width:100%; height:100%;">
-          <div id="m-before-1-${uid}" style="display:block; height:100%;">${renderImg(arrBefore[0])}</div>
-          <div id="m-before-2-${uid}" style="display:none; height:100%;">${renderImg(arrBefore[1])}</div>
-          ${toggleBtns}
-        </div>`;
+      beforePhotoDesktopHtml = `<div style="position:relative; width:100%; height:100%;">${desktopImgs}${toggleBtns}</div>`;
+      beforePhotoMobileHtml = `<div style="position:relative; width:100%; height:100%;">${mobileImgs}${toggleBtns}</div>`;
+  }
+
+  // (B) 處理完工成果照 (arrAfter)
+  let afterPhotoDesktopHtml = `<div id="d-after-1-${uid}" style="display:block; height:100%;">${renderImg(arrAfter[0])}</div>`;
+  let afterPhotoMobileHtml  = `<div id="m-after-1-${uid}" style="display:block; height:100%;">${renderImg(arrAfter[0])}</div>`;
+  
+  if (arrAfter.length > 1) {
+      let toggleBtns = `<div style="position:absolute; bottom:5px; left:0; width:100%; display:flex; justify-content:center; gap:8px; z-index:10;">`;
+      let desktopImgs = "";
+      let mobileImgs = "";
+      arrAfter.forEach((imgUrl, idx) => {
+          let i = idx + 1;
+          desktopImgs += `<div id="d-after-${i}-${uid}" style="display:${i===1?'block':'none'}; height:100%;">${renderImg(imgUrl)}</div>`;
+          mobileImgs += `<div id="m-after-${i}-${uid}" style="display:${i===1?'block':'none'}; height:100%;">${renderImg(imgUrl)}</div>`;
+          
+          toggleBtns += `<div onclick="
+              for(let j=1; j<=${arrAfter.length}; j++) {
+                  let d = document.getElementById('d-after-'+j+'-${uid}');
+                  let m = document.getElementById('m-after-'+j+'-${uid}');
+                  if(d) d.style.display = (j==${i}) ? 'block' : 'none';
+                  if(m) m.style.display = (j==${i}) ? 'block' : 'none';
+              }
+              for(let child of this.parentElement.children) {
+                 child.style.background = 'rgba(255,255,255,0.8)';
+                 child.style.color = '#333';
+              }
+              this.style.background = '#004080';
+              this.style.color = '#fff';
+          " style="width:20px; height:20px; border-radius:50%; background:${i===1 ? '#004080' : 'rgba(255,255,255,0.8)'}; color:${i===1 ? 'white' : '#333'}; font-size:12px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-weight:bold; box-shadow:0 2px 4px rgba(0,0,0,0.4); border:1px solid #fff;">${i}</div>`;
+      });
+      toggleBtns += `</div>`;
+      
+      afterPhotoDesktopHtml = `<div style="position:relative; width:100%; height:100%;">${desktopImgs}${toggleBtns}</div>`;
+      afterPhotoMobileHtml = `<div style="position:relative; width:100%; height:100%;">${mobileImgs}${toggleBtns}</div>`;
   }
 
   // --- 5. 回傳組合好的最終 HTML ---
@@ -3008,7 +3048,7 @@ function createPopup(data) {
 
     <div class="desktop-photo-row">
       <div class="photo-half">${beforePhotoDesktopHtml}<div class="photo-label">原始報案照 (基準)</div></div>
-      <div class="photo-half">${renderImg(arrAfter[0])}<div class="photo-label">完工成果照</div></div>
+      <div class="photo-half">${afterPhotoDesktopHtml}<div class="photo-label">完工成果照</div></div>
     </div>
 
     <div class="mobile-photo-tabs">
@@ -3016,7 +3056,7 @@ function createPopup(data) {
       <div class="m-photo-tab" onclick="switchMobilePhotoTab(this, 'before', '${uid}')">原始報案照</div>
     </div>
     <div class="mobile-photo-area">
-      <div class="mobile-photo-view active" id="m-view-after-${uid}">${renderImg(arrAfter[0])}</div>
+      <div class="mobile-photo-view active" id="m-view-after-${uid}">${afterPhotoMobileHtml}</div>
       <div class="mobile-photo-view" id="m-view-before-${uid}">${beforePhotoMobileHtml}</div>
     </div>
 

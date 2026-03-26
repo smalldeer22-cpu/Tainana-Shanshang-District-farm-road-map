@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0326_V7)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0326_V8)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -6274,57 +6274,66 @@ window.fetchVendorPendingList = async function(pwd) {
     }
 
     // 🌟 控制按鈕與鼠標 (手指 pointer / 禁止 not-allowed)
-    window.updateVendorButtonStates = function() {
-        const btnSave = document.getElementById('btnVendorSave');
-        const btnNext = document.getElementById('btnVendorNext');
-        const btnSubmit = document.getElementById('btnSubmitVendor');
-        const btnPrint = document.getElementById('btnVendorPrint');
-        const cancelBlock = document.getElementById('btnVendorCancelBlock');
+   window.updateVendorButtonStates = function() {
+       const btnSave = document.getElementById('btnVendorSave');
+       const btnNext = document.getElementById('btnVendorNext');
+       const btnSubmit = document.getElementById('btnSubmitVendor');
+       const btnPrint = document.getElementById('btnVendorPrint');
+       const cancelBlock = document.getElementById('btnVendorCancelBlock');
+ 
+       if(!btnSave || !btnNext || !btnSubmit || !btnPrint) return;
+ 
+       const disableBtn = (btn) => {
+           btn.disabled = true;
+           btn.style.background = "#ccc";
+           btn.style.color = "#fff";
+           btn.style.cursor = "not-allowed";
+       };
+       const enableBtn = (btn, bg, color) => {
+           btn.disabled = false;
+           btn.style.background = bg;
+           btn.style.color = color || "#fff";
+           btn.style.cursor = "pointer";
+       };
+ 
+       disableBtn(btnSave);
+       btnSave.innerHTML = `<i class="fas fa-save"></i> ${isEditMode ? "修改" : "暫存"}`;
+       disableBtn(btnNext);
+       disableBtn(btnSubmit);
+       disableBtn(btnPrint);
+ 
+       if(cancelBlock) {
+           cancelBlock.style.display = "block"; 
+           const cancelBtn = cancelBlock.querySelector('button');
+           if(cancelBtn) cancelBtn.onclick = window.backToVendorSearch;
+       }
+ 
+       // --- [修改重點 1] 解除 hasModified 鎖定，只要暫存區有資料就全亮 ---
+       if (vendorCart.length === 0) {
+           enableBtn(btnSave, "#0056b3");
+       } else {
+           enableBtn(btnSave, "#0056b3"); // 儲存/修改
+           enableBtn(btnNext, "#f0ad4e", "#333"); // 上傳其他照片
+           enableBtn(btnSubmit, "#2e7d32"); // 送出上傳
+       }
 
-        if(!btnSave || !btnNext || !btnSubmit || !btnPrint) return;
+       // --- [修改重點 2] 動態偵測是否含有「施工後」照片，決定備份 PDF 按鈕是否亮起 ---
+       let hasAfterPhoto = false;
+       vendorCart.forEach(group => {
+           if (group) {
+               group.forEach(photo => {
+                   if (photo && (photo.category === '施工後' || photo.desc === '施工後')) {
+                       hasAfterPhoto = true;
+                   }
+               });
+           }
+       });
 
-        const disableBtn = (btn) => {
-            btn.disabled = true;
-            btn.style.background = "#ccc";
-            btn.style.color = "#fff";
-            btn.style.cursor = "not-allowed";
-        };
-        const enableBtn = (btn, bg, color) => {
-            btn.disabled = false;
-            btn.style.background = bg;
-            btn.style.color = color || "#fff";
-            btn.style.cursor = "pointer";
-        };
-
-        disableBtn(btnSave);
-        btnSave.innerHTML = `<i class="fas fa-save"></i> ${isEditMode ? "修改" : "暫存"}`;
-        disableBtn(btnNext);
-        disableBtn(btnSubmit);
-        disableBtn(btnPrint);
-
-        // 第三項需求：無論是不是編輯舊資料，都強制顯示「取消」按鈕，讓廠商可以退回清單畫面
-        if(cancelBlock) {
-            cancelBlock.style.display = "block"; 
-            const cancelBtn = cancelBlock.querySelector('button');
-            if(cancelBtn) cancelBtn.onclick = window.backToVendorSearch;
-        }
-
-        if (vendorCart.length === 0) {
-            enableBtn(btnSave, "#0056b3");
-        } else {
-            if (isEditMode) {
-                if (hasModified) {
-                    enableBtn(btnSave, "#0056b3");
-                    enableBtn(btnNext, "#f0ad4e", "#333");
-                    enableBtn(btnSubmit, "#2e7d32");
-                }
-            } else {
-                enableBtn(btnSave, "#0056b3");
-                enableBtn(btnNext, "#f0ad4e", "#333");
-                enableBtn(btnSubmit, "#2e7d32");
-            }
-        }
-    };
+       // 只有當偵測到施工後照片時，才讓 PDF 按鈕變成紫色可點擊
+       if (hasAfterPhoto) {
+           enableBtn(btnPrint, "#6f42c1"); 
+       }
+   };
 
     window.renderVendorTabs = function() {
         const container = document.getElementById('vendorTabsContainer');

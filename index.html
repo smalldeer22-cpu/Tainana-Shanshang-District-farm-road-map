@@ -2912,11 +2912,11 @@ function createPopup(data) {
   }
   // (B) 廠商施工前加入輪播
   if (typeof vendorBefore !== 'undefined' && vendorBefore) {
-      vendorBefore.forEach(url => allProcessPhotos.push({url: url, label: '施工前(廠商)'}));
+      vendorBefore.forEach(url => allProcessPhotos.push({url: url, label: '施工前'}));
   }
   // (C) 廠商施工中加入輪播
   if (typeof vendorDuring !== 'undefined' && vendorDuring) {
-      vendorDuring.forEach(url => allProcessPhotos.push({url: url, label: '施工中(機具/交維)'}));
+      vendorDuring.forEach(url => allProcessPhotos.push({url: url, label: '施工中'}));
   }
   // (D) 廠商完工照加入輪播 (支援把多張完工照都塞進去！)
   if (arrAfter.length > 0) {
@@ -3047,7 +3047,7 @@ function createPopup(data) {
     </div>
 
     <div class="desktop-photo-row">
-      <div class="photo-half">${beforePhotoDesktopHtml}<div class="photo-label">原始報案照 (基準)</div></div>
+      <div class="photo-half">${beforePhotoDesktopHtml}<div class="photo-label">原始報案照 </div></div>
       <div class="photo-half">${afterPhotoDesktopHtml}<div class="photo-label">完工成果照</div></div>
     </div>
 

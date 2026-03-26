@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0325_V1)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0326_V1)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -2963,6 +2963,34 @@ function createPopup(data) {
   </div>`;
   }
   // ------------------------------------
+  
+  // --- [修改後] 處理 1~2 張原始報案照的數字切換邏輯 (乾淨無重複版) ---
+  // 新增防呆變數，確保 uid 絕對有值，不會導致整個網頁當機
+  let safeUid = props['案件編號'] || Math.random().toString(36).substr(2, 9);
+  
+  let beforePhotoDesktopHtml = `<div id="d-before-1-${safeUid}" style="display:block;">${renderImg(arrBefore[0])}</div>`;
+  let beforePhotoMobileHtml  = `<div id="m-before-1-${safeUid}" style="display:block;">${renderImg(arrBefore[0])}</div>`;
+  
+  // 如果原始照片大於 1 張，就產生第二張隱藏照片與切換數字按鈕
+  if (arrBefore.length > 1) {
+      let toggleBtns = `
+      <div style="display:flex; justify-content:center; gap:8px; margin-top:6px; margin-bottom:2px;">
+          <div onclick="
+              if(document.getElementById('d-before-1-${safeUid}')) { document.getElementById('d-before-1-${safeUid}').style.display='block'; document.getElementById('d-before-2-${safeUid}').style.display='none'; }
+              if(document.getElementById('m-before-1-${safeUid}')) { document.getElementById('m-before-1-${safeUid}').style.display='block'; document.getElementById('m-before-2-${safeUid}').style.display='none'; }
+              this.style.background='#004080'; this.nextElementSibling.style.background='#ccc';" 
+              style="width:22px; height:22px; border-radius:50%; background:#004080; color:white; font-size:12px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-weight:bold; box-shadow:0 2px 4px rgba(0,0,0,0.2);">1</div>
+          <div onclick="
+              if(document.getElementById('d-before-1-${safeUid}')) { document.getElementById('d-before-1-${safeUid}').style.display='none'; document.getElementById('d-before-2-${safeUid}').style.display='block'; }
+              if(document.getElementById('m-before-1-${safeUid}')) { document.getElementById('m-before-1-${safeUid}').style.display='none'; document.getElementById('m-before-2-${safeUid}').style.display='block'; }
+              this.style.background='#004080'; this.previousElementSibling.style.background='#ccc';" 
+              style="width:22px; height:22px; border-radius:50%; background:#ccc; color:white; font-size:12px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-weight:bold; box-shadow:0 2px 4px rgba(0,0,0,0.2);">2</div>
+      </div>`;
+      
+      beforePhotoDesktopHtml += `<div id="d-before-2-${safeUid}" style="display:none;">${renderImg(arrBefore[1])}</div>` + toggleBtns;
+      beforePhotoMobileHtml  += `<div id="m-before-2-${safeUid}" style="display:none;">${renderImg(arrBefore[1])}</div>` + toggleBtns;
+  }
+  // ----------------------------------------------------
 
   return `
   <div class="popup-card">
@@ -2994,17 +3022,17 @@ function createPopup(data) {
     </div>
 
     <div class="desktop-photo-row">
-      <div class="photo-half">${renderImg(arrBefore[0])}<div class="photo-label">原始報案照 (基準)</div></div>
+      <div class="photo-half">${beforePhotoDesktopHtml}<div class="photo-label">原始報案照 (基準)</div></div>
       <div class="photo-half">${renderImg(arrAfter[0])}<div class="photo-label">完工成果照</div></div>
     </div>
 
     <div class="mobile-photo-tabs">
-      <div class="m-photo-tab active" onclick="switchMobilePhotoTab(this, 'after', '${uid}')">完工成果照</div>
-      <div class="m-photo-tab" onclick="switchMobilePhotoTab(this, 'before', '${uid}')">原始報案照</div>
+      <div class="m-photo-tab active" onclick="switchMobilePhotoTab(this, 'after', '${safeUid}')">完工成果照</div>
+      <div class="m-photo-tab" onclick="switchMobilePhotoTab(this, 'before', '${safeUid}')">原始報案照</div>
     </div>
     <div class="mobile-photo-area">
-      <div class="mobile-photo-view active" id="m-view-after-${uid}">${renderImg(arrAfter[0])}</div>
-      <div class="mobile-photo-view" id="m-view-before-${uid}">${renderImg(arrBefore[0])}</div>
+      <div class="mobile-photo-view active" id="m-view-after-${safeUid}">${renderImg(arrAfter[0])}</div>
+      <div class="mobile-photo-view" id="m-view-before-${safeUid}">${beforePhotoMobileHtml}</div>
     </div>
 
     ${processPhotosHtml}

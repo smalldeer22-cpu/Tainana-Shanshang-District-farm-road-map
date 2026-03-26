@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0326_V2)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0326_V3)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -2820,16 +2820,15 @@ window.jumpToCaseSibling = function(targetStoreId) {
 };
 
 function createPopup(data) {
-  const { fileName, props, lat, lng, dist } = data; 
+  const { fileName, props, lat, lng, dist } = data;
   const twd = twd97FromWgs84(lat, lng);
   const uid = Math.random().toString(36).substr(2, 9);
-  
-  let caseId = '未知編號'; 
+  let caseId = '未知編號';
   try { caseId = props['案件編號'] || '無編號'; } catch(e) {}
   const cleanCaseId = String(caseId).replace(/[^a-zA-Z0-9]/g, '');
   const storeId = props.storeId || ((cleanCaseId === '' ? 'TMP_' : cleanCaseId) + "_" + uid);
   CASE_DATA_CACHE[storeId] = props;
-
+  
   const siblings = findMarkersByCaseId(caseId);
   let paginationHtml = '';
   if (siblings.length > 1) {
@@ -2843,157 +2842,141 @@ function createPopup(data) {
 
   const status = (props['案件狀態'] || '已完工').trim();
   const contractor = props['施工廠商'] || '-';
-  const supervisor = props['監造廠商'] || '-'; 
+  const supervisor = props['監造廠商'] || '-';
   const priceDisplay = formatMoneyWan(props['決標金額'] || '0');
   const desc = props['案情描述'] || '無';
   
   let pillClass = status.includes('施工')||status.includes('派工') ? 'pill-working' : (status.includes('搶修') ? 'pill-urgent' : 'pill-status');
   let step = (status.includes('完工') || status.includes('完成') || status.includes('結案')) ? 3 : (status.includes('未完成') || status.includes('派工') || status.includes('施工') ? 2 : 1);
-  if (step === 1) { 
-    if (props['完工日期']) step = 3; 
-    else if (props['派工日期']) step = 2; 
+  if (step === 1) {
+    if (props['完工日期']) step = 3;
+    else if (props['派工日期']) step = 2;
   }
-
+  
   let typeStr = props['搶修類型'] || '';
   let types = String(typeStr).split(/[,，]/).filter(t => t.trim() !== '');
   let typeDisplay = types.length > 1 ? `${types[0]}... +${types.length - 1}` : (types.length === 1 ? types[0] : '未分類');
   let typeClickAttr = types.length > 1 ? `id="type-pill-${uid}" onclick="expandTypePill('${uid}', '${String(typeStr).replace(/'/g, "\\'")}')"` : '';
-  
   let distDisplay = (!isNaN(dist) && dist !== null) ? `<div class="info-pill pill-dist"><i class="fas fa-route"></i> 距路線 ${Math.ceil(dist)}m</div>` : '';
   
-  // 【新增】判斷來源標籤 (藍綠色)，優先使用後台新欄位，若無則顯示預設字樣
   let projectTypeStr = props['案件類型'];
   let sourceDisplay = (projectTypeStr && projectTypeStr.trim() !== '') ? projectTypeStr : (fileName || '來源未知');
 
-  // --- [修改後] 支援解析 M 欄的 1~2 張報案照片 (打開 JSON 百寶箱) ---
- let arrBefore = [];
- try {
-    let bParsed = JSON.parse(props['施工前照片'] || "[]");
-    if (Array.isArray(bParsed) && bParsed.length > 0) {
-        // 如果成功解開百寶箱，把每一張照片的網址都轉成可直接顯示的圖片連結
-        arrBefore = bParsed.map(url => typeof getDirectDriveUrl === 'function' ? getDirectDriveUrl(url) : url);
-    } else {
-        arrBefore = getPhotosFromProps({'施工前照片': props['施工前照片']});
-    }
- } catch(e) {
-    // 如果不是 JSON (例如以前的舊案件)，就照舊處理
-    arrBefore = getPhotosFromProps({'施工前照片': props['施工前照片']});
- }
- 
- let arrAfter = getPhotosFromProps({'施工後照片': props['施工後照片']});
- if (arrBefore.length === 0 && props.photoUrl) {
-    arrBefore.push(getDirectDriveUrl(props.photoUrl)); 
- }
- // -----------------------------------------------------------------
- 
- // --- [修改後] 渲染泡泡窗上方圖片，並加入最高強度保護 (防另存、防拖曳、防點擊) ---
- const renderImg = (src) => src ?
- `<img src="${src}" style="pointer-events:none;" oncontextmenu="return false;" draggable="false">` : 
- '<div style="width:100%;height:100%;background:#f1f5f9;display:flex;align-items:center;justify-content:center;color:#999;font-size:12px;">無影像</div>';
- 
- // --- 新增：處理廠商多張照片輪播邏輯 ---
+  // --- 1. [修正] 支援解析 M 欄的 1~2 張報案照片 (打開 JSON 百寶箱) ---
+  let arrBefore = [];
+  try {
+      let bParsed = JSON.parse(props['施工前照片'] || "[]");
+      if (Array.isArray(bParsed) && bParsed.length > 0) {
+          arrBefore = bParsed.map(url => typeof getDirectDriveUrl === 'function' ? getDirectDriveUrl(url) : url);
+      } else {
+          arrBefore = getPhotosFromProps({'施工前照片': props['施工前照片']});
+      }
+  } catch(e) {
+      arrBefore = getPhotosFromProps({'施工前照片': props['施工前照片']});
+  }
+
+  let arrAfter = getPhotosFromProps({'施工後照片': props['施工後照片']});
+  if (arrBefore.length === 0 && props.photoUrl) {
+      arrBefore.push(getDirectDriveUrl(props.photoUrl)); 
+  }
+
+  // --- 2. 渲染圖片的保護函式 (防右鍵、防外連、自適應填滿) ---
+  const renderImg = (src) => src ? `<img src="${src}" style="width:100%; height:100%; object-fit:cover; pointer-events:none;" oncontextmenu="return false;" draggable="false">` : '<div style="width:100%;height:100%;background:#f1f5f9;display:flex;align-items:center;justify-content:center;color:#999;font-size:12px;">無影像</div>';
+
+  // --- 3. [修正] 處理廠商多張照片與全歷程輪播邏輯 ---
   let vendorBefore = [];
   let vendorDuring = [];
   try {
-    vendorBefore = JSON.parse(props['廠商施工前JSON'] || "[]");
-    vendorDuring = JSON.parse(props['廠商施工中JSON'] || "[]");
+      vendorBefore = JSON.parse(props['廠商施工前JSON'] || "[]");
+      vendorDuring = JSON.parse(props['廠商施工中JSON'] || "[]");
   } catch(e) {}
+  
+  let allProcessPhotos = [];
+  
+  // (A) 民眾報案照加入輪播
+  if (arrBefore.length > 0) {
+      arrBefore.forEach((url, idx) => {
+          allProcessPhotos.push({url: url, label: '原始報案照' + (arrBefore.length > 1 ? `-${idx+1}` : '')});
+      });
+  }
+  // (B) 廠商施工前加入輪播
+  if (typeof vendorBefore !== 'undefined' && vendorBefore) {
+      vendorBefore.forEach(url => allProcessPhotos.push({url: url, label: '施工前(廠商)'}));
+  }
+  // (C) 廠商施工中加入輪播
+  if (typeof vendorDuring !== 'undefined' && vendorDuring) {
+      vendorDuring.forEach(url => allProcessPhotos.push({url: url, label: '施工中(機具/交維)'}));
+  }
+  // (D) 廠商完工照加入輪播
+  if (props['施工後照片']) {
+      try {
+          let afterArr = JSON.parse(props['施工後照片']);
+          if(Array.isArray(afterArr)) {
+              afterArr.forEach(url => allProcessPhotos.push({url: url, label: '完工成果照(廠商)'}));
+          } else {
+              allProcessPhotos.push({url: props['施工後照片'], label: '完工成果照(廠商)'});
+          }
+      } catch(e) {
+          allProcessPhotos.push({url: props['施工後照片'], label: '完工成果照(廠商)'});
+      }
+  }
 
   let processPhotosHtml = '';
-  if (vendorBefore.length > 0 || vendorDuring.length > 0) {
-    // --- [修改後] 整合全歷程照片陣列：民眾報案 -> 廠商前 -> 廠商中 -> 廠商後 ---
-  let allProcessPhotos = [];
-
-  // --- [修改後] 1. 加入民眾原始報案照 (支援單張舊網址，也支援多張新陣列) ---
-  if (props['施工前照片']) {
-    try {
-        let bArr = JSON.parse(props['施工前照片']);
-        if (Array.isArray(bArr)) {
-            bArr.forEach((pUrl, idx) => {
-                 allProcessPhotos.push({url: pUrl, label: '原始報案照-' + (idx+1)});
-            });
-        } else {
-             allProcessPhotos.push({url: props['施工前照片'], label: '原始報案照(民眾)'});
-        }
-    } catch(e) {
-        // 如果解碼失敗，代表這是以前的舊案件（單純的網址字串）
-        allProcessPhotos.push({url: props['施工前照片'], label: '原始報案照(民眾)'});
-    }
-  }
-  // ----------------------------------------------------------------------
-
-  // 2. 加入廠商施工前
-  if (typeof vendorBefore !== 'undefined' && vendorBefore) {
-    vendorBefore.forEach(url => allProcessPhotos.push({url: url, label: '施工前(廠商)'}));
-  }
-
-  // 3. 加入廠商施工中
-  if (typeof vendorDuring !== 'undefined' && vendorDuring) {
-    vendorDuring.forEach(url => allProcessPhotos.push({url: url, label: '施工中(機具/交維)'}));
-  }
-
-  // 4. 加入廠商施工後 (從 N 欄 vendorAfter 抓取，並新增到輪播中)
-  if (props.vendorAfter) {
-    try {
-        let afterArr = JSON.parse(props.vendorAfter);
-        if(Array.isArray(afterArr)) {
-            afterArr.forEach(p => allProcessPhotos.push({url: p.url || p, label: '完工成果照(廠商)'}));
-        }
-    } catch(e) {
-        allProcessPhotos.push({url: props.vendorAfter, label: '完工成果照(廠商)'});
-    }
-  }
-   
-  processPhotosHtml = `
-  <div style="margin: 0 15px 10px 15px; border-top: 1px dashed #ccc; padding-top: 10px;">
-    <div style="font-size:12px; font-weight:bold; color:#004080; margin-bottom:5px;">
-      <i class="fas fa-images"></i> 施工全歷程照片 (左右滑動檢視)
-    </div>
-    <div style="display:flex; overflow-x:auto; gap:8px; padding-bottom:8px;">
-      ${allProcessPhotos.map(p => `
-        <div style="min-width:120px; height:90px; position:relative; border-radius:4px; overflow:hidden; border:1px solid #ddd; flex-shrink:0;">
-          <img src="${getDirectDriveUrl(p.url)}" 
-               oncontextmenu="return false;" 
-               draggable="false" 
-               style="width:100%; height:100%; object-fit:cover; pointer-events:none;">
-          <div style="position:absolute; bottom:0; width:100%; background:rgba(0,0,0,0.6); color:white; font-size:10px; text-align:center; padding:2px 0;">
-            ${p.label}
-          </div>
+  if (allProcessPhotos.length > 0) {
+      processPhotosHtml = `
+      <div style="margin: 0 15px 10px 15px; border-top: 1px dashed #ccc; padding-top: 10px;">
+        <div style="font-size:12px; font-weight:bold; color:#004080; margin-bottom:5px;">
+          <i class="fas fa-images"></i> 施工全歷程照片 (左右滑動檢視)
         </div>
-      `).join('')}
-    </div>
-  </div>`;
+        <div style="display:flex; overflow-x:auto; gap:8px; padding-bottom:8px;">
+          ${allProcessPhotos.map(p => `
+            <div style="min-width:120px; height:90px; position:relative; border-radius:4px; overflow:hidden; border:1px solid #ddd; flex-shrink:0;">
+              <img src="${typeof getDirectDriveUrl === 'function' ? getDirectDriveUrl(p.url) : p.url}" 
+                   oncontextmenu="return false;" draggable="false" 
+                   style="width:100%; height:100%; object-fit:cover; pointer-events:none;">
+              <div style="position:absolute; bottom:0; width:100%; background:rgba(0,0,0,0.6); color:white; font-size:10px; text-align:center; padding:2px 0;">
+                ${p.label}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>`;
   }
-  // ------------------------------------
+
+  // --- 4. [修正] 處理上方大圖的雙圖數字切換邏輯 ---
+  let beforePhotoDesktopHtml = `<div id="d-before-1-${uid}" style="display:block; height:100%;">${renderImg(arrBefore[0])}</div>`;
+  let beforePhotoMobileHtml  = `<div id="m-before-1-${uid}" style="display:block; height:100%;">${renderImg(arrBefore[0])}</div>`;
   
-  // --- [修改後] 處理 1~2 張原始報案照的數字切換邏輯 (乾淨無重複版) ---
-  // 新增防呆變數，確保 uid 絕對有值，不會導致整個網頁當機
-  let safeUid = props['案件編號'] || Math.random().toString(36).substr(2, 9);
-  
-  let beforePhotoDesktopHtml = `<div id="d-before-1-${safeUid}" style="display:block;">${renderImg(arrBefore[0])}</div>`;
-  let beforePhotoMobileHtml  = `<div id="m-before-1-${safeUid}" style="display:block;">${renderImg(arrBefore[0])}</div>`;
-  
-  // 如果原始照片大於 1 張，就產生第二張隱藏照片與切換數字按鈕
   if (arrBefore.length > 1) {
       let toggleBtns = `
-      <div style="display:flex; justify-content:center; gap:8px; margin-top:6px; margin-bottom:2px;">
+      <div style="position:absolute; bottom:5px; left:0; width:100%; display:flex; justify-content:center; gap:8px; z-index:10;">
           <div onclick="
-              if(document.getElementById('d-before-1-${safeUid}')) { document.getElementById('d-before-1-${safeUid}').style.display='block'; document.getElementById('d-before-2-${safeUid}').style.display='none'; }
-              if(document.getElementById('m-before-1-${safeUid}')) { document.getElementById('m-before-1-${safeUid}').style.display='block'; document.getElementById('m-before-2-${safeUid}').style.display='none'; }
-              this.style.background='#004080'; this.nextElementSibling.style.background='#ccc';" 
-              style="width:22px; height:22px; border-radius:50%; background:#004080; color:white; font-size:12px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-weight:bold; box-shadow:0 2px 4px rgba(0,0,0,0.2);">1</div>
+              if(document.getElementById('d-before-1-${uid}')) { document.getElementById('d-before-1-${uid}').style.display='block'; document.getElementById('d-before-2-${uid}').style.display='none'; }
+              if(document.getElementById('m-before-1-${uid}')) { document.getElementById('m-before-1-${uid}').style.display='block'; document.getElementById('m-before-2-${uid}').style.display='none'; }
+              this.style.background='#004080'; this.style.color='#fff'; this.nextElementSibling.style.background='rgba(255,255,255,0.8)'; this.nextElementSibling.style.color='#333';" 
+              style="width:20px; height:20px; border-radius:50%; background:#004080; color:white; font-size:12px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-weight:bold; box-shadow:0 2px 4px rgba(0,0,0,0.4); border:1px solid #fff;">1</div>
           <div onclick="
-              if(document.getElementById('d-before-1-${safeUid}')) { document.getElementById('d-before-1-${safeUid}').style.display='none'; document.getElementById('d-before-2-${safeUid}').style.display='block'; }
-              if(document.getElementById('m-before-1-${safeUid}')) { document.getElementById('m-before-1-${safeUid}').style.display='none'; document.getElementById('m-before-2-${safeUid}').style.display='block'; }
-              this.style.background='#004080'; this.previousElementSibling.style.background='#ccc';" 
-              style="width:22px; height:22px; border-radius:50%; background:#ccc; color:white; font-size:12px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-weight:bold; box-shadow:0 2px 4px rgba(0,0,0,0.2);">2</div>
+              if(document.getElementById('d-before-1-${uid}')) { document.getElementById('d-before-1-${uid}').style.display='none'; document.getElementById('d-before-2-${uid}').style.display='block'; }
+              if(document.getElementById('m-before-1-${uid}')) { document.getElementById('m-before-1-${uid}').style.display='none'; document.getElementById('m-before-2-${uid}').style.display='block'; }
+              this.style.background='#004080'; this.style.color='#fff'; this.previousElementSibling.style.background='rgba(255,255,255,0.8)'; this.previousElementSibling.style.color='#333';" 
+              style="width:20px; height:20px; border-radius:50%; background:rgba(255,255,255,0.8); color:#333; font-size:12px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-weight:bold; box-shadow:0 2px 4px rgba(0,0,0,0.4); border:1px solid #fff;">2</div>
       </div>`;
       
-      beforePhotoDesktopHtml += `<div id="d-before-2-${safeUid}" style="display:none;">${renderImg(arrBefore[1])}</div>` + toggleBtns;
-      beforePhotoMobileHtml  += `<div id="m-before-2-${safeUid}" style="display:none;">${renderImg(arrBefore[1])}</div>` + toggleBtns;
+      beforePhotoDesktopHtml = `
+        <div style="position:relative; width:100%; height:100%;">
+          <div id="d-before-1-${uid}" style="display:block; height:100%;">${renderImg(arrBefore[0])}</div>
+          <div id="d-before-2-${uid}" style="display:none; height:100%;">${renderImg(arrBefore[1])}</div>
+          ${toggleBtns}
+        </div>`;
+      beforePhotoMobileHtml = `
+        <div style="position:relative; width:100%; height:100%;">
+          <div id="m-before-1-${uid}" style="display:block; height:100%;">${renderImg(arrBefore[0])}</div>
+          <div id="m-before-2-${uid}" style="display:none; height:100%;">${renderImg(arrBefore[1])}</div>
+          ${toggleBtns}
+        </div>`;
   }
-  // ----------------------------------------------------
 
+  // --- 5. 回傳組合好的最終 HTML ---
   return `
   <div class="popup-card">
     <div class="popup-header">
@@ -3029,12 +3012,12 @@ function createPopup(data) {
     </div>
 
     <div class="mobile-photo-tabs">
-      <div class="m-photo-tab active" onclick="switchMobilePhotoTab(this, 'after', '${safeUid}')">完工成果照</div>
-      <div class="m-photo-tab" onclick="switchMobilePhotoTab(this, 'before', '${safeUid}')">原始報案照</div>
+      <div class="m-photo-tab active" onclick="switchMobilePhotoTab(this, 'after', '${uid}')">完工成果照</div>
+      <div class="m-photo-tab" onclick="switchMobilePhotoTab(this, 'before', '${uid}')">原始報案照</div>
     </div>
     <div class="mobile-photo-area">
-      <div class="mobile-photo-view active" id="m-view-after-${safeUid}">${renderImg(arrAfter[0])}</div>
-      <div class="mobile-photo-view" id="m-view-before-${safeUid}">${beforePhotoMobileHtml}</div>
+      <div class="mobile-photo-view active" id="m-view-after-${uid}">${renderImg(arrAfter[0])}</div>
+      <div class="mobile-photo-view" id="m-view-before-${uid}">${beforePhotoMobileHtml}</div>
     </div>
 
     ${processPhotosHtml}

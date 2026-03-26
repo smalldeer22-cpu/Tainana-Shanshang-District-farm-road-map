@@ -6460,16 +6460,19 @@ window.fetchVendorPendingList = async function(pwd) {
         if (!hasPhoto) return alert("⚠️ 此組請至少拍攝或上傳一張照片！");
 
         if (isEditMode && currentEditIndex >= 0) {
-            vendorCart[currentEditIndex] = currentGroup;
-            alert(`✅ 第 ${currentEditIndex + 1} 組已修改儲存！`);
-        } else {
-            vendorCart.push(currentGroup);
-            currentEditIndex = vendorCart.length - 1;
-            alert(`✅ 已成功暫存！目前共 ${vendorCart.length} 組。`);
-        }
+           vendorCart[currentEditIndex] = currentGroup;
+           alert(`✅ 第 ${currentEditIndex + 1} 組已修改儲存！`);
+       } else {
+           vendorCart.push(currentGroup);
+           currentEditIndex = vendorCart.length - 1;
+           alert(`✅ 已成功暫存！目前共 ${vendorCart.length} 組。`);
+       }
 
-        hasModified = true;
-        let totalPhotos = 0;
+       // --- [修正防呆 Bug] 儲存成功後，把「有修改尚未儲存」的標記關閉 ---
+       hasModified = false; 
+       // ---------------------------------------------------------
+
+       let totalPhotos = 0;
         vendorCart.forEach(g => totalPhotos += g.length);
         document.getElementById('vendorCartCount').innerText = totalPhotos;
         renderVendorTabs();

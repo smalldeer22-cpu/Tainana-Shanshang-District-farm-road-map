@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0326_V4)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0326_V5)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -3515,15 +3515,19 @@ function triggerCamera(id) {
   }
 }
 
-function selectSource(type) {
-  if(!activePhotoId) return;
-  const input = document.getElementById(`fileInput${activePhotoId}`);
-  const modal = document.getElementById('photoSourceModal');
+// --- [修改後] 記錄照片來源 (相機 或 相簿) ---
+window.currentPhotoSource = 'album';
+function selectSource(type) { 
+  if(!activePhotoId) return; 
+  const input = document.getElementById(`fileInput${activePhotoId}`); 
+  const modal = document.getElementById('photoSourceModal'); 
+  window.currentPhotoSource = type; // 記錄來源
   if(type === 'camera') input.setAttribute('capture', 'environment'); 
-  else input.removeAttribute('capture');
-  modal.style.display = 'none';
-  setTimeout(() => input.click(), 300);
+  else input.removeAttribute('capture'); 
+  modal.style.display = 'none'; 
+  setTimeout(() => input.click(), 300); 
 }
+// ----------------------------------------
 function closeSourceModal() { document.getElementById('photoSourceModal').style.display = 'none'; }
 
 let blazefaceModel = null;
@@ -3545,15 +3549,78 @@ async function loadAiModel() {
 }
 loadAiModel(); 
 
-window.previewImage = function(input, id) {
-  document.getElementById('photoSourceModal').style.display = 'none';
-  if (input.files && input.files[0]) {
-    compressImage(input.files[0], 1024, 0.8, function(dataUrl) { 
-      openPrivacyEditor(dataUrl, id); 
-    });
-  }
-  input.value = '';
+// --- [修改後] 加入座標時間浮水印邏輯 ---
+window.previewImage = function(input, id) { 
+    document.getElementById('photoSourceModal').style.display = 'none'; 
+    if (input.files && input.files[0]) { 
+        compressImage(input.files[0], 1024, 0.8, function(dataUrl) { 
+            if (window.currentPhotoSource === 'camera') {
+                // 若為相機拍照，加上浮水印
+                applyWatermark(dataUrl, function(watermarkedUrl) {
+                    openPrivacyEditor(watermarkedUrl, id); 
+                });
+            } else {
+                // 若為相簿挑選，維持原圖
+                openPrivacyEditor(dataUrl, id); 
+            }
+        }); 
+    } 
+    input.value = ''; 
 };
+
+// 產生座標與時間浮水印
+function applyWatermark(dataUrl, callback) {
+    // 從畫面第 3 步驟的定位欄位，抓取已經算好的精準座標
+    const wgs84Text = document.getElementById('reportWgs84').innerText;
+    const twd97Text = document.getElementById('reportTwd97').innerText;
+    
+    // 若尚未定位完成，給予預設文字
+    const wgs = wgs84Text.includes('定位中') ? 'WGS84: 取得中...' : 'WGS84: ' + wgs84Text;
+    const twd = twd97Text.includes('定位中') ? 'TWD97: 取得中...' : 'TWD97: ' + twd97Text;
+    
+    const now = new Date();
+    const timeStr = `${now.getFullYear()}/${('0'+(now.getMonth()+1)).slice(-2)}/${('0'+now.getDate()).slice(-2)} ${('0'+now.getHours()).slice(-2)}:${('0'+now.getMinutes()).slice(-2)}:${('0'+now.getSeconds()).slice(-2)}`;
+
+    const img = new Image();
+    img.onload = function() {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        
+        // 1. 畫上原圖
+        ctx.drawImage(img, 0, 0);
+        
+        // 2. 設定浮水印字體大小 (依據圖片解析度自適應)
+        const padding = 15;
+        const fontSize = Math.max(14, Math.floor(img.width * 0.035)); 
+        ctx.font = `bold ${fontSize}px sans-serif`;
+        
+        const text1 = timeStr;
+        const text2 = wgs;
+        const text3 = twd;
+        
+        const lineSpacing = fontSize * 1.5;
+        const boxWidth = Math.max(ctx.measureText(text1).width, ctx.measureText(text2).width, ctx.measureText(text3).width) + padding * 2;
+        const boxHeight = lineSpacing * 3 + padding;
+        
+        // 3. 畫半透明黑底框 (位於左上角，確保文字清晰)
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+        ctx.fillRect(10, 10, boxWidth, boxHeight);
+        
+        // 4. 寫上白字
+        ctx.fillStyle = '#ffffff';
+        ctx.textBaseline = 'top';
+        ctx.fillText(text1, 10 + padding, 10 + padding);
+        ctx.fillText(text2, 10 + padding, 10 + padding + lineSpacing);
+        ctx.fillText(text3, 10 + padding, 10 + padding + lineSpacing * 2);
+        
+        // 5. 輸出為新的照片並接續下一步
+        callback(canvas.toDataURL('image/jpeg', 0.8));
+    };
+    img.src = dataUrl;
+}
+// ----------------------------------------
 
 function openPrivacyEditor(imgUrl, id) {
   currentTargetId = id;

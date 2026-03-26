@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0326_V5)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0326_V6)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -3373,11 +3373,48 @@ function openReportWizard() {
   document.getElementById('hp_report').value = ""; 
   document.getElementById('reportOverlay').style.display = 'flex';
   resetReportForm();
+  
+  // --- [新增] 視窗開啟就立刻啟動定位，為浮水印座標做準備 ---
+  startBackgroundLocating();
+  // ----------------------------------------------------
 }
+// --- [新增] 背景持續定位函式 ---
+function startBackgroundLocating() {
+  if (navigator.geolocation) {
+    // 第一次先快速抓取
+    navigator.geolocation.getCurrentPosition(updateLocLabels, null, { enableHighAccuracy: true });
+    // 隨後持續追蹤位置，確保浮水印座標是最新的
+    window.watchLocId = navigator.geolocation.watchPosition(updateLocLabels, null, { enableHighAccuracy: true });
+  }
+}
+
+function updateLocLabels(pos) {
+  const lat = pos.coords.latitude, lng = pos.coords.longitude;
+  const twd = twd97FromWgs84(lat, lng);
+  
+  // 更新第 3 步驟的隱藏標籤，讓 applyWatermark 讀得到
+  const wgsEl = document.getElementById('reportWgs84');
+  const twdEl = document.getElementById('reportTwd97');
+  if(wgsEl) wgsEl.innerText = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+  if(twdEl) twdEl.innerText = `${twd.x}, ${twd.y}`;
+  
+  // 如果已經到第 3 步驟，順便觸發歷史紀錄比對
+  if (typeof reportNearbyMatches !== 'undefined') {
+      checkNearbyHistory(lat, lng);
+  }
+}
+// ----------------------------
+
+
 
 function closeReport() { 
   document.getElementById('reportOverlay').style.display = 'none'; 
   document.getElementById('photoSourceModal').style.display = 'none';
+  
+  // --- [新增] 關閉定位追蹤器 ---
+  if(window.watchLocId) navigator.geolocation.clearWatch(window.watchLocId);
+  // ----------------------------
+  
   resetReportForm(); 
 }
 

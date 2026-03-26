@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0326_V1)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0326_V2)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -2868,21 +2868,21 @@ function createPopup(data) {
   // --- [修改後] 支援解析 M 欄的 1~2 張報案照片 (打開 JSON 百寶箱) ---
  let arrBefore = [];
  try {
-     let bParsed = JSON.parse(props['施工前照片'] || "[]");
-     if (Array.isArray(bParsed) && bParsed.length > 0) {
-         // 如果成功解開百寶箱，把每一張照片的網址都轉成可直接顯示的圖片連結
-         arrBefore = bParsed.map(url => typeof getDirectDriveUrl === 'function' ? getDirectDriveUrl(url) : url);
-     } else {
-         arrBefore = getPhotosFromProps({'施工前照片': props['施工前照片']});
-     }
+    let bParsed = JSON.parse(props['施工前照片'] || "[]");
+    if (Array.isArray(bParsed) && bParsed.length > 0) {
+        // 如果成功解開百寶箱，把每一張照片的網址都轉成可直接顯示的圖片連結
+        arrBefore = bParsed.map(url => typeof getDirectDriveUrl === 'function' ? getDirectDriveUrl(url) : url);
+    } else {
+        arrBefore = getPhotosFromProps({'施工前照片': props['施工前照片']});
+    }
  } catch(e) {
-     // 如果不是 JSON (例如以前的舊案件)，就照舊處理
-     arrBefore = getPhotosFromProps({'施工前照片': props['施工前照片']});
+    // 如果不是 JSON (例如以前的舊案件)，就照舊處理
+    arrBefore = getPhotosFromProps({'施工前照片': props['施工前照片']});
  }
  
  let arrAfter = getPhotosFromProps({'施工後照片': props['施工後照片']});
  if (arrBefore.length === 0 && props.photoUrl) {
-     arrBefore.push(getDirectDriveUrl(props.photoUrl)); 
+    arrBefore.push(getDirectDriveUrl(props.photoUrl)); 
  }
  // -----------------------------------------------------------------
  
@@ -2905,17 +2905,19 @@ function createPopup(data) {
   let allProcessPhotos = [];
 
   // --- [修改後] 1. 加入民眾原始報案照 (支援單張舊網址，也支援多張新陣列) ---
-  if (props.beforePhoto) {
+  if (props['施工前照片']) {
     try {
-        let bArr = JSON.parse(props.beforePhoto);
+        let bArr = JSON.parse(props['施工前照片']);
         if (Array.isArray(bArr)) {
             bArr.forEach((pUrl, idx) => {
-                allProcessPhotos.push({url: pUrl, label: '原始報案照-' + (idx+1)});
+                 allProcessPhotos.push({url: pUrl, label: '原始報案照-' + (idx+1)});
             });
+        } else {
+             allProcessPhotos.push({url: props['施工前照片'], label: '原始報案照(民眾)'});
         }
     } catch(e) {
         // 如果解碼失敗，代表這是以前的舊案件（單純的網址字串）
-        allProcessPhotos.push({url: props.beforePhoto, label: '原始報案照(民眾)'});
+        allProcessPhotos.push({url: props['施工前照片'], label: '原始報案照(民眾)'});
     }
   }
   // ----------------------------------------------------------------------

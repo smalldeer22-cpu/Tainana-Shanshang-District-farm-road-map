@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0326_V8)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0326_V9)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -6494,6 +6494,14 @@ window.fetchVendorPendingList = async function(pwd) {
 
     window.submitVendorCart = function() {
        const caseId = document.getElementById('vendorCaseId').value.trim();
+
+       // --- [新增防呆機制] 檢查畫面上是否有忘記按暫存的新資料 ---
+       if (hasModified) {
+           alert("⚠️ 系統偵測到您畫面上還有「尚未暫存」的新照片或文字！\n\n請先點擊左下角的【暫存 / 修改】按鈕，將照片加入群組後，再點擊【送出上傳】。");
+           return; // 攔截並終止送出
+       }
+       // ----------------------------------------------------
+
        if (vendorCart.length === 0) return alert("請先暫存資料！");
 
        // === 新增：施工後防呆警告機制 ===

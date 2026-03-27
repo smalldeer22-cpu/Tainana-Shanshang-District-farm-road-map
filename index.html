@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0326_V9)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0327_V1)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -1747,6 +1747,19 @@
           <div class="confirm-row"><span class="confirm-label">通報時間</span><span class="confirm-val" id="reportTime"></span></div>
           <div class="confirm-row"><span class="confirm-label">TWD97座標</span><span class="confirm-val" id="reportTwd97" style="font-size:12px;">定位中...</span></div>
           <div class="confirm-row"><span class="confirm-label">WGS84座標</span><span class="confirm-val" id="reportWgs84" style="font-size:12px;">📍 正在為您精準定位中...</span></div>
+        </div>
+
+        <div style="margin-bottom: 15px; padding: 15px; background: #f0f7ff; border: 1px solid #cce5ff; border-radius: 8px;">
+          <div style="font-weight:bold; color:#004080; margin-bottom: 10px; font-size: 14px;">
+            <i class="fas fa-user-shield"></i> 聯絡資訊 (選填，僅供機關內部聯繫使用)
+          </div>
+          <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+            <input type="text" id="reportName" placeholder="通報人姓名" style="flex:1; padding:10px; border:1px solid #ccc; border-radius:6px; box-sizing: border-box;">
+            <input type="tel" id="reportPhone" placeholder="聯絡電話" style="flex:1; padding:10px; border:1px solid #ccc; border-radius:6px; box-sizing: border-box;">
+          </div>
+          <div style="font-size: 11px; color: #666;">
+            ※ 此資訊絕對保密，僅供案件聯繫，不會顯示於公開地圖上。
+          </div>
         </div>
         <div style="margin-bottom: 15px; padding: 10px; background: #fffde7; border: 1px dashed #fbc02d; border-radius: 8px;">
           <label style="cursor:pointer; display:flex; align-items:center; gap:8px; font-weight:bold; color:#f57f17; font-size: 14px;">
@@ -3870,12 +3883,17 @@ async function submitReport() {
     
     const desc = sanitizeInput(combinedDesc);
     let email = "";
-  if (document.getElementById('subscribeToggle').checked) {
-    email = document.getElementById('subscriberEmail').value.trim();
-    if(!email || !email.includes('@')) return alert("請輸入有效的 Email 以便訂閱通知。");
-  }
+    if (document.getElementById('subscribeToggle').checked) {
+      email = document.getElementById('subscriberEmail').value.trim();
+      if(!email || !email.includes('@')) return alert("請輸入有效的 Email 以便訂閱通知。");
+    }
 
-  if (!confirm("確定要上傳此案件通報嗎？")) return;
+    // --- 新增：抓取姓名與電話 ---
+    const name = document.getElementById('reportName').value.trim();
+    const phone = document.getElementById('reportPhone').value.trim();
+    // ----------------------------
+
+    if (!confirm("確定要上傳此案件通報嗎？")) return;
   
   const btn = document.getElementById('btnSubmitReport'); 
   const originalText = btn.innerHTML; 
@@ -3893,21 +3911,24 @@ async function submitReport() {
   }
   // --------------------------------------------------------
   
-  try {
-    const payload = { 
-      time: document.getElementById('reportTime').innerText, 
-      wgs84: document.getElementById('reportWgs84').innerText, 
-      twd97: document.getElementById('reportTwd97').innerText, 
-      description: desc, 
-      photo1: (document.getElementById('imgPreview1').src.startsWith('data:')) ? document.getElementById('imgPreview1').src : "", 
-      photo2: (document.getElementById('imgPreview2').src.startsWith('data:')) ? document.getElementById('imgPreview2').src : "",
-      appKey: "TainanMap2026_SecureKey_v1", 
-      siteUrl: window.location.href,        
-      uid: getUserID(), 
-      mathVerified: "true", 
-      email: email,
-      nearbyInfo: nearbyInfoText // 【新增】把警示文字打包送給後端
-    };
+  const payload = {
+        time: document.getElementById('reportTime').innerText,
+        wgs84: document.getElementById('reportWgs84').innerText,
+        twd97: document.getElementById('reportTwd97').innerText,
+        description: desc,
+        photo1: (document.getElementById('imgPreview1').src.startsWith('data:')) ? document.getElementById('imgPreview1').src : "",
+        photo2: (document.getElementById('imgPreview2').src.startsWith('data:')) ? document.getElementById('imgPreview2').src : "",
+        appKey: "TainanMap2026_SecureKey_v1",
+        siteUrl: window.location.href,
+        uid: getUserID(),
+        mathVerified: "true",
+        email: email,
+        nearbyInfo: nearbyInfoText, // 【新增】把警示文字打包送給後端
+        // --- 新增：將姓名與電話加入傳送資料包 ---
+        name: name,
+        phone: phone
+        // ------------------------------------
+      };
     
     const response = await fetch(GOOGLE_SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) });
     const result = await response.json();

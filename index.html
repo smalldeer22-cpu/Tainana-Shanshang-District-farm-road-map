@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0327_V1)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0327_V2)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -1751,7 +1751,9 @@
 
         <div style="margin-bottom: 15px; padding: 15px; background: #f0f7ff; border: 1px solid #cce5ff; border-radius: 8px;">
           <div style="font-weight:bold; color:#004080; margin-bottom: 10px; font-size: 14px;">
-            <i class="fas fa-user-shield"></i> 聯絡資訊 (選填，僅供機關內部聯繫使用)
+            <div style="font-weight:bold; color:#004080; margin-bottom: 10px; font-size: 14px;">
+            <i class="fas fa-user-shield"></i> 聯絡資訊 <span style="color:red;">(必填)</span> 為了後續聯絡使用，請留下聯絡資訊
+          </div>
           </div>
           <div style="display: flex; gap: 10px; margin-bottom: 10px;">
             <input type="text" id="reportName" placeholder="通報人姓名" style="flex:1; padding:10px; border:1px solid #ccc; border-radius:6px; box-sizing: border-box;">
@@ -3888,9 +3890,17 @@ async function submitReport() {
       if(!email || !email.includes('@')) return alert("請輸入有效的 Email 以便訂閱通知。");
     }
 
-    // --- (已移除提早抓取資料的危險程式碼，統一在下方安全打包) ---
+    // --- 【新增】必填防呆檢查：檢查姓名與電話是否都有填寫 ---
+    const checkName = document.getElementById('reportName');
+    const checkPhone = document.getElementById('reportPhone');
+    if (checkName && checkPhone) {
+      if (checkName.value.trim() === "" || checkPhone.value.trim() === "") {
+        return alert("請務必填寫「聯絡人姓名」與「聯絡電話」，以便機關後續聯繫確認案件內容！\n(註：此資訊絕對保密，不會公開顯示於地圖上)");
+      }
+    }
+    // ---------------------------------------------------
 
-   if (!confirm("確定要上傳此案件通報嗎？")) return;
+    if (!confirm("確定要上傳此案件通報嗎？")) return;
   
    const btn = document.getElementById('btnSubmitReport'); 
    const originalText = btn.innerHTML; 

@@ -3888,97 +3888,89 @@ async function submitReport() {
       if(!email || !email.includes('@')) return alert("請輸入有效的 Email 以便訂閱通知。");
     }
 
-    // --- 新增：抓取姓名與電話 ---
-    const name = document.getElementById('reportName').value.trim();
-    const phone = document.getElementById('reportPhone').value.trim();
-    // ----------------------------
+    // --- (已移除提早抓取資料的危險程式碼，統一在下方安全打包) ---
 
-    if (!confirm("確定要上傳此案件通報嗎？")) return;
+   if (!confirm("確定要上傳此案件通報嗎？")) return;
   
-  const btn = document.getElementById('btnSubmitReport'); 
-  const originalText = btn.innerHTML; 
-  btn.disabled = true; 
-  btn.innerText = "資料上傳中...";
+   const btn = document.getElementById('btnSubmitReport'); 
+   const originalText = btn.innerHTML; 
+   btn.disabled = true; 
+   btn.innerText = "資料上傳中...";
+ 
+   // --- 【新增】將前端計算出的附近歷史案件，組合成純文字 ---
+   let nearbyInfoText = "";
+   if (typeof reportNearbyMatches !== 'undefined' && reportNearbyMatches.length > 0) {
+     nearbyInfoText = `⚠️ 系統警示：50公尺內有 ${reportNearbyMatches.length} 筆近3年維修紀錄\n`;
+     reportNearbyMatches.forEach((item, index) => {
+       let caseNo = item.props['案件編號'] || '無編號';
+       nearbyInfoText += `${index + 1}. [${caseNo}] ${item.label} (完工:${item.dateStr}) -距 ${item.dist}m\n`;
+     });
+   }
+   // --------------------------------------------------------
+ 
+   // 👇 這裡補回遺失的 try { (非常重要，沒有它整個網頁會當機)
+   try {
+     const payload = {
+       time: document.getElementById('reportTime') ? document.getElementById('reportTime').innerText : "",
+       wgs84: document.getElementById('reportWgs84') ? document.getElementById('reportWgs84').innerText : "",
+       twd97: document.getElementById('reportTwd97') ? document.getElementById('reportTwd97').innerText : "",
+       description: desc,
+       photo1: (document.getElementById('imgPreview1') && document.getElementById('imgPreview1').src.startsWith('data:')) ? document.getElementById('imgPreview1').src : "",
+       photo2: (document.getElementById('imgPreview2') && document.getElementById('imgPreview2').src.startsWith('data:')) ? document.getElementById('imgPreview2').src : "",
+       appKey: "TainanMap2026_SecureKey_v1",
+       siteUrl: window.location.href,
+       uid: (typeof getUserID === 'function') ? getUserID() : "anonymous",
+       mathVerified: "true",
+       email: email,
+       nearbyInfo: nearbyInfoText, 
+       name: document.getElementById('reportName') ? document.getElementById('reportName').value.trim() : "",
+       phone: document.getElementById('reportPhone') ? document.getElementById('reportPhone').value.trim() : ""
+     };
+     
+     const response = await fetch(GOOGLE_SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) });
+     const result = await response.json();
+     
+     if (result.result === "success") { 
+       saveMyHistory(result.caseId);
+       
+       const caseId = result.caseId;
+       const lineBotId = "@898ruary"; 
+       const bindMessage = encodeURIComponent("【綁定案件】" + caseId);
+       const lineDeepLink = `https://line.me/R/oaMessage/${lineBotId}/?${bindMessage}`;
 
-  // --- 【新增】將前端計算出的附近歷史案件，組合成純文字 ---
-  let nearbyInfoText = "";
-  if (typeof reportNearbyMatches !== 'undefined' && reportNearbyMatches.length > 0) {
-    nearbyInfoText = `⚠️ 系統警示：50公尺內有 ${reportNearbyMatches.length} 筆近3年維修紀錄\n`;
-    reportNearbyMatches.forEach((item, index) => {
-      let caseNo = item.props['案件編號'] || '無編號';
-      nearbyInfoText += `${index + 1}. [${caseNo}] ${item.label} (完工:${item.dateStr}) - 距 ${item.dist}m\n`;
-    });
-  }
-  // --------------------------------------------------------
-  
-  const payload = {
-        time: document.getElementById('reportTime').innerText,
-        wgs84: document.getElementById('reportWgs84').innerText,
-        twd97: document.getElementById('reportTwd97').innerText,
-        description: desc,
-        photo1: (document.getElementById('imgPreview1').src.startsWith('data:')) ? document.getElementById('imgPreview1').src : "",
-        photo2: (document.getElementById('imgPreview2').src.startsWith('data:')) ? document.getElementById('imgPreview2').src : "",
-        appKey: "TainanMap2026_SecureKey_v1",
-        siteUrl: window.location.href,
-        uid: getUserID(),
-        mathVerified: "true",
-        email: email,
-        nearbyInfo: nearbyInfoText, // 【新增】把警示文字打包送給後端
-        // --- 新增：將姓名與電話加入傳送資料包 ---
-        name: name,
-        phone: phone
-        // ------------------------------------
-      };
-    
-    const response = await fetch(GOOGLE_SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) });
-    const result = await response.json();
-    
-    if (result.result === "success") { 
-      saveMyHistory(result.caseId);
-      
-      // 取得成功立案的編號
-      const caseId = result.caseId;
-      
-      // ⚠️【注意】請將下方的 @123abcde 換成公所 LINE 官方帳號的「專屬 ID」 (要包含 @ 符號)
-      const lineBotId = "@898ruary"; 
-      
-      const bindMessage = encodeURIComponent("【綁定案件】" + caseId);
-      const lineDeepLink = `https://line.me/R/oaMessage/${lineBotId}/?${bindMessage}`;
-
-      // 彈出包含 LINE 按鈕的客製化成功視窗
-      document.body.insertAdjacentHTML('beforeend', `
-        <div id="successModal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:99999; display:flex; align-items:center; justify-content:center;">
-          <div style="background:#fff; padding:30px; border-radius:15px; text-align:center; max-width:90%; width:400px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
-            <i class="fas fa-check-circle" style="color:#28a745; font-size:60px; margin-bottom:15px;"></i>
-            <h2 style="color:#004080; margin-top:0; font-size:24px;">通報上傳成功！</h2>
-            <p style="font-size:18px; color:#333;">您的案件編號為：<br><b style="font-size:22px; color:#d32f2f;">${caseId}</b></p>
-            <p style="font-size:12px; color:#666;">(已自動儲存至「我的歷史通報」)</p>
-            
-            <div style="background:#e8f5e9; border-left:5px solid #2e7d32; padding:15px; margin:20px 0; border-radius:5px; text-align:left;">
-              <p style="color:#2e7d32; margin:0; font-size:15px; font-weight:bold;"><i class="fas fa-bell"></i> 啟用進度通知服務</p>
-              <p style="color:#555; margin:5px 0 0 0; font-size:14px;">強烈建議您點擊下方按鈕，未來案件若有<b>「派工」</b>或<b>「完工」</b>，將自動透過 LINE 傳送通知給您！</p>
-            </div>
-            
-            <a href="${lineDeepLink}" style="display:block; width:100%; box-sizing:border-box; padding:15px; background:#06C755; color:white; font-size:18px; font-weight:bold; text-decoration:none; border-radius:10px; box-shadow:0 4px 6px rgba(0,0,0,0.2); transition: 0.3s;">
-              <i class="fab fa-line" style="font-size:22px; vertical-align:middle; margin-right:8px;"></i> <span style="vertical-align:middle;">點我用 LINE 接收進度</span>
-            </a>
-            
-            <div style="margin-top:20px;">
-              <button onclick="document.getElementById('successModal').remove(); closeReport(); location.reload();" style="padding:10px 20px; border:none; background:#f1f1f1; color:#666; font-size:16px; border-radius:5px; cursor:pointer; width:100%;">先不用，關閉視窗</button>
-            </div>
-          </div>
-        </div>
-      `);
-    } else { 
-      alert("❌ 上傳失敗: " + (result.error || "未知錯誤")); 
-    }
-  } catch (error) { 
-    alert("❌ 連線錯誤，請檢查網路或稍後再試。"); 
-  } finally { 
-    btn.disabled = false; 
-    btn.innerHTML = originalText; 
-  }
-}
+       document.body.insertAdjacentHTML('beforeend', `
+         <div id="successModal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:99999; display:flex; align-items:center; justify-content:center;">
+           <div style="background:#fff; padding:30px; border-radius:15px; text-align:center; max-width:90%; width:400px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+             <i class="fas fa-check-circle" style="color:#28a745; font-size:60px; margin-bottom:15px;"></i>
+             <h2 style="color:#004080; margin-top:0; font-size:24px;">通報上傳成功！</h2>
+             <p style="font-size:18px; color:#333;">您的案件編號為：<br><b style="font-size:22px; color:#d32f2f;">${caseId}</b></p>
+             <p style="font-size:12px; color:#666;">(已自動儲存至「我的歷史通報」)</p>
+             
+             <div style="background:#e8f5e9; border-left:5px solid #2e7d32; padding:15px; margin:20px 0; border-radius:5px; text-align:left;">
+                <p style="color:#2e7d32; margin:0; font-size:15px; font-weight:bold;"><i class="fas fa-bell"></i> 啟用進度通知服務</p>
+                <p style="color:#555; margin:5px 0 0 0; font-size:14px;">強烈建議您點擊下方按鈕，未來案件若有<b>「派工」</b>或<b>「完工」</b>，將自動透過 LINE 傳送通知給您！</p>
+             </div>
+             
+             <a href="${lineDeepLink}" style="display:block; width:100%; box-sizing:border-box; padding:15px; background:#06C755; color:white; font-size:18px; font-weight:bold; text-decoration:none; border-radius:10px; box-shadow:0 4px 6px rgba(0,0,0,0.2); transition: 0.3s;">
+                <i class="fab fa-line" style="font-size:22px; vertical-align:middle; margin-right:8px;"></i> <span style="vertical-align:middle;">點我用 LINE 接收進度</span>
+             </a>
+             
+             <div style="margin-top:20px;">
+                <button onclick="document.getElementById('successModal').remove(); closeReport(); location.reload();" style="padding:10px 20px; border:none; background:#f1f1f1; color:#666; font-size:16px; border-radius:5px; cursor:pointer; width:100%;">先不用，關閉視窗</button>
+             </div>
+           </div>
+         </div>
+       `);
+     } else { 
+       alert("❌ 上傳失敗: " + (result.error || "未知錯誤")); 
+     }
+   } catch (error) { 
+     alert("❌ 連線錯誤，請檢查網路或稍後再試。");
+   } finally { 
+     btn.disabled = false; 
+     btn.innerHTML = originalText; 
+   }
+} // <--- submitReport 函數在這裡漂亮地結束
 
 function saveMyHistory(caseId) {
   let history = JSON.parse(localStorage.getItem("myReportHistory") || "[]");

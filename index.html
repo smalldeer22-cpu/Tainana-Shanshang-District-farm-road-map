@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0327_V2)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0329_V5)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -14,7 +14,29 @@
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface"></script>
 
 <style>
-  /* === 1. 全局設定 === */
+    /* 🌟 強制統整所有巡查表格的字體、大小與行高 */
+    #inspTableBody td, 
+    #editFullItemsTableBody td {
+        font-family: "Microsoft JhengHei", sans-serif !important;
+        font-size: 13px !important;
+        line-height: 1.6 !important;
+        color: #333 !important;
+    }
+/* 🌟 強制主表格與編輯表的「巡查項目」欄位靠左對齊 */
+    #inspTableBody tr:nth-child(1) td:nth-child(3),
+    #inspTableBody tr:nth-child(5) td:nth-child(3),
+    #inspTableBody tr:nth-child(6) td:nth-child(2),
+    #inspTableBody tr:nth-child(7) td:nth-child(3),
+    #editFullItemsTableBody tr:nth-child(1) td:nth-child(3),
+    #editFullItemsTableBody tr:nth-child(5) td:nth-child(3),
+    #editFullItemsTableBody tr:nth-child(6) td:nth-child(2),
+    #editFullItemsTableBody tr:nth-child(7) td:nth-child(3) {
+        text-align: left !important;
+        padding-left: 15px !important;
+    }
+
+  /*
+=== 1. 全局設定 === */
   :root {
     --primary-color: #004080; /* 深藍 */
     --accent-color: #ff9800;  /* 橘黃 */
@@ -2394,19 +2416,19 @@
               </div>
             </th>
           </tr>
-          <tr>
-            <th rowspan="2" style="width: 70px;">主分類</th>
-            <th rowspan="2" style="width: 70px;">次分類</th>
-            <th rowspan="2">巡查項目</th>
-            <th colspan="2">是否有此項目</th>
-            <th rowspan="2">狀況說明</th>
-            <th rowspan="2">辦理<br>改善意見</th>
-            <th rowspan="2">辦理情形及<br>完成時間</th>
-          </tr>
-          <tr>
-            <th style="min-width: 40px;">是</th>
-            <th style="min-width: 40px;">否</th>
-          </tr>
+          <tr style="background:#f2f2f2; font-size:13px;">
+           <th rowspan="2" style="padding:8px; width:8%; border:1px solid #000;">主分類</th>
+           <th rowspan="2" style="padding:8px; width:10%; border:1px solid #000;">次分類</th>
+           <th rowspan="2" style="padding:8px; width:24%; border:1px solid #000;">巡查項目</th>
+           <th colspan="2" style="padding:4px; width:10%; border:1px solid #000;">是否有此項目</th>
+           <th rowspan="2" style="padding:8px; width:16%; border:1px solid #000;">狀況說明</th>
+           <th rowspan="2" style="padding:8px; width:16%; border:1px solid #000;">辦理<br>改善意見</th>
+           <th rowspan="2" style="padding:8px; width:16%; border:1px solid #000;">辦理情形及<br>完成時間</th>
+         </tr>
+         <tr style="background:#f2f2f2; font-size:13px;">
+           <th style="padding:4px; text-align:center; border:1px solid #000;">是</th>
+           <th style="padding:4px; text-align:center; border:1px solid #000;">否</th>
+         </tr>
         </thead>
         <tbody id="inspTableBody">
           </tbody>
@@ -7239,32 +7261,341 @@ window.fetchPatrolList = async function() {
     
     try {
         const res = await fetch(`${GOOGLE_SCRIPT_URL}?action=getPatrolList`);
-        const json = await res.json();
+        const text = await res.text(); // 【防呆機制】先抓純文字
         
-        if (json.result === "success") {
-            const data = json.data;
-            if (data.length === 0) {
-                listContent.innerHTML = '<div style="padding:15px; text-align:center; color:#666;">目前尚無巡查紀錄</div>';
-                return;
+        try {
+            const json = JSON.parse(text); 
+            
+            if (json.result === "success") {
+                const data = json.data;
+                if (!data || data.length === 0) {
+                     listContent.innerHTML = '<div style="padding:15px; text-align:center; color:#666;">目前尚無巡查紀錄</div>';
+                     return;
+                }
+                
+                window.patrolDataList = data; 
+                
+                let html = ''; 
+                data.forEach((item, index) => {
+                     html += `
+                     <div style="padding:10px; border-bottom:1px dashed #ccc; font-size:13px; background:#fff; border-radius:5px; margin-bottom:8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                         <div style="color:#6f42c1; font-weight:bold; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee; padding-bottom:8px; margin-bottom:8px;">
+                            <span><i class="far fa-calendar-alt"></i> 巡查日期：${item.date || "無"}</span>
+                            <div>
+                               <button onclick="window.open('${GOOGLE_SCRIPT_URL}?action=printInspection&row=${item.rowId}', '_blank')" style="background:#17a2b8; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-size:12px; margin-right:5px; box-shadow:0 1px 2px rgba(0,0,0,0.2); transition:0.2s;" onmouseover="this.style.background='#138496'" onmouseout="this.style.background='#17a2b8'"><i class="fas fa-print"></i> 產製報表</button>
+                               
+                               <button onclick="openPatrolEditModal(${index})" style="background:#28a745; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-size:12px; box-shadow:0 1px 2px rgba(0,0,0,0.2); transition:0.2s;" onmouseover="this.style.background='#218838'" onmouseout="this.style.background='#28a745'"><i class="fas fa-edit"></i> 編輯明細</button>
+                            </div>
+                         </div>
+                         <div style="color:#333; margin:4px 0;"><strong>案件ID：</strong><span style="color:#d32f2f; font-weight:bold;">${item.caseId || "無"}</span></div>
+                         <div style="color:#333; margin:4px 0;"><strong>道路名稱：</strong>${item.location || "無"}</div>
+                         
+                         <div style="display:flex; justify-content:space-between; margin-top:10px; background:#f9f9f9; padding:8px; border-radius:4px; border:1px solid #eee;">
+                            <div style="color:#666; font-size:12px;">
+                               <strong><i class="fas fa-folder-plus"></i> 建立時間：</strong><br>${item.createTime || "無"}
+                            </div>
+                            <div style="color:#d32f2f; font-size:12px; text-align:right;">
+                               <strong><i class="fas fa-pen-square"></i> 最後修改：</strong><br>${item.editTime || "尚未修改"}
+                            </div>
+                         </div>
+                     </div>`;
+                });
+                listContent.innerHTML = html;
+            } else {
+                listContent.innerHTML = `<div style="padding:15px; text-align:center; color:red;">讀取失敗：${json.error || '未知錯誤'}</div>`;
             }
-            let html = '';
-            data.forEach(item => {
-                html += `
-                <div style="padding:10px; border-bottom:1px dashed #eee; font-size:13px; background:#fff;">
-                    <div style="color:#6f42c1; font-weight:bold;"><i class="far fa-clock"></i> ${item.time}</div>
-                    <div style="color:#333; margin:2px 0;"><strong>巡查員：</strong>${item.inspector}</div>
-                    <div style="color:#666; font-size:12px;"><strong>地點：</strong>${item.location}</div>
-                </div>`;
-            });
-            listContent.innerHTML = html;
-        } else {
-            listContent.innerHTML = `<div style="padding:15px; text-align:center; color:#d32f2f;">載入失敗：${json.error}</div>`;
+        } catch (parseErr) {
+            listContent.innerHTML = `<div style="padding:15px; text-align:center; color:red; line-height:1.5;"><b>⚠️ 後端發生錯誤</b><br>請確認 GAS 是否有確實發布為「新版本」！<br><span style="font-size:11px; color:#999; word-break:break-all;">${text.substring(0, 150)}...</span></div>`;
         }
-    } catch (e) {
-        listContent.innerHTML = `<div style="padding:15px; text-align:center; color:#d32f2f;">連線異常，請確認網路或後端部署</div>`;
+    } catch (error) {
+        listContent.innerHTML = `<div style="padding:15px; text-align:center; color:red;"><i class="fas fa-exclamation-triangle"></i> 網路連線異常：${error.message}</div>`;
     }
 };
 
+// === 【新增】分流四：全螢幕編輯巡查紀錄專屬功能 (100%還原固定表單版) ===
+
+// 💡 【照片修復核心】轉換 Google Drive 網址為可直接顯示的圖片縮圖
+window.getDriveDirectUrl = function(url) {
+    if (!url) return "";
+    let match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+    if (match && match[1]) return "https://drive.google.com/thumbnail?id=" + match[1] + "&sz=w800";
+    let idMatch = url.match(/id=([a-zA-Z0-9_-]+)/);
+    if (idMatch && idMatch[1]) return "https://drive.google.com/thumbnail?id=" + idMatch[1] + "&sz=w800";
+    return url; 
+};
+
+function openPatrolEditModal(index) {
+    const item = window.patrolDataList[index];
+    document.getElementById("editPatrolRowId").value = item.rowId;
+    document.getElementById("editPatrolCaseId").innerText = item.caseId || "無";
+
+    // 1. 自動帶入基本文字資料
+    document.getElementById("editFullRoadName").value = item.location || "";
+    document.getElementById("editFullDate").value = item.date || item.time || "";
+    document.getElementById("editFullWeather").value = item.weather || "";
+    document.getElementById("editFullUnit").value = item.unit || "";
+    document.getElementById("editFullInspector").value = item.inspector || "";
+    // 處理巡查類別勾選
+    if (item.category === '特別') {
+        document.getElementById("editTypeNormal").checked = false;
+        document.getElementById("editTypeSpecial").checked = true;
+    } else {
+        document.getElementById("editTypeNormal").checked = true;
+        document.getElementById("editTypeSpecial").checked = false;
+    }
+
+    // 2. 處理固定巡查項目表格
+    const rowDefs = [
+        { main: "路基及邊坡", sub: "自然邊坡", items: "1、路面塌陷、落石<br>2、邊坡滑動、掏空", mainRow: 4, itemRow: 4 },
+        { sub: "柔性護坡" },
+        { sub: "剛性護坡" },
+        { sub: "擋土牆" },
+        { main: "鋪面", sub: "柔性鋪面", items: "1、路面坑洞、破裂<br>2、車轍、變形推擠", mainRow: 2, itemRow: 1 },
+        { sub: "剛性鋪面", items: "1、坑洞、破(龜)裂<br>2、人手孔損壞", itemRow: 1 },
+        { main: "排水設施", sub: "道路側溝", items: "1、頂蓋版損壞、遺失<br>2、阻礙水路暢流", mainRow: 1, itemRow: 1 }
+    ];
+
+    let savedItems = [];
+    try { 
+        if (typeof item.content === 'string') savedItems = JSON.parse(item.content);
+        else savedItems = item.content || [];
+    } catch(e) { console.log("解析項目失敗", e); }
+
+    const tbody = document.getElementById("editFullItemsTableBody");
+    let trHtml = "";
+    
+    // 依序產出固定的 7 列，並帶入對應的舊資料
+    rowDefs.forEach((def, i) => {
+        let oldData = savedItems[i] || { hasItem: "否", statusDesc: "", advice: "", result: "" };
+        let isYes = oldData.hasItem === "是" ? "checked" : "";
+        let isNo = oldData.hasItem !== "是" ? "checked" : "";
+
+        trHtml += `<tr>`;
+        if (def.main) trHtml += `<td rowspan="${def.mainRow}" style="text-align:center; background:#f9f9f9; border:1px solid #000;">${def.main}</td>`;
+        trHtml += `<td style="text-align:center; background:#fff; border:1px solid #000;">${def.sub}</td>`;
+        if (def.items) trHtml += `<td rowspan="${def.itemRow}" style="font-size:12px; line-height:1.5; padding:8px; border:1px solid #000;">${def.items}</td>`;
+        
+        trHtml += `
+            <td style="text-align:center; background:#fff; border:1px solid #000; vertical-align:middle;">
+                <input type="radio" name="edit_hasItem_${i}" value="是" ${isYes} style="cursor:pointer; transform:scale(1.2);">
+            </td>
+            <td style="text-align:center; background:#fff; border:1px solid #000; vertical-align:middle;">
+                <input type="radio" name="edit_hasItem_${i}" value="否" ${isNo} style="cursor:pointer; transform:scale(1.2);">
+            </td>
+            <td style="padding:6px; background:#fff; border:1px solid #000;"><textarea class="edit-statusDesc" rows="3" style="width:100%; box-sizing:border-box; padding:5px; border:1px solid #ccc; border-radius:4px; resize:vertical;">${oldData.statusDesc || ""}</textarea></td>
+            <td style="padding:6px; background:#fff; border:1px solid #000;"><textarea class="edit-advice" rows="3" style="width:100%; box-sizing:border-box; padding:5px; border:1px solid #ccc; border-radius:4px; resize:vertical;">${oldData.advice || ""}</textarea></td>
+            <td style="padding:6px; background:#fff; border:1px solid #000;"><textarea class="edit-result" rows="3" style="width:100%; box-sizing:border-box; padding:5px; border:1px solid #ccc; border-radius:4px; resize:vertical;">${oldData.result || ""}</textarea></td>
+        </tr>`;
+    });
+    tbody.innerHTML = trHtml;
+
+    // 3. 處理舊照片預覽 (顯示縮圖，不可刪除)
+    const oldPhotosDiv = document.getElementById("editFullOldPhotos");
+    oldPhotosDiv.innerHTML = "";
+    
+    let photosArr = [];
+    try {
+        if (typeof item.photos === 'string') photosArr = JSON.parse(item.photos);
+        else photosArr = item.photos || [];
+    } catch(e) {}
+
+    if (photosArr.length > 0) {
+        photosArr.forEach((p, idx) => {
+            let originalUrl = typeof p === 'string' ? p : (p.url || "");
+            if (originalUrl) {
+                let directUrl = getDriveDirectUrl(originalUrl); 
+                oldPhotosDiv.innerHTML += `
+                    <div style="position:relative; width:100px; height:100px;">
+                        <a href="${originalUrl}" target="_blank">
+                           <img src="${directUrl}" style="width:100px; height:100px; object-fit:cover; border-radius:4px; border:1px solid #aaa;">
+                        </a>
+                        <div style="position:absolute; bottom:0; left:0; width:100%; background:rgba(0,0,0,0.6); color:white; font-size:11px; text-align:center; padding:3px 0;">照片 #${idx+1}</div>
+                    </div>`;
+            }
+        });
+    } else {
+        oldPhotosDiv.innerHTML = "<div style='color:#777; font-size:13px;'>無歷史照片</div>";
+    }
+
+    // 4. 清空新照片暫存區
+    document.getElementById("editFullNewPhotos").value = "";
+    document.getElementById("editFullNewPhotosPreview").innerHTML = "";
+    window.editNewPhotosBase64 = []; 
+
+    document.getElementById("patrolFullScreenModal").style.display = "block";
+}
+
+function closePatrolEditModal() {
+    document.getElementById("patrolFullScreenModal").style.display = "none";
+}
+
+// 處理廠商補充新照片
+function handleEditNewPhotos(event) {
+    const files = event.target.files;
+    const previewDiv = document.getElementById("editFullNewPhotosPreview");
+    previewDiv.innerHTML = "";
+    window.editNewPhotosBase64 = [];
+
+    if (!files || files.length === 0) return;
+
+    Array.from(files).forEach((file) => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const base64 = e.target.result;
+            window.editNewPhotosBase64.push({ base64: base64, desc: "補充照片" });
+            previewDiv.innerHTML += `
+                <div style="position:relative; width:100px; height:100px;">
+                    <img src="${base64}" style="width:100px; height:100px; object-fit:cover; border-radius:4px; border:2px solid #28a745;">
+                    <div style="position:absolute; bottom:0; left:0; width:100%; background:rgba(40,167,69,0.8); color:white; font-size:11px; text-align:center; padding:3px 0;">新補充</div>
+                </div>`;
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+// 收集資料並送出
+async function submitPatrolEdit() {
+    const rowId = document.getElementById("editPatrolRowId").value;
+    
+    const itemsArr = [];
+    const trs = document.querySelectorAll('#editFullItemsTableBody tr');
+    
+    trs.forEach((tr, i) => {
+        const yesRadio = document.querySelector(`input[name="edit_hasItem_${i}"]:checked`);
+        itemsArr.push({
+            hasItem: yesRadio ? yesRadio.value : "否",
+            statusDesc: tr.querySelector('.edit-statusDesc').value.trim(),
+            advice: tr.querySelector('.edit-advice').value.trim(),
+            result: tr.querySelector('.edit-result').value.trim()
+        });
+    });
+
+    const finalType = document.getElementById("editTypeSpecial").checked ? "特別" : "經常/定期";
+
+    if(!confirm("確定要儲存修改後的內容與補充照片嗎？")) return;
+    
+    const btn = document.getElementById("btnSavePatrol");
+    const oldText = btn.innerHTML;
+    btn.innerHTML = "<i class='fas fa-spinner fa-spin'></i> 資料儲存中...(若有照片請稍候)";
+    btn.disabled = true;
+    
+    try {
+        const payload = {
+            action: "updatePatrol",
+            rowId: rowId,
+            date: document.getElementById("editFullDate").value,
+            weather: document.getElementById("editFullWeather").value,
+            unit: document.getElementById("editFullUnit").value,
+            inspector: document.getElementById("editFullInspector").value,
+            type: finalType,
+            items: itemsArr,
+            newPhotos: window.editNewPhotosBase64 || [] 
+        };
+        
+        const res = await fetch(GOOGLE_SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) });
+        const json = await res.json();
+        
+        if(json.result === "success") {
+            alert("✅ 巡查紀錄明細表修改成功！");
+            closePatrolEditModal();
+            if (typeof window.fetchPatrolList === 'function') {
+                window.fetchPatrolList(); // 🌟 只重新抓取歷史清單，不重整整個網頁
+            }
+        } else {
+            alert("❌ 儲存失敗：" + (json.error || "未知錯誤"));
+        }
+    } catch(e) {
+        alert("❌ 連線失敗，請檢查網路或稍後再試。");
+    } finally {
+        btn.innerHTML = oldText;
+        btn.disabled = false;
+    }
+}
 </script>
+
+<div id="patrolFullScreenModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#e9ecef; z-index:99999; overflow-y:auto; font-family: 'Microsoft JhengHei', sans-serif;">
+  <div style="background:#fff; max-width:950px; margin:30px auto; box-shadow:0 5px 15px rgba(0,0,0,0.2); position:relative;">
+    
+    <button onclick="closePatrolEditModal()" style="position:absolute; right:15px; top:15px; background:#dc3545; border:none; color:white; width:35px; height:35px; font-size:20px; font-weight:bold; border-radius:50%; cursor:pointer; box-shadow:0 2px 5px rgba(0,0,0,0.2); z-index:10;">&times;</button>
+    
+    <div style="padding:30px 40px;">
+      
+      <h2 style="text-align:center; letter-spacing:2px; font-size:24px; margin-bottom:20px; color:#000;">道路巡查報告表 <span style="color:#d32f2f; font-size:16px;">(編輯模式)</span></h2>
+      
+      <div style="font-size:15px; color:#333; margin-bottom:5px;">
+         <input type="hidden" id="editPatrolRowId">
+         <span style="font-size:13px; color:#666;">系統案號：<span id="editPatrolCaseId"></span></span>
+      </div>
+      
+      <div style="margin-bottom:10px; font-size:15px;">
+        道路編號/名稱：<input type="text" id="editFullRoadName" style="border:none; border-bottom:1px solid #000; width:400px; outline:none; background:transparent; font-weight:bold; color:#000;" readonly disabled>
+      </div>
+      <div style="margin-bottom:10px; font-size:15px;">
+        日期：<input type="text" id="editFullDate" style="border:none; border-bottom:1px solid #000; width:150px; outline:none;">
+      </div>
+      <div style="margin-bottom:15px; display:flex; justify-content:space-between; font-size:15px;">
+        <div>天氣狀況(晴/陰/雨)：<input type="text" id="editFullWeather" style="border:none; border-bottom:1px solid #000; width:100px; outline:none;"></div>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:5px; font-size:15px;">
+        <div>巡查單位：<input type="text" id="editFullUnit" style="border:none; border-bottom:1px solid #000; width:200px; outline:none;"></div>
+        <div>
+          巡查類別：
+          <label style="cursor:pointer;"><input type="radio" name="editType" id="editTypeNormal" value="經常/定期"> 經常/定期</label>
+          <label style="cursor:pointer;"><input type="radio" name="editType" id="editTypeSpecial" value="特別"> 特別</label>
+        </div>
+      </div>
+
+      <table style="width:100%; border-collapse:collapse; border:2px solid #000; font-size:14px; margin-bottom:20px;">
+        <thead>
+          <thead style="font-size:13px;">
+          <tr style="background:#f2f2f2;">
+            <th rowspan="2" style="border:1px solid #000; padding:8px; width:8%;">主分類</th>
+            <th rowspan="2" style="border:1px solid #000; padding:8px; width:10%;">次分類</th>
+            <th rowspan="2" style="border:1px solid #000; padding:8px; width:24%;">巡查項目</th>
+            <th colspan="2" style="border:1px solid #000; padding:4px; width:10%;">是否有此項目</th>
+            <th rowspan="2" style="border:1px solid #000; padding:8px; width:16%;">狀況說明</th>
+            <th rowspan="2" style="border:1px solid #000; padding:8px; width:16%;">辦理<br>改善意見</th>
+            <th rowspan="2" style="border:1px solid #000; padding:8px; width:16%;">辦理情形及<br>完成時間</th>
+          </tr>
+          <tr style="background:#f2f2f2;">
+            <th style="border:1px solid #000; padding:5px; text-align:center;">是</th>
+            <th style="border:1px solid #000; padding:5px; text-align:center;">否</th>
+          </tr>
+        </thead>
+        <tbody id="editFullItemsTableBody">
+          </tbody>
+      </table>
+
+      <div style="display:flex; justify-content:space-between; margin-bottom:30px; font-size:15px;">
+        <div style="width:30%;">巡查人員：<input type="text" id="editFullInspector" style="border:none; border-bottom:1px solid #000; width:150px; outline:none;"></div>
+        <div style="width:30%;">承辦人：___________________</div>
+        <div style="width:30%;">單位主管：___________________</div>
+      </div>
+      <hr style="border:1px solid #ccc; margin-bottom:20px;">
+
+      <div>
+        <h3 style="font-size:16px; color:#004080; margin-bottom:10px;"><i class="fas fa-camera"></i> 巡查現場照片</h3>
+        
+        <div style="margin-bottom:15px;">
+           <span style="font-size:14px; font-weight:bold; color:#555;">歷史通報照片 (不可刪除)</span>
+           <div id="editFullOldPhotos" style="display:flex; flex-wrap:wrap; gap:10px; margin-top:8px; padding:10px; background:#f9f9f9; border:1px solid #ddd;"></div>
+        </div>
+
+        <div style="margin-bottom:20px; border:2px dashed #28a745; padding:15px; background:#f9fff9;">
+           <span style="font-size:14px; font-weight:bold; color:#28a745;">補充新照片 (選填)</span>
+           <input type="file" id="editFullNewPhotos" accept="image/*" multiple onchange="handleEditNewPhotos(event)" style="display:block; margin-top:10px; width:100%;">
+           <div id="editFullNewPhotosPreview" style="display:flex; flex-wrap:wrap; gap:10px; margin-top:10px;"></div>
+        </div>
+      </div>
+
+      <div style="text-align:center; margin-top:30px;">
+        <button onclick="closePatrolEditModal()" style="padding:12px 30px; margin-right:10px; border:1px solid #aaa; background:#eee; font-size:16px; font-weight:bold; cursor:pointer; border-radius:5px;">取消</button>
+        <button id="btnSavePatrol" onclick="submitPatrolEdit()" style="padding:12px 40px; border:none; background:#004080; color:white; font-size:16px; font-weight:bold; cursor:pointer; border-radius:5px; box-shadow:0 3px 6px rgba(0,0,0,0.2);">💾 儲存巡查表</button>
+      </div>
+
+    </div>
+  </div>
+</div>
 </body>
 </html>

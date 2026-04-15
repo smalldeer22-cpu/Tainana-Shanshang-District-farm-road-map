@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0329_V5)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0412_V12)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -12,7 +12,8 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface"></script>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html-docx-js@0.3.1/dist/html-docx.min.js"></script>
 <style>
     /* 🌟 強制統整所有巡查表格的字體、大小與行高 */
     #inspTableBody td, 
@@ -2168,9 +2169,15 @@
       <div class="small" style="margin-bottom:8px; color:#666;">
         透過演算法分析維修頻率、結構風險與植被影響，點擊列表可快速定位。
       </div>
-      <label class="toggle-switch">
-        <input type="checkbox" id="aiRiskToggle" onchange="toggleAiRiskLayer(this)"> 風險預警熱點
-      </label>
+      <label class="toggle-switch" style="display: inline-flex; align-items: center; gap: 10px;">
+    <input type="checkbox" id="aiRiskToggle" onchange="toggleAiRiskLayer(this)"> 
+    <span>風險預警熱點</span>
+    
+    <button id="exportRiskBtn" onclick="exportAllRiskGroups(); event.stopPropagation();" 
+            style="display: none; background:#8e44ad; color:white; border:none; border-radius:4px; padding:3px 8px; cursor:pointer; font-size:12px; align-items:center;">
+        <i class="fas fa-file-export" style="margin-right:4px;"></i> 打包總表
+    </button>
+</label>
       <div style="margin-top:10px; font-size:13px;">
         <a href="javascript:void(0)" onclick="openAiLogicModal()" style="color:#8e44ad; text-decoration:underline; font-weight:bold;">
           <i class="fas fa-info-circle"></i> 演算法與評分邏輯說明
@@ -2661,31 +2668,18 @@ window.addEventListener('load', () => {
 });
 
 function attachPopupEvents(marker, sourceLayers) {
-  marker.on('mouseover', function(e) {
-    if (!window.lockedPopupMarker) {
-      const dist = distToRoad(this.getLatLng(), roadsLayer);
-      const content = createPopup({ 
-        fileName: this.customData.configLabel, 
-        props: this.customData.props, 
-        lat: this.getLatLng().lat, 
-        lng: this.getLatLng().lng, 
-        dist: dist 
-      });
-      this.bindPopup(content, { className: 'custom-popup', maxWidth: 960 }).openPopup();
-    }
-  });
+  // 已經刪除 mouseover (游標滑入) 和 mouseout (游標移出) 的自動彈窗邏輯
   
-  marker.on('mouseout', function(e) {
-    if (!window.lockedPopupMarker) {
-      this.closePopup();
-    }
-  });
-  
+  // 保留點擊事件：點擊時才執行後續動作
   marker.on('click', function(e) {
     L.DomEvent.stopPropagation(e);
     window.lockedPopupMarker = true;
+    
+    // 如果您希望點擊這個 marker 也能觸發我們剛剛優化的「重疊列表」或「單一詳細視窗」
+    // 可以直接呼叫我們剛剛改好的函數：
+    window.openDetailPopupFromMarker(this); 
+    
     map.flyTo(this.getLatLng(), 18, { duration: 0.8 });
-    handleNearbyMarkerClick(e, sourceLayers);
   });
 }
 
@@ -4082,87 +4076,191 @@ window.focusDupMarker = function(index) {
   } 
 };
 
+// === 1. 顯示重複案件詳細資訊泡泡 ===
 window.showDupDetailPopup = function(groupIdx, caseIdx) {
-  const group = CURRENT_DUPLICATE_GROUPS[groupIdx]; 
-  if(!group) return; 
-  const item = group[caseIdx];
-  const distToLine = distToRoad(item.latlng, roadsLayer); 
-  const content = createPopup({ fileName: item.name, props: item.props, lat: item.latlng.lat, lng: item.latlng.lng, dist: distToLine });
-  L.popup({className:'custom-popup', maxWidth:960}).setLatLng(item.latlng).setContent(content).openOn(map);
+    const group = CURRENT_DUPLICATE_GROUPS[groupIdx]; 
+    if(!group) return; 
+    const item = group[caseIdx];
+    const distToLine = distToRoad(item.latlng, roadsLayer); 
+    const content = createPopup({ fileName: item.name, props: item.props, lat: item.latlng.lat, lng: item.latlng.lng, dist: distToLine });
+    L.popup({className:'custom-popup', maxWidth:960}).setLatLng(item.latlng).setContent(content).openOn(map);
 };
 
 window.showMapDetailPopup = function(key, index) {
-  const group = CURRENT_MAP_GROUPS[key]; 
-  if(!group || !group[index]) return; 
-  const item = group[index];
-  const dist = distToRoad(item.latlng, roadsLayer);
-  const content = createPopup({ fileName: item.configLabel, props: item.feature.properties, lat: item.latlng.lat, lng: item.latlng.lng, dist: dist });
-  L.popup({className:'custom-popup', maxWidth:960}).setLatLng(item.latlng).setContent(content).openOn(map);
+    const group = CURRENT_MAP_GROUPS[key]; 
+    if(!group || !group[index]) return; 
+    const item = group[index];
+    const dist = distToRoad(item.latlng, roadsLayer);
+    const content = createPopup({ fileName: item.configLabel, props: item.feature.properties, lat: item.latlng.lat, lng: item.latlng.lng, dist: dist });
+    L.popup({className:'custom-popup', maxWidth:960}).setLatLng(item.latlng).setContent(content).openOn(map);
 };
 
 document.getElementById('autoDupCheckToggle').addEventListener('change', function() {
-  if(this.checked) { 
-    document.getElementById('dupCheckInput').value = ''; 
-    performAutoDuplicateCheck(); 
-  } else { 
-    dupCheckLayer.clearLayers(); 
-    document.getElementById('dupCheckResult').innerHTML = ''; 
-    dupMarkersMap = {}; 
-    CURRENT_DUPLICATE_GROUPS = []; 
-  }
+    if(this.checked) { 
+        document.getElementById('dupCheckInput').value = ''; 
+        performAutoDuplicateCheck(); 
+    } else { 
+        dupCheckLayer.clearLayers(); 
+        document.getElementById('dupCheckResult').innerHTML = ''; 
+        dupMarkersMap = {}; 
+        CURRENT_DUPLICATE_GROUPS = []; 
+    }
 });
 
+// === 2. 單一群組匯出 EXCEL ===
+window.exportGroupToExcel = function(groupIdx) {
+    const group = CURRENT_DUPLICATE_GROUPS[groupIdx];
+    if (!group) return;
+    let tableHtml = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><style>table{border-collapse:collapse;font-family:"Microsoft JhengHei",sans-serif;} th,td{border:1px solid #000;text-align:center;vertical-align:middle;padding:5px;} th{background-color:#ffd700;color:#000;font-size:16px;height:30px;font-weight:bold;} td{font-size:14px;}</style></head><body><table><tr><th width="60">項次</th><th width="150">案件名稱</th><th width="150">案件編號</th><th width="120">完工日期</th><th width="180">TWD97 座標</th><th width="160">施工前照片</th><th width="160">施工後照片</th></tr>`;
+    group.forEach((item, i) => {
+        let pB = item.props['施工前照片'] || item.props['p_url'] || '';
+        let pA = item.props['施工後照片'] || item.props['p_finish_url'] || '';
+        if(pB.startsWith('[')) { try{pB=JSON.parse(pB)[0]||pB;}catch(e){} }
+        if(pA.startsWith('[')) { try{pA=JSON.parse(pA)[0]||pA;}catch(e){} }
+        const toThumb = (u) => {
+            if(!u) return '';
+            let m1 = u.match(/\/d\/([a-zA-Z0-9_-]+)/); if(m1) return "https://drive.google.com/thumbnail?id="+m1[1]+"&sz=w400";
+            let m2 = u.match(/id=([a-zA-Z0-9_-]+)/); if(m2) return "https://drive.google.com/thumbnail?id="+m2[1]+"&sz=w400";
+            return u;
+        };
+        const twd = (typeof twd97FromWgs84==='function') ? twd97FromWgs84(item.latlng.lat, item.latlng.lng) : {x:'無',y:'無'};
+        
+        // 🌟 關鍵修復：加入 height="120" 強制撐開 Excel 列高
+        tableHtml += `<tr height="120"><td>${i+1}</td><td style="font-weight:bold;color:#004080;">${item.name}</td><td>${item.props['案件編號']||'無'}</td><td>${item.props['完工日期']||'無'}</td><td>${twd.x}, ${twd.y}</td><td>${toThumb(pB)?`<img src="${toThumb(pB)}" width="140" height="105" style="display:block; margin:auto;">`:'無照片'}</td><td>${toThumb(pA)?`<img src="${toThumb(pA)}" width="140" height="105" style="display:block; margin:auto;">`:'無照片'}</td></tr>`;
+    });
+    tableHtml += `</table></body></html>`;
+    let blob = new Blob(['\uFEFF' + tableHtml], { type: 'application/vnd.ms-excel' });
+    let link = document.createElement('a'); link.href = URL.createObjectURL(blob);
+    link.download = `重複案件清單_群組${groupIdx+1}_${new Date().toISOString().slice(0,10).replace(/-/g,"")}.xls`;
+    document.body.appendChild(link); link.click(); document.body.removeChild(link);
+};
+
+// === 3. 全區總表一鍵打包 EXCEL ===
+window.exportAllGroupsToExcel = function() {
+    if (!CURRENT_DUPLICATE_GROUPS || CURRENT_DUPLICATE_GROUPS.length === 0) return alert('目前沒有重複案件資料可供下載！');
+    let tableHtml = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><style>table{border-collapse:collapse;font-family:"Microsoft JhengHei",sans-serif;} th,td{border:1px solid #000;text-align:center;vertical-align:middle;padding:5px;} .g-head{background-color:#004080;color:#fff;font-size:16px;font-weight:bold;text-align:left;padding-left:10px;height:35px;} .c-head{background-color:#ffd700;color:#000;font-size:14px;font-weight:bold;}</style></head><body><table>`;
+    CURRENT_DUPLICATE_GROUPS.forEach((group, idx) => {
+        tableHtml += `<tr><td colspan="8" class="g-head">📍 重複座標群組 #${idx+1} (共 ${group.length} 件)</td></tr><tr><th class="c-head" width="50">項次</th><th class="c-head" width="150">案件名稱</th><th class="c-head" width="120">案件編號</th><th class="c-head" width="110">完工日期</th><th class="c-head" width="110">搶修類型</th><th class="c-head" width="160">TWD97 座標</th><th class="c-head" width="150">施工前照片</th><th class="c-head" width="150">施工後照片</th></tr>`;
+        group.forEach((item, i) => {
+            let pB = item.props['施工前照片'] || item.props['p_url'] || '';
+            let pA = item.props['施工後照片'] || item.props['p_finish_url'] || '';
+            if(pB.startsWith('[')) { try{pB=JSON.parse(pB)[0]||pB;}catch(e){} }
+            if(pA.startsWith('[')) { try{pA=JSON.parse(pA)[0]||pA;}catch(e){} }
+            const toThumb = (u) => {
+                if(!u) return '';
+                let m1 = u.match(/\/d\/([a-zA-Z0-9_-]+)/); if(m1) return "https://drive.google.com/thumbnail?id="+m1[1]+"&sz=w400";
+                let m2 = u.match(/id=([a-zA-Z0-9_-]+)/); if(m2) return "https://drive.google.com/thumbnail?id="+m2[1]+"&sz=w400";
+                return u;
+            };
+            const twd = (typeof twd97FromWgs84==='function') ? twd97FromWgs84(item.latlng.lat, item.latlng.lng) : {x:'無',y:'無'};
+            
+            // 🌟 關鍵修復：加入 height="110" 強制撐開 Excel 列高，並讓圖片置中
+            tableHtml += `<tr height="110"><td>${i+1}</td><td style="font-weight:bold;color:#004080;">${item.name}</td><td>${item.props['案件編號']||'無'}</td><td>${item.props['完工日期']||'日期未知'}</td><td>${item.props['搶修類型']||'一般維護'}</td><td>${twd.x}, ${twd.y}</td><td>${toThumb(pB)?`<img src="${toThumb(pB)}" width="130" height="98" style="display:block; margin:auto;">`:'無照片'}</td><td>${toThumb(pA)?`<img src="${toThumb(pA)}" width="130" height="98" style="display:block; margin:auto;">`:'無照片'}</td></tr>`;
+        });
+        tableHtml += `<tr><td colspan="8" style="border:none;height:20px;"></td></tr>`;
+    });
+    tableHtml += `</table></body></html>`;
+    let blob = new Blob(['\uFEFF' + tableHtml], { type: 'application/vnd.ms-excel' });
+    let link = document.createElement('a'); link.href = URL.createObjectURL(blob);
+    link.download = `全區重複案件總表_${new Date().toISOString().slice(0,10).replace(/-/g,"")}.xls`;
+    document.body.appendChild(link); link.click(); document.body.removeChild(link);
+};
+// === 4. 自動檢核核心功能 (含左側一鍵打包按鈕) ===
 function performAutoDuplicateCheck() {
-  const resDiv = document.getElementById('dupCheckResult'); 
-  resDiv.innerHTML = '<div style="padding:10px; color:#666;">掃描資料庫中...</div>';
-  let coordMap = {}; 
-  
-  REPAIR_CONFIG.forEach(conf => {
-    const data = REPAIR_DATA_CACHE[conf.value]; 
-    if(!data || !data.features) return;
-    data.features.forEach(f => {
-      if(f.geometry.type !== 'Point') return;
-      const key = f.geometry.coordinates.join(',');
-      if(!coordMap[key]) coordMap[key] = [];
-      coordMap[key].push({ name: conf.label, props: f.properties, latlng: L.latLng(f.geometry.coordinates[1], f.geometry.coordinates[0]) });
+    const resDiv = document.getElementById('dupCheckResult'); 
+    resDiv.innerHTML = '<div style="padding:10px; color:#666;">掃描資料庫中...</div>';
+    let coordMap = {}; 
+    REPAIR_CONFIG.forEach(conf => {
+        const data = REPAIR_DATA_CACHE[conf.value]; 
+        if(!data || !data.features) return;
+        data.features.forEach(f => {
+            if(f.geometry.type !== 'Point') return;
+            const key = f.geometry.coordinates.join(',');
+            if(!coordMap[key]) coordMap[key] = [];
+            coordMap[key].push({ name: conf.label, props: f.properties, latlng: L.latLng(f.geometry.coordinates[1], f.geometry.coordinates[0]) });
+        });
     });
-  });
-  
-  let duplicates = []; 
-  Object.keys(coordMap).forEach(k => { 
-    if(coordMap[k].length > 1) duplicates.push(coordMap[k]); 
-  });
-  
-  CURRENT_DUPLICATE_GROUPS = duplicates;
-  dupCheckLayer.clearLayers(); 
-  resDiv.innerHTML = ''; 
-  dupMarkersMap = {};
-  
-  if(duplicates.length === 0) { 
-    resDiv.innerHTML = '<div style="padding:10px; color:green;">未發現完全重疊的案件座標。</div>'; 
-    return; 
-  }
-  
-  let html = `<div style="color:#d32f2f; font-weight:bold; margin-bottom:5px;">⚠️ 發現 ${duplicates.length} 組重複座標點位：</div>`;
-  
-  duplicates.forEach((group, idx) => {
-    const pt = group[0].latlng; 
-    const twd = twd97FromWgs84(pt.lat, pt.lng);
-    const marker = L.circleMarker(pt, { radius: 10, color: '#d32f2f', fillColor: '#ffeb3b', fillOpacity: 0.9, weight:2 }).addTo(dupCheckLayer);
-    
-    let popupHTML = `<div class="info-header" style="padding:10px;background:#004080;color:white;font-weight:bold;">重複座標點位資訊 (${group.length}筆)</div><div class="info-body" style="padding:10px;max-height:250px; overflow-y:auto;"><div style="font-size:12px; color:#666; margin-bottom:5px;">點擊案件名稱可查看詳細資料</div>`;
-    group.forEach((item, i) => { 
-      popupHTML += `<div style="border-bottom:1px dashed #ccc; padding:8px 0; cursor:pointer;" onclick="showDupDetailPopup(${idx}, ${i})"><b style="color:#004080; text-decoration:underline;">${i+1}. ${item.name}</b><br><span style="color:#333; font-size:12px;">案件編號: ${item.props['案件編號']||'無'}<br>完工日期: ${item.props['完工日期']||'無'}</span></div>`; 
+    let duplicates = []; 
+    Object.keys(coordMap).forEach(k => { if(coordMap[k].length > 1) duplicates.push(coordMap[k]); });
+    CURRENT_DUPLICATE_GROUPS = duplicates;
+    dupCheckLayer.clearLayers(); 
+    resDiv.innerHTML = ''; 
+    dupMarkersMap = {};
+    if(duplicates.length === 0) { 
+        resDiv.innerHTML = '<div style="padding:10px; color:green;">未發現完全重疊的案件座標。</div>'; 
+        return; 
+    }
+    let html = `
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding-bottom:10px; border-bottom:2px solid #ccc;">
+        <div style="color:#d32f2f; font-weight:bold; font-size:15px;">⚠️ 發現 ${duplicates.length} 組重複熱點</div>
+        <button onclick="exportAllGroupsToExcel()" style="background:#004080; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-size:13px; font-weight:bold; box-shadow:0 2px 4px rgba(0,0,0,0.3); transition:0.2s;" onmouseover="this.style.background='#0056b3'" onmouseout="this.style.background='#004080'">
+            <i class="fas fa-file-excel"></i> 打包總表
+        </button>
+    </div>`;
+    duplicates.forEach((group, idx) => {
+        const pt = group[0].latlng; 
+        const twd = twd97FromWgs84(pt.lat, pt.lng);
+        const marker = L.circleMarker(pt, { radius: 10, color: '#d32f2f', fillColor: '#ffeb3b', fillOpacity: 0.9, weight:2 }).addTo(dupCheckLayer);
+        
+        let popupHTML = `
+        <div class="info-header" style="padding:10px; background:#004080; color:white; font-weight:bold; display:flex; justify-content:space-between; align-items:center;">
+            <span>重複座標點位資訊 (${group.length}筆)</span>
+            <button onclick="exportGroupToExcel(${idx}); event.stopPropagation();" style="background:#28a745; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-size:13px; font-weight:bold; box-shadow:0 2px 4px rgba(0,0,0,0.3); transition:0.2s;" onmouseover="this.style.background='#218838'" onmouseout="this.style.background='#28a745'">
+                <i class="fas fa-file-excel"></i> 下載 EXCEL
+            </button>
+        </div>
+        <div class="info-body" style="padding:10px; max-height:350px; overflow-y:auto; overflow-x:hidden;">`;
+        
+        group.forEach((item, i) => { 
+            let pUrlBefore = item.props['施工前照片'] || item.props['p_url'] || 'https://via.placeholder.com/150x100?text=無照片';
+            let pUrlAfter = item.props['施工後照片'] || item.props['p_finish_url'] || 'https://via.placeholder.com/150x100?text=無照片';
+            if(pUrlBefore.startsWith('[')) { try{ pUrlBefore = JSON.parse(pUrlBefore)[0] || pUrlBefore; }catch(e){} }
+            if(pUrlAfter.startsWith('[')) { try{ pUrlAfter = JSON.parse(pUrlAfter)[0] || pUrlAfter; }catch(e){} }
+            popupHTML += `
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px dashed #ccc; padding:8px 0; cursor:pointer;">
+                <div style="flex:1; padding-right:10px;" onclick="showDupDetailPopup(${idx}, ${i})">
+                    <b style="color:#004080; text-decoration:underline;">${i+1}. ${item.name}</b><br>
+                    <span style="color:#333; font-size:12px;">案件編號: ${item.props['案件編號']||'無'}<br>完工日期: ${item.props['完工日期']||'無'}</span>
+                </div>
+                <div style="display:flex; gap:5px; flex-shrink:0;">
+                    <div style="text-align:center;">
+                        <div style="font-size:10px; color:#666;">施工前</div>
+                        <img src="${pUrlBefore}" style="width:60px; height:45px; object-fit:cover; border-radius:4px; cursor:zoom-in; border:1px solid #ddd;" onclick="event.stopPropagation(); window.zoomImg(this.src)" oncontextmenu="return false;" ondragstart="return false;">
+                    </div>
+                    <div style="text-align:center;">
+                        <div style="font-size:10px; color:#666;">施工後</div>
+                        <img src="${pUrlAfter}" style="width:60px; height:45px; object-fit:cover; border-radius:4px; cursor:zoom-in; border:1px solid #ddd;" onclick="event.stopPropagation(); window.zoomImg(this.src)" oncontextmenu="return false;" ondragstart="return false;">
+                    </div>
+                </div>
+            </div>`;
+        });
+        popupHTML += `</div>`;
+        marker.bindPopup(popupHTML, { className: 'custom-popup', maxWidth: 450 }); 
+        dupMarkersMap[idx] = marker;
+        
+        if (!window.zoomImg) {
+            window.zoomImg = function(url) {
+                if (url.includes('無照片')) return;
+                let lb = document.getElementById('globalPhotoLightbox');
+                if (!lb) {
+                    lb = document.createElement('div');
+                    lb.id = 'globalPhotoLightbox';
+                    lb.style.cssText = 'display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9999; justify-content:center; align-items:center;';
+                    lb.onclick = function() { this.style.display = 'none'; };
+                    lb.oncontextmenu = function(e) { e.preventDefault(); return false; };
+                    lb.ondragstart = function(e) { e.preventDefault(); return false; };
+                    lb.innerHTML = '<img id="globalPhotoLightboxImg" style="max-width:95%; max-height:95%; box-shadow:0 0 20px rgba(255,255,255,0.5); border-radius:8px;" oncontextmenu="return false;" ondragstart="return false;">';
+                    document.body.appendChild(lb);
+                }
+                document.getElementById('globalPhotoLightboxImg').src = url;
+                lb.style.display = 'flex';
+            };
+        }
+        
+        const dates = group.map(g => g.props['完工日期'] || '').sort();
+        html += `<div class="dup-check-item" onclick="focusDupMarker(${idx})"><div class="dup-check-title">📍 座標重複群組 #${idx+1} <br><span style="font-size:11px; color:#555;">(TWD97: ${twd.x}, ${twd.y})</span></div><div class="dup-check-info" style="color:#d32f2f; font-weight:bold;">包含 ${group.length} 筆案件</div><div class="dup-check-info" style="font-size:11px; color:#666;">${dates[0] ? `${dates[0]} ~ ${dates[dates.length-1]}` : '日期未知'}</div></div>`;
     });
-    popupHTML += `</div>`;
-    
-    marker.bindPopup(popupHTML, { className: 'custom-popup', maxWidth: 300 }); 
-    dupMarkersMap[idx] = marker;
-    
-    const dates = group.map(g => g.props['完工日期'] || '').sort();
-    html += `<div class="dup-check-item" onclick="focusDupMarker(${idx})"><div class="dup-check-title">📍 座標重複群組 #${idx+1} <br><span style="font-size:11px; color:#555;">(TWD97: ${twd.x}, ${twd.y})</span></div><div class="dup-check-info" style="color:#d32f2f; font-weight:bold;">包含 ${group.length} 筆案件</div><div class="dup-check-info" style="font-size:11px; color:#666;">${dates[0] ? `${dates[0]} ~ ${dates[dates.length-1]}` : '日期未知'}</div></div>`;
-  });
-  resDiv.innerHTML = html;
+    resDiv.innerHTML = html;
 }
 
 document.getElementById('dupCheckBtn').addEventListener('click', function() {
@@ -4191,57 +4289,141 @@ document.getElementById('dupCheckBtn').addEventListener('click', function() {
     L.circle(centerLatLng, { color: 'red', fillColor: '#f03', fillOpacity: 0.2, radius: 50 }).addTo(dupCheckLayer);
     L.marker(centerLatLng).addTo(dupCheckLayer).bindPopup(`檢核中心點<br>TWD97: ${x}, ${y}`).openPopup();
     
-    const matches = []; 
-    const now = new Date(); 
-    const threeYearsAgo = new Date(); 
-    threeYearsAgo.setFullYear(now.getFullYear() - 3);
-    
-    REPAIR_CONFIG.forEach(conf => {
-      const data = REPAIR_DATA_CACHE[conf.value]; 
-      if (!data) return;
-      data.features.forEach(f => {
-        if (f.geometry.type !== 'Point') return;
-        const pt = L.latLng(f.geometry.coordinates[1], f.geometry.coordinates[0]);
-        const dist = centerLatLng.distanceTo(pt);
-        if (dist <= 50) {
-          const dateStr = f.properties['完工日期'];
-          if (dateStr && dateStr.length === 7) {
-            const finishDate = new Date(parseInt(dateStr.substring(0, 3)) + 1911, parseInt(dateStr.substring(3, 5)) - 1, parseInt(dateStr.substring(5, 7)));
-            if (finishDate >= threeYearsAgo) {
-              let diffMonths = (now.getFullYear() - finishDate.getFullYear()) * 12 + (now.getMonth() - finishDate.getMonth());
-              if (now.getDate() < finishDate.getDate()) diffMonths--;
-              matches.push({ 
-                name: conf.label, 
-                props: f.properties, 
-                date: dateStr, 
-                timeAgo: `${Math.floor(diffMonths / 12)} 年 ${diffMonths % 12} 個月`, 
-                dist: dist.toFixed(1), 
-                isEmergency: /搶修|災害|緊急/.test(conf.label), 
-                latlng: pt 
-              });
+    // --- 👇 開始取代 👇 ---
+        const matches = []; 
+        const now = new Date(); 
+        const threeYearsAgo = new Date(); 
+        threeYearsAgo.setFullYear(now.getFullYear() - 3);
+
+        // 🌟 輔助函數：放寬日期檢查標準，並將即時圖層納入
+        const checkAndPushMatch = (f, configLabel, latlng) => {
+            const dist = centerLatLng.distanceTo(latlng);
+            if (dist <= 50) {
+                // 寬鬆讀取日期：完工優先，無完工看通報，都沒寫則當作最新案件
+                let rawDate = f.properties['完工日期'] || f.properties['通報日期'] || f.properties['通報日期ROC'] || '';
+                let cleanDate = String(rawDate).replace(/\D/g, ''); // 濾除非數字字元 (例如過濾掉斜線)
+                let refDate = now; 
+                let timeAgoStr = "日期未知/處理中";
+
+                if (cleanDate.length >= 7) {
+                    let twYear = parseInt(cleanDate.substring(0, cleanDate.length - 4)); 
+                    let mo = parseInt(cleanDate.substring(cleanDate.length - 4, cleanDate.length - 2)) - 1;
+                    let da = parseInt(cleanDate.substring(cleanDate.length - 2));
+                    refDate = new Date(twYear + 1911, mo, da);
+                }
+
+                // 條件：三年內，或者完全沒日期的案件 (視為近期未結案，強制納入)
+                if (refDate >= threeYearsAgo || cleanDate === '') {
+                    let diffMonths = (now.getFullYear() - refDate.getFullYear()) * 12 + (now.getMonth() - refDate.getMonth());
+                    if (now.getDate() < refDate.getDate()) diffMonths--;
+                    if (diffMonths < 0) diffMonths = 0;
+                    
+                    if (cleanDate.length >= 7) {
+                        timeAgoStr = `${Math.floor(diffMonths / 12)} 年 ${diffMonths % 12} 個月`;
+                    }
+
+                    matches.push({ 
+                        name: configLabel || f.properties['案件類型'] || '相關案件', 
+                        props: f.properties, 
+                        date: rawDate || '無日期紀錄', 
+                        timeAgo: timeAgoStr, 
+                        dist: dist.toFixed(1), 
+                        isEmergency: /搶修|災害|緊急/.test(configLabel || f.properties['搶修類型'] || ''),
+                        latlng: latlng 
+                    });
+                }
             }
-          }
+        };
+
+        // 1. 搜尋歷史資料庫
+        REPAIR_CONFIG.forEach(conf => {
+            const data = REPAIR_DATA_CACHE[conf.value]; 
+            if (!data) return;
+            data.features.forEach(f => {
+                if (f.geometry.type === 'Point') {
+                    checkAndPushMatch(f, conf.label, L.latLng(f.geometry.coordinates[1], f.geometry.coordinates[0]));
+                }
+            });
+        });
+
+        // 2. 搜尋「即時通報」與剛上傳的新案件 (極重要，防漏接！)
+        if (typeof realtimeLayer !== 'undefined') {
+            realtimeLayer.eachLayer(layer => {
+                if (layer.customData && layer.customData.props) {
+                    let mockFeature = { properties: layer.customData.props };
+                    checkAndPushMatch(mockFeature, "近期/即時通報", layer.getLatLng());
+                }
+            });
         }
-      });
-    });
+        // --- 👆 結束取代 👆 ---
     
     if (matches.length === 0) { 
       resultDiv.innerHTML = '<div style="color:green; font-weight:bold;"><i class="fas fa-check-circle"></i> 此範圍 50m 內近 3 年無相關紀錄</div>'; 
     } else {
-      matches.sort((a, b) => parseFloat(a.dist) - parseFloat(b.dist));
-      let html = `<div style="color:#d32f2f; font-weight:bold; margin-bottom:5px;">⚠️ 發現 ${matches.length} 筆近 3 年紀錄：</div>`;
-      matches.forEach((m, index) => {
-        const marker = L.circleMarker(m.latlng, { radius: 8, color: '#d32f2f', weight: 2, fillColor: '#ffeb3b', fillOpacity: 1 }).addTo(dupCheckLayer);
-        marker.bindPopup(createPopup({ fileName: m.name, props: m.props, lat: m.latlng.lat, lng: m.latlng.lng, dist: distToRoad(m.latlng, roadsLayer) }), { className: 'custom-popup', maxWidth:960 });
-        dupMarkersMap[index] = marker;
-        html += `<div class="dup-check-item" onclick="focusDupMarker(${index})"><div class="dup-check-title">${m.name}<span class="dup-tag ${m.isEmergency ? 'tag-emg' : 'tag-gen'}">${m.isEmergency ? '搶修' : '一般'}</span></div><div class="dup-check-info"><span>完工：${m.props['完工日期']} (距今 ${m.timeAgo})</span></div><div class="dup-check-info"><span>距離：${m.dist} 公尺</span></div></div>`;
-      });
-      resultDiv.innerHTML = html;
-    }
+        matches.sort((a, b) => parseFloat(a.dist) - parseFloat(b.dist));
+        let html = `<div style="color:#d32f2f; font-weight:bold; margin-bottom:5px;">⚠️ 發現 ${matches.length} 筆近 3 年紀錄：</div>`;
+        
+        matches.forEach((m, index) => {
+            const marker = L.circleMarker(m.latlng, { radius: 8, color: '#d32f2f', weight: 2, fillColor: '#ffeb3b', fillOpacity: 1 }).addTo(dupCheckLayer);
+            marker.bindPopup(createPopup({ fileName: m.name, props: m.props, lat: m.latlng.lat, lng: m.latlng.lng, dist: distToRoad(m.latlng, roadsLayer) }), { className: 'custom-popup', maxWidth:960 });
+            dupMarkersMap[index] = marker;
+            
+            // 1. 抓取照片網址 (若無則給佔位圖)
+            let pUrlBefore = m.props['施工前照片'] || m.props['p_url'] || 'https://via.placeholder.com/150x100?text=無照片';
+            let pUrlAfter = m.props['施工後照片'] || m.props['p_finish_url'] || 'https://via.placeholder.com/150x100?text=無照片';
+            if(pUrlBefore.startsWith('[')) { try{ pUrlBefore = JSON.parse(pUrlBefore)[0] || pUrlBefore; }catch(e){} }
+            if(pUrlAfter.startsWith('[')) { try{ pUrlAfter = JSON.parse(pUrlAfter)[0] || pUrlAfter; }catch(e){} }
+
+            // 2. 組合左右分欄的 HTML (📸 已經加入防右鍵與防拖曳)
+            html += `
+            <div class="dup-check-item" style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px dashed #ccc; cursor:pointer;">
+                <div style="flex:1; padding-right:10px;" onclick="focusDupMarker(${index})">
+                    <div class="dup-check-title">${m.name}<span class="dup-tag ${m.isEmergency ? 'tag-emg' : 'tag-gen'}">${m.isEmergency ? '搶修' : '一般'}</span></div>
+                    <div class="dup-check-info"><span>完工：${m.props['完工日期']} (距今 ${m.timeAgo})</span></div>
+                    <div class="dup-check-info"><span>距離：${m.dist} 公尺</span></div>
+                </div>
+                
+                <div style="display:flex; gap:5px; flex-shrink:0;">
+                    <div style="text-align:center;">
+                        <div style="font-size:10px; color:#666;">施工前</div>
+                        <img src="${pUrlBefore}" style="width:70px; height:50px; object-fit:cover; border-radius:4px; cursor:zoom-in; border:1px solid #ddd;" onclick="event.stopPropagation(); window.zoomImg(this.src)" oncontextmenu="return false;" ondragstart="return false;">
+                    </div>
+                    <div style="text-align:center;">
+                        <div style="font-size:10px; color:#666;">施工後</div>
+                        <img src="${pUrlAfter}" style="width:70px; height:50px; object-fit:cover; border-radius:4px; cursor:zoom-in; border:1px solid #ddd;" onclick="event.stopPropagation(); window.zoomImg(this.src)" oncontextmenu="return false;" ondragstart="return false;">
+                    </div>
+                </div>
+            </div>`;
+        });
+        resultDiv.innerHTML = html;
+
+        // 3. 全域放大照片功能 (終極防護版：連同黑底背景一起鎖定)
+        if (!window.zoomImg) {
+            window.zoomImg = function(url) {
+                if (url.includes('無照片')) return;
+                let lb = document.getElementById('globalPhotoLightbox');
+                if (!lb) {
+                    lb = document.createElement('div');
+                    lb.id = 'globalPhotoLightbox';
+                    lb.style.cssText = 'display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9999; justify-content:center; align-items:center;';
+                    
+                    // 👇 加上這三行，把整個黑底視窗的右鍵與拖曳封印起來！
+                    lb.onclick = function() { this.style.display = 'none'; };
+                    lb.oncontextmenu = function(e) { e.preventDefault(); return false; };
+                    lb.ondragstart = function(e) { e.preventDefault(); return false; };
+                    
+                    lb.innerHTML = '<img id="globalPhotoLightboxImg" style="max-width:95%; max-height:95%; box-shadow:0 0 20px rgba(255,255,255,0.5); border-radius:8px;" oncontextmenu="return false;" ondragstart="return false;">';
+                    document.body.appendChild(lb);
+                }
+                document.getElementById('globalPhotoLightboxImg').src = url;
+                lb.style.display = 'flex';
+            };
+        }
+    } 
   } catch (e) { 
     alert('座標轉換失敗'); 
   }
-});
+}); // 結束點擊事件
 
 window.switchTab = function(tabId) {
   document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
@@ -4722,22 +4904,55 @@ window.triggerMarkerPopup = function(idx) {
 };
 
 window.openDetailPopupFromMarker = function(marker) {
-  const data = marker.customData;
-  if(!data) return;
-  
-  if (data.group && data.group.length > 1) {
-    let listHtml = `<div class="info-header" style="padding:10px;background:#004080;color:white;font-weight:bold;">重複座標點位資訊 (${data.group.length}筆)</div><div class="info-body" style="padding:10px;max-height:250px; overflow-y:auto;"><div style="font-size:12px; color:#666; margin-bottom:5px;">點擊案件名稱可查看詳細資料</div>`;
-    data.group.forEach((item, index) => { 
-      window[`_temp_group_item_${index}`] = item; 
-      listHtml += `<div style="border-bottom:1px dashed #ccc; padding:8px 0; cursor:pointer;" onclick="openSingleGroupItem(${index})"><b style="color:#004080; text-decoration:underline;">${index+1}. ${item.configLabel}</b><br><span style="color:#333; font-size:12px;">案件編號: ${item.feature.properties['案件編號']||'無'}<br>完工日期: ${item.feature.properties['完工日期']||'無'}</span></div>`; 
-    });
-    L.popup({ className: 'custom-popup', maxWidth: 300 }).setLatLng(marker.getLatLng()).setContent(listHtml + `</div>`).openOn(map);
-  } else {
-    const dist = distToRoad(marker.getLatLng(), roadsLayer);
-    const content = createPopup({ fileName: data.configLabel, props: data.props, lat: marker.getLatLng().lat, lng: marker.getLatLng().lng, dist: dist });
-    L.popup({className:'custom-popup', maxWidth:960}).setLatLng(marker.getLatLng()).setContent(content).openOn(map);
-    fetchAndRefreshComments(data.storeId, data.props['案件編號']);
-  }
+    const data = marker.customData;
+    if(!data) return;
+    
+    // 🌟 邏輯：判斷是否為「座標重疊案件」
+    if (data.group && data.group.length > 1) {
+        let listHtml = `<div class="info-header" style="padding:10px;background:#004080;color:white;font-weight:bold;border-radius:5px 5px 0 0;">
+                        <i class="fas fa-layer-group"></i> 重複座標案件清單 (${data.group.length}筆)
+                        </div>
+                        <div class="info-body" style="padding:10px; max-height:250px; overflow-y:auto; background:white;">
+                        <div style="font-size:12px; color:#666; margin-bottom:8px;">※ 座標位置極近，請選擇欲查看之案件：</div>`;
+        
+        data.group.forEach((item, index) => { 
+            window[`_temp_group_item_${index}`] = item; 
+            listHtml += `
+                <div style="border-bottom:1px dashed #ccc; padding:10px 0; cursor:pointer;" onclick="openSingleGroupItem(${index})">
+                    <b style="color:#004080; text-decoration:underline; font-size:14px;">${index+1}. ${item.configLabel}</b>
+                    <div style="color:#333; font-size:12px; margin-top:4px;">
+                        編號: ${item.feature.properties['案件編號']||'無'}<br>
+                        日期: ${item.feature.properties['完工日期']||'無'}
+                    </div>
+                </div>`; 
+        });
+        
+        L.popup({ className: 'custom-popup', maxWidth: 300 })
+         .setLatLng(marker.getLatLng())
+         .setContent(listHtml + `</div>`)
+         .openOn(map);
+    } 
+    // 🌟 如果是單一案件：點擊才開啟原本的詳細資料泡泡窗
+    else {
+        const dist = distToRoad(marker.getLatLng(), roadsLayer);
+        const content = createPopup({ 
+            fileName: data.configLabel, 
+            props: data.props, 
+            lat: marker.getLatLng().lat, 
+            lng: marker.getLatLng().lng, 
+            dist: dist 
+        });
+        
+        L.popup({className:'custom-popup', maxWidth:960})
+         .setLatLng(marker.getLatLng())
+         .setContent(content)
+         .openOn(map);
+         
+        // 載入留言功能
+        if(typeof fetchAndRefreshComments === 'function') {
+            fetchAndRefreshComments(data.storeId, data.props['案件編號']);
+        }
+    }
 };
 
 window.openSingleGroupItem = function(index) {
@@ -4751,19 +4966,72 @@ window.openSingleGroupItem = function(index) {
 };
 
 function renderClusterGroup() {
-  const sliderVal = parseInt(document.getElementById('clusterRadiusSlider').value);
-  if (markersClusterGroup) map.removeLayer(markersClusterGroup);
-  
-  markersClusterGroup = L.markerClusterGroup({ 
-    maxClusterRadius: sliderVal, 
-    disableClusteringAtZoom: 18, 
-    spiderfyOnMaxZoom: true, 
-    showCoverageOnHover: false, 
-    zoomToBoundsOnClick: true 
-  });
-  
-  markersClusterGroup.addLayers(activeRepairLayers); 
-  map.addLayer(markersClusterGroup);
+    const sliderVal = parseInt(document.getElementById('clusterRadiusSlider').value);
+    if (markersClusterGroup) map.removeLayer(markersClusterGroup);
+    
+    markersClusterGroup = L.markerClusterGroup({ 
+        // 🌟 核心魔法：根據縮放等級「動態」調整叢集吸附半徑
+        maxClusterRadius: function(zoom) {
+            // 當地圖放大到 18 級時，把吸附半徑縮小到極限 (5 px)
+            // 這樣只有「完全在同一個座標點上」的案件才會被吸成叢集
+            // 其他只要有一點點真實距離的案件，都會散開回到真實位置！
+            return zoom >= 18 ? 5 : sliderVal;
+        },
+        
+        // 🌟 必須刪除 disableClusteringAtZoom！否則不管多近都會強制拆散變成千層派疊羅漢
+        // disableClusteringAtZoom: 18, 
+        
+        spiderfyOnMaxZoom: false, // 關閉極限放大時的蜘蛛網，改用我們的列表
+        showCoverageOnHover: false, 
+        zoomToBoundsOnClick: true 
+    });
+    
+    // 🌟 攔截極限放大時的叢集點擊，彈出超美列表
+    markersClusterGroup.on('clusterclick', function (a) {
+        var currentZoom = map.getZoom();
+        
+        // 只要是大於等於 18 級，點擊剩下的極限叢集就顯示列表
+        if (currentZoom >= 18) {
+            var markers = a.layer.getAllChildMarkers();
+            
+            let html = `<div class="multi-select-popup"><div class="info-header" style="padding:10px; background:#004080; color:white; font-weight:bold; border-radius:5px 5px 0 0;">請選擇案件 (${markers.length}筆)</div><div style="max-height:250px; overflow-y:auto; padding:5px; background:white;">`;
+            
+            markers.forEach((m, idx) => {
+                const data = m.customData || {};
+                const props = data.props || (m.feature && m.feature.properties) || {};
+                const isGroup = data.group && data.group.length > 1;
+                const projectType = props['案件類型'];
+                const title = (projectType && projectType.trim() !== '') ? projectType : (data.configLabel || "案件");
+                
+                const twd = typeof twd97FromWgs84 === 'function' ? twd97FromWgs84(m.getLatLng().lat, m.getLatLng().lng) : {x:'-', y:'-'};
+                
+                window[`_temp_marker_${idx}`] = m;
+                
+                html += `
+                <div class="multi-select-item" onclick="window.triggerMarkerPopup(${idx})" style="padding:8px; border-bottom:1px dashed #ccc; cursor:pointer;">
+                    <div class="multi-select-title" style="font-weight:bold; color:#004080; font-size:14px;">${idx+1}. ${title} 
+                        ${isGroup ? `<span style='font-size:10px;background:#d32f2f;color:#fff;padding:2px 4px;border-radius:3px;'>重疊${data.group.length}筆</span>` : ''}
+                    </div>
+                    <div class="multi-select-meta" style="font-size:12px; color:#666; margin-top:4px;">
+                        <span><i class="fas fa-barcode"></i> ${props['案件編號'] || '無編號'}</span> | 
+                        <span><i class="fas fa-calendar-alt"></i> ${props['完工日期'] || props['通報日期'] || ''}</span>
+                        ${props['搶修類型'] ? `<span class="badge-type" style="background:#eee; padding:2px 4px; border-radius:3px; margin-left:4px; color:#333;">${props['搶修類型']}</span>` : ''}
+                    </div>
+                    <div class="multi-select-meta" style="margin-top:2px; color:#999; font-size:10px;">
+                        <span><i class="fas fa-map-marker-alt"></i> TWD97: ${twd.x}, ${twd.y}</span>
+                    </div>
+                </div>`;
+            });
+            
+            L.popup({ className: 'custom-popup', maxWidth: 300 })
+             .setLatLng(a.latlng)
+             .setContent(html + `</div></div>`)
+             .openOn(map);
+        }
+    });
+    
+    markersClusterGroup.addLayers(activeRepairLayers); 
+    map.addLayer(markersClusterGroup);
 }
 
 document.getElementById('clusterRadiusSlider').addEventListener('input', function() { 
@@ -5573,8 +5841,9 @@ function toggleAiRiskLayer(checkbox) {
      if (map.hasLayer(window.aiPureLayer)) map.removeLayer(window.aiPureLayer);
   }
   document.getElementById('aiDashboard').style.display = 'none'; 
+ document.getElementById('exportRiskBtn').style.display = 'none'; // 👉 新增：把按鈕隱藏起來
   
-  if(!checkbox.checked) return;
+ if(!checkbox.checked) return;
   
   let hasData = false; 
   Object.keys(REPAIR_DATA_CACHE).forEach(key => { 
@@ -5736,12 +6005,20 @@ function toggleAiRiskLayer(checkbox) {
       `;
       
       marker.bindPopup(popupHtml, {className:'custom-popup dashboard-popup', maxWidth: 320});
-      window.aiPureLayer.addLayer(marker);
-      
-      riskResults.push({ score, filterClass, level, lat: c.lat, lng: c.lng, dominantType, count: c.points.length, hasRealtime });
+     
+     // 👇👇👇 這裡就是新增的魔法行！點擊圖示時，把該群組的案件(c.points)傳給列表
+     marker.on('click', function() {
+         openRiskCaseList(c.points);
+     });
+     // 👆👆👆
+     
+     window.aiPureLayer.addLayer(marker);
+     
+     riskResults.push({ score, filterClass, level, lat: c.lat, lng: c.lng, dominantType, count: c.points.length, hasRealtime, points: c.points });
     });
     
     riskResults.sort((a,b) => b.score - a.score);
+window.globalAiRiskResults = riskResults;
     document.getElementById('aiResultList').innerHTML = riskResults.length === 0 ? '<div style="padding:10px;text-align:center;color:#666;">經分析，山上區目前無「反覆發生」之風險熱點。</div>' : 
        riskResults.map(p => `
          <div class="ai-list-item" data-type="${p.filterClass}" onclick="zoomToAiMarker(${p.lat}, ${p.lng})">
@@ -5757,8 +6034,14 @@ function toggleAiRiskLayer(checkbox) {
        `).join('');
        
     document.getElementById('aiDashboard').style.display = 'block'; 
-    document.getElementById('aiLoading').style.display = 'none';
-  }, 800); 
+   document.getElementById('aiLoading').style.display = 'none';
+   
+   // 👉 新增：如果有運算出結果，才把打包按鈕顯示出來
+   if (riskResults.length > 0) {
+       document.getElementById('exportRiskBtn').style.display = 'inline-flex';
+   }
+  },
+800); 
 }
 
 window.zoomToAiMarker = function(lat, lng) {
@@ -7596,6 +7879,180 @@ async function submitPatrolEdit() {
 
     </div>
   </div>
+</div>
+<style>
+#riskDetailPanel {
+    position: fixed; top: 0; right: -400px; width: 380px; height: 100%;
+    background: white; z-index: 5000;
+    box-shadow: -5px 0 15px rgba(0,0,0,0.2);
+    transition: right 0.4s ease; display: flex; flex-direction: column;
+}
+#riskDetailPanel.active { right: 0; }
+@media (max-width: 768px) {
+    #riskDetailPanel {
+        top: auto; bottom: -100%; right: 0; width: 100%; height: 75%;
+        border-radius: 20px 20px 0 0; transition: bottom 0.4s ease;
+    }
+    #riskDetailPanel.active { bottom: 0; }
+}
+.risk-case-card {
+    border: 1px solid #ddd; border-left: 4px solid #d32f2f;
+    border-radius: 8px; margin: 10px; padding: 12px; background: #fdfdfd;
+}
+.risk-img-compare { display: flex; gap: 8px; margin-top: 10px; }
+.risk-img-compare img { 
+    width: 48%; height: 110px; object-fit: cover; 
+    border-radius: 4px; cursor: zoom-in; border: 1px solid #eee;
+}
+#photoLightbox {
+    display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.9); z-index: 6000; 
+    justify-content: center; align-items: center;
+}
+#photoLightbox img { max-width: 95%; max-height: 95%; box-shadow: 0 0 20px rgba(255,255,255,0.5); }
+</style>
+ 
+<div id="riskDetailPanel">
+   <div style="padding:15px; background:#004080; color:white; display:flex; justify-content:space-between; align-items:center;">
+       <h3 style="margin:0; font-size:16px;"><i class="fas fa-list-ul"></i> 重複致災案件清單 (<span id="riskCaseCount">0</span>件)</h3>
+       <button onclick="document.getElementById('riskDetailPanel').classList.remove('active')" style="background:none; border:none; color:white; font-size:24px; cursor:pointer;">×</button>
+   </div>
+   
+   <div style="padding: 10px; background: #f4f4f4; border-bottom: 1px solid #ddd;">
+       <button class="btn-custom" onclick="exportAllRiskGroups ()" style="width: 100%; background-color: #198754; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; font-weight: bold;">
+           <i class="fas fa-file-export"></i> 一鍵打包下載此清單 (Word)
+       </button>
+   </div>
+   <div id="riskListContent" style="flex:1; overflow-y:auto; background:#f4f4f4;"></div>
+</div>
+
+<script>
+// === 顯示詳情列表的函數 (根據叢集內的真實件數) ===
+function openRiskCaseList(pointsArray) {
+    window.currentRiskPoints = pointsArray;
+    const panel = document.getElementById('riskDetailPanel');
+    const container = document.getElementById('riskListContent');
+    document.getElementById('riskCaseCount').innerText = pointsArray.length;
+    container.innerHTML = ""; 
+ 
+    pointsArray.forEach((pt, index) => {
+        let props = pt.props || {};
+        let title = props['案件編號'] || props['案件類型'] || '歷史通報案件';
+        let date = props['完工日期'] || props['通報日期'] || props['通報日期ROC'] || '日期未知';
+        
+        let pUrlBefore = props['施工前照片'] || props['p_url'] || 'https://via.placeholder.com/300x200?text=無施工前照片';
+        let pUrlAfter = props['施工後照片'] || props['p_finish_url'] || 'https://via.placeholder.com/300x200?text=無施工後照片';
+        
+        if(pUrlBefore.startsWith('[')) { try{ pUrlBefore = JSON.parse(pUrlBefore)[0] || pUrlBefore; }catch(e){} }
+        if(pUrlAfter.startsWith('[')) { try{ pUrlAfter = JSON.parse(pUrlAfter)[0] || pUrlAfter; }catch(e){} }
+ 
+        let card = document.createElement('div');
+        card.className = "risk-case-card";
+        card.innerHTML = `
+            <div style="font-weight:bold; color:#004080; font-size:15px;">${index + 1}. 案件編號：${title}</div>
+            <div style="font-size:12px; color:#666; margin-top:4px;"><i class="fas fa-calendar-alt"></i> 日期：${date}</div>
+            <div style="font-size:12px; margin-top:4px;"><span style="background:#d32f2f; color:white; padding:2px 6px; border-radius:4px;">${pt.type || '一般搶修'}</span></div>
+            <div class="risk-img-compare">
+                <div style="width:50%; text-align:center;"><small style="color:#555;">施工前</small><br><img src="${pUrlBefore}" onclick="zoomImg(this.src)" oncontextmenu="return false;" ondragstart="return false;"></div>
+                <div style="width:50%; text-align:center;"><small style="color:#555;">施工後</small><br><img src="${pUrlAfter}" onclick="zoomImg(this.src)" oncontextmenu="return false;" ondragstart="return false;"></div>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+ 
+    panel.classList.add('active');
+}
+ 
+function zoomImg(url) {
+    if(url.includes('無施工')) return; // 佔位圖不放大
+    document.getElementById('lightboxImg').src = url;
+    document.getElementById('photoLightbox').style.display = 'flex';
+}
+// === 一鍵打包總表：匯出畫面上所有風險預警熱點的案件 ===
+async function exportAllRiskGroups() {
+    // 檢查系統是否已經有運算好的全域資料
+    if (!window.globalAiRiskResults || window.globalAiRiskResults.length === 0) {
+        alert("目前沒有風險案件可供匯出！請確認已勾選預警熱點。");
+        return;
+    }
+
+    // 建立要轉成 Word 表格的 HTML 字串
+    let htmlString = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <style>
+            table { width: 100%; border-collapse: collapse; margin-bottom: 30px; font-family: "Microsoft JhengHei", sans-serif; }
+            th, td { border: 1px solid #000; padding: 8px; text-align: center; vertical-align: middle; }
+            th { background-color: #f2f2f2; }
+            img { width: 150px; height: auto; } /* 鎖定圖片寬度避免跑版 */
+        </style>
+    </head>
+    <body>
+        <h1 style="text-align: center; color: #8e44ad;">風險預警熱點 (總表) 案件彙整</h1>
+    `;
+
+    // 迴圈處理每一個熱點群組
+    window.globalAiRiskResults.forEach((group, groupIndex) => {
+        // 印出該群組的標題 (例如：熱點 1 - 🌳樹木反覆致災)
+        htmlString += `
+            <h2 style="color: #d32f2f; margin-top: 20px; border-bottom: 2px solid #d32f2f;">
+                熱點 ${groupIndex + 1} - ${group.dominantType} (風險指數: ${group.score}分, 共 ${group.points.length} 件)
+            </h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>項次</th><th>案件編號</th><th>報修日期</th><th>案件類型</th><th>施工前照片</th><th>施工後照片</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+
+        // 迴圈處理該群組裡面的每一筆案件
+        group.points.forEach((pt, j) => {
+            let props = pt.props || {};
+            let title = props['案件編號'] || props['案件類型'] || '歷史通報案件';
+            let date = props['完工日期'] || props['通報日期'] || props['通報日期ROC'] || '日期未知';
+            let type = pt.type || '一般搶修';
+            
+            let pUrlBefore = props['施工前照片'] || props['p_url'] || '';
+            let pUrlAfter = props['施工後照片'] || props['p_finish_url'] || '';
+            
+            // 防呆處理
+            if (pUrlBefore.startsWith && pUrlBefore.startsWith('[')) { try { pUrlBefore = JSON.parse(pUrlBefore)[0] || pUrlBefore; } catch(e){} }
+            if (pUrlAfter.startsWith && pUrlAfter.startsWith('[')) { try { pUrlAfter = JSON.parse(pUrlAfter)[0] || pUrlAfter; } catch(e){} }
+
+            const imgBeforeHtml = (pUrlBefore && !pUrlBefore.includes('placeholder.com')) ? `<img src="${pUrlBefore}" />` : '無照片';
+            const imgAfterHtml = (pUrlAfter && !pUrlAfter.includes('placeholder.com')) ? `<img src="${pUrlAfter}" />` : '無照片';
+
+            htmlString += `
+                <tr>
+                    <td>${j + 1}</td><td>${title}</td><td>${date}</td><td>${type}</td>
+                    <td>${imgBeforeHtml}</td><td>${imgAfterHtml}</td>
+                </tr>
+            `;
+        });
+
+        htmlString += `</tbody></table>`;
+    });
+
+    htmlString += `</body></html>`;
+
+    // 呼叫轉換並下載
+    try {
+        var converted = htmlDocx.asBlob(htmlString);
+        saveAs(converted, '風險預警熱點_案件總表.docx');
+        alert("總表已成功打包下載！");
+    } catch (error) {
+        console.error("匯出失敗:", error);
+        alert("匯出發生錯誤，請確認系統套件載入正常。");
+    }
+}
+</script>
+
+<div id="photoLightbox" onclick="this.style.display='none'" oncontextmenu="return false;" ondragstart="return false;">
+  <img id="lightboxImg" src="" oncontextmenu="return false;" ondragstart="return false;">
 </div>
 </body>
 </html>

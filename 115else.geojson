@@ -1,0 +1,160 @@
+{
+  "type": "FeatureCollection",
+  "name": "Converted_Data",
+  "crs": {
+    "type": "name",
+    "properties": {
+      "name": "urn:ogc:def:crs:OGC:1.3:CRS84"
+    }
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.34353812600176,
+          23.093483476851148
+        ]
+      },
+      "properties": {
+        "案件編號": "115008-明南段958地號農路改善工程",
+        "完工日期": null,
+        "x1": 182750,
+        "y1": 2554786,
+        "派工時機": "一般案件",
+        "搶修類型": "瀝青混凝土路面",
+        "案件狀態": "施工中",
+        "決標金額": 462000,
+        "施工廠商": "金定土木包工業",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzExMTg4MzA=",
+        "施工前照片": null,
+        "施工後照片": null
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.35427841113483,
+          23.092868558657475
+        ]
+      },
+      "properties": {
+        "案件編號": "115010-平陽里及新莊里農路排水改善工程",
+        "完工日期": null,
+        "x1": 183850,
+        "y1": 2554713,
+        "派工時機": "一般案件",
+        "搶修類型": "矩形排水溝",
+        "案件狀態": "施工中",
+        "決標金額": 1115000,
+        "施工廠商": "鼎瀚土木工程有限公司",
+        "監造廠商": "丞信工程顧問有限公司",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzExMzM5Nzc=",
+        "施工前照片": null,
+        "施工後照片": null
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.37463758988474,
+          23.089230038706795
+        ]
+      },
+      "properties": {
+        "案件編號": "115010-平陽里及新莊里農路排水改善工程",
+        "完工日期": null,
+        "x1": 185934,
+        "y1": 2554301,
+        "派工時機": "一般案件",
+        "搶修類型": "瀝青混凝土路面",
+        "案件狀態": "施工中",
+        "決標金額": 1115000,
+        "施工廠商": "鼎瀚土木工程有限公司",
+        "監造廠商": "丞信工程顧問有限公司",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzExMzM5Nzc=",
+        "施工前照片": null,
+        "施工後照片": null
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.36745332859613,
+          23.080929710570928
+        ]
+      },
+      "properties": {
+        "案件編號": "115012-豐德里379地號農路改善工程",
+        "完工日期": null,
+        "x1": 185194,
+        "y1": 2553385,
+        "派工時機": "一般案件",
+        "搶修類型": "擋土牆,混凝土路面,塊狀護欄",
+        "案件狀態": "施工中",
+        "決標金額": 1170000,
+        "施工廠商": " 福森土木包工業",
+        "監造廠商": "丞信工程顧問有限公司",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzExNjI0NDE=",
+        "施工前照片": null,
+        "施工後照片": null
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.3901621175021,
+          23.099025387932592
+        ]
+      },
+      "properties": {
+        "案件編號": "115013-山上區玉峰里清水寺往中坑農側溝及南洲里38之100號農路改善工程",
+        "完工日期": null,
+        "x1": 187529,
+        "y1": 2555379,
+        "派工時機": "一般案件",
+        "搶修類型": "矩形溝,矩形暗溝",
+        "案件狀態": "施工中",
+        "決標金額": 1100000,
+        "施工廠商": "元第土木包工業",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzExNTU1MjI=",
+        "施工前照片": null,
+        "施工後照片": null
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.35053741852444,
+          23.09947236881734
+        ]
+      },
+      "properties": {
+        "案件編號": "115013-山上區玉峰里清水寺往中坑農側溝及南洲里38之100號農路改善工程",
+        "完工日期": null,
+        "x1": 183470,
+        "y1": 2555446,
+        "派工時機": "一般案件",
+        "搶修類型": "瀝青混凝土路面",
+        "案件狀態": "施工中",
+        "決標金額": 1100000,
+        "施工廠商": "元第土木包工業",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzExNTU1MjI="
+      }
+    }
+  ]
+}

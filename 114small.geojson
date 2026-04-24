@@ -1,0 +1,1087 @@
+{
+  "type": "FeatureCollection",
+  "name": "Converted_Data",
+  "crs": {
+    "type": "name",
+    "properties": {
+      "name": "urn:ogc:def:crs:OGC:1.3:CRS84"
+    }
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.36219900035613,
+          23.078996001452403
+        ]
+      },
+      "properties": {
+        "案件編號": "114年道路及公共設施養護維修第1-01案",
+        "完工日期": null,
+        "x1": 184654.7309,
+        "y1": 2553173.203,
+        "派工時機": "N/A",
+        "搶修類型": "既有側溝及路基掏空修復",
+        "案件狀態": "已完成",
+        "決標金額": 57427,
+        "施工廠商": "裕軒土木包工業",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4MTA0ODg=",
+        "施工前照片": "https://i.ibb.co/LhRSk7Zx/1140101.jpg",
+        "施工後照片": "https://i.ibb.co/6RDP09wv/1140101.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.3568800003023,
+          23.102137996718735
+        ]
+      },
+      "properties": {
+        "案件編號": "114年道路及公共設施養護維修第1-02案",
+        "完工日期": null,
+        "x1": 184121.044,
+        "y1": 2555738.314,
+        "派工時機": "N/A",
+        "搶修類型": "既有側溝高差修補",
+        "案件狀態": "已完成",
+        "決標金額": 13080,
+        "施工廠商": "裕軒土木包工業",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4MTA0ODg=",
+        "施工前照片": "https://i.ibb.co/Zsm3Qh3/1140102.jpg",
+        "施工後照片": "https://i.ibb.co/r2RxkKXQ/1140102.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.35723199962794,
+          23.10307499777293
+        ]
+      },
+      "properties": {
+        "案件編號": "114年道路及公共設施養護維修第1-03案",
+        "完工日期": null,
+        "x1": 184157.5594,
+        "y1": 2555841.918,
+        "派工時機": "N/A",
+        "搶修類型": "既有路面溝蓋高差改善",
+        "案件狀態": "已完成",
+        "決標金額": 24934,
+        "施工廠商": "裕軒土木包工業",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4MTA0ODg=",
+        "施工前照片": "https://i.ibb.co/8Lg58ww8/1140103.jpg",
+        "施工後照片": "https://i.ibb.co/rKNX2ymK/1140103.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.35758100001159,
+          23.1016420035444
+        ]
+      },
+      "properties": {
+        "案件編號": "114年道路及公共設施養護維修第1-04案",
+        "完工日期": null,
+        "x1": 184192.6124,
+        "y1": 2555683.072,
+        "派工時機": "N/A",
+        "搶修類型": "既有溝蓋沉陷修復",
+        "案件狀態": "已完成",
+        "決標金額": 21554,
+        "施工廠商": "裕軒土木包工業",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4MTA0ODg=",
+        "施工前照片": "https://i.ibb.co/Zptd8B9p/1140104.jpg",
+        "施工後照片": "https://i.ibb.co/2YnQ4qn9/1140104.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.35820399997587,
+          23.10106400259166
+        ]
+      },
+      "properties": {
+        "案件編號": "114年道路及公共設施養護維修第1-05案",
+        "完工日期": null,
+        "x1": 184256.1511,
+        "y1": 2555618.784,
+        "派工時機": "N/A",
+        "搶修類型": "既有溝蓋沉陷修復",
+        "案件狀態": "已完成",
+        "決標金額": 22263,
+        "施工廠商": "裕軒土木包工業",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4MTA0ODg=",
+        "施工前照片": "https://i.ibb.co/JW4Qy8rr/1140105.jpg",
+        "施工後照片": "https://i.ibb.co/5XsF6sJb/1140105.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.35879600031059,
+          23.10062600420288
+        ]
+      },
+      "properties": {
+        "案件編號": "114年道路及公共設施養護維修第1-06案",
+        "完工日期": null,
+        "x1": 184316.5828,
+        "y1": 2555570.014,
+        "派工時機": "N/A",
+        "搶修類型": "既有側溝損壞修復",
+        "案件狀態": "已完成",
+        "決標金額": 17578,
+        "施工廠商": "裕軒土木包工業",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4MTA0ODg=",
+        "施工前照片": "https://i.ibb.co/WvqsNDd7/1140106.jpg",
+        "施工後照片": "https://i.ibb.co/PZ5HkwvB/1140106.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.37565899962823,
+          23.084670997646104
+        ]
+      },
+      "properties": {
+        "案件編號": "114年道路及公共設施養護維修第1-07案",
+        "完工日期": null,
+        "x1": 186036.4851,
+        "y1": 2553795.69,
+        "派工時機": "N/A",
+        "搶修類型": "路面坑洞修補",
+        "案件狀態": "已完成",
+        "決標金額": 24964,
+        "施工廠商": "裕軒土木包工業",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4MTA0ODg=",
+        "施工前照片": "https://i.ibb.co/hJM7dfwW/1140107.jpg",
+        "施工後照片": "https://i.ibb.co/YTpTzhSB/1140107.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.382041000066,
+          23.08704499707804
+        ]
+      },
+      "properties": {
+        "案件編號": "114年道路及公共設施養護維修第1-08案",
+        "完工日期": null,
+        "x1": 186691.4484,
+        "y1": 2554055.804,
+        "派工時機": "N/A",
+        "搶修類型": "路面坑洞修補",
+        "案件狀態": "已完成",
+        "決標金額": 13080,
+        "施工廠商": "裕軒土木包工業",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4MTA0ODg=",
+        "施工前照片": "https://i.ibb.co/nq5BVNjk/1140108.jpg",
+        "施工後照片": "https://i.ibb.co/g54dc2c/1140108.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.33960499990044,
+          23.11508299895932
+        ]
+      },
+      "properties": {
+        "案件編號": "114年道路及公共設施養護維修第1-09案",
+        "完工日期": null,
+        "x1": 182357.8848,
+        "y1": 2557179.737,
+        "派工時機": "N/A",
+        "搶修類型": "既有隔柵板損壞維修更換",
+        "案件狀態": "已完成",
+        "決標金額": 20199,
+        "施工廠商": "裕軒土木包工業",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4MTA0ODg=",
+        "施工前照片": "https://i.ibb.co/CKHCn5hN/1140109.jpg",
+        "施工後照片": "https://i.ibb.co/HpDcMKHD/1140109.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.3565839996093,
+          23.099405996220874
+        ]
+      },
+      "properties": {
+        "案件編號": "114年道路及公共設施養護維修第1-10案",
+        "完工日期": null,
+        "x1": 184089.3888,
+        "y1": 2555435.908,
+        "派工時機": "N/A",
+        "搶修類型": "路面混凝土凸起打除、孔洞修補",
+        "案件狀態": "已完成",
+        "決標金額": 17898,
+        "施工廠商": "裕軒土木包工業",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4MTA0ODg=",
+        "施工前照片": "https://i.ibb.co/Gfb8dk9B/1140110.jpg",
+        "施工後照片": "https://i.ibb.co/Ng4BK86C/1140110.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.34019800042007,
+          23.10522499568977
+        ]
+      },
+      "properties": {
+        "案件編號": "114年道路及公共設施養護維修第1-11案",
+        "完工日期": null,
+        "x1": 182413.6913,
+        "y1": 2556087.791,
+        "派工時機": "N/A",
+        "搶修類型": "側溝損壞修復",
+        "案件狀態": "已完成",
+        "決標金額": 25569,
+        "施工廠商": "裕軒土木包工業",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4MTA0ODg=",
+        "施工前照片": "https://i.ibb.co/Kxptj4hx/1140111.jpg",
+        "施工後照片": "https://i.ibb.co/2Yd4fQ0P/1140111.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.3426500001424,
+          23.09721800140558
+        ]
+      },
+      "properties": {
+        "案件編號": "114年道路及公共設施養護維修第1-12案",
+        "完工日期": null,
+        "x1": 182660.8761,
+        "y1": 2555199.968,
+        "派工時機": "N/A",
+        "搶修類型": "路面破損2處修復",
+        "案件狀態": "已完成",
+        "決標金額": 29982,
+        "施工廠商": "裕軒土木包工業",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4MTA0ODg=",
+        "施工前照片": "https://i.ibb.co/cKXq9G7K/1140112-1.jpg,https://i.ibb.co/k2jQ57M6/1140112-2.jpg",
+        "施工後照片": "https://i.ibb.co/DDLvJxD7/1140112-1.jpg,https://i.ibb.co/MDZdwCkT/1140112-2.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.34852300000418,
+          23.10794799749416
+        ]
+      },
+      "properties": {
+        "案件編號": "114年道路及公共設施養護維修第1-13案",
+        "完工日期": null,
+        "x1": 183267.8276,
+        "y1": 2556385.505,
+        "派工時機": "N/A",
+        "搶修類型": "路面下陷修復",
+        "案件狀態": "已完成",
+        "決標金額": 48362,
+        "施工廠商": "裕軒土木包工業",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4MTA0ODg=",
+        "施工前照片": "https://i.ibb.co/wG7SfG9/1140113.jpg",
+        "施工後照片": "https://i.ibb.co/hJr1hVNQ/1140113.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.33661200007415,
+          23.10999499970213
+        ]
+      },
+      "properties": {
+        "案件編號": "114年道路及公共設施養護維修第1-14案",
+        "完工日期": null,
+        "x1": 182048.7511,
+        "y1": 2556617.684,
+        "派工時機": "N/A",
+        "搶修類型": "路面坑洞修復",
+        "案件狀態": "已完成",
+        "決標金額": 25702,
+        "施工廠商": "裕軒土木包工業",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4MTA0ODg=",
+        "施工前照片": "https://i.ibb.co/ytYk6vT/1140114.jpg",
+        "施工後照片": "https://i.ibb.co/N2Ns2hJj/1140114.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.36824900022744,
+          23.078847996738386
+        ]
+      },
+      "properties": {
+        "案件編號": "114年道路及公共設施養護維修第1-15案",
+        "完工日期": null,
+        "x1": 185274.5244,
+        "y1": 2553154.121,
+        "派工時機": "N/A",
+        "搶修類型": "路基掏空修復",
+        "案件狀態": "已完成",
+        "決標金額": 19793,
+        "施工廠商": "裕軒土木包工業",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4MTA0ODg=",
+        "施工前照片": "https://i.ibb.co/V0J2896n/1140115.jpg",
+        "施工後照片": "https://i.ibb.co/XxfMvy5M/1140115.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.35360799997075,
+          23.09904799914576
+        ]
+      },
+      "properties": {
+        "案件編號": "114年道路及公共設施養護維修第1-16案",
+        "完工日期": null,
+        "x1": 183784.3472,
+        "y1": 2555397.61,
+        "派工時機": "N/A",
+        "搶修類型": "路面坑洞修復",
+        "案件狀態": "已完成",
+        "決標金額": 19793,
+        "施工廠商": "裕軒土木包工業",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4MTA0ODg=",
+        "施工前照片": "https://i.ibb.co/vCs3JNXd/1140116.jpg",
+        "施工後照片": "https://i.ibb.co/Bdj55xc/1140116.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.33573799992345,
+          23.102739997243404
+        ]
+      },
+      "properties": {
+        "案件編號": "114年道路及公共設施養護維修第1-17案",
+        "完工日期": null,
+        "x1": 181955.5684,
+        "y1": 2555814.675,
+        "派工時機": "N/A",
+        "搶修類型": "路面坑洞修復",
+        "案件狀態": "已完成",
+        "決標金額": 14228,
+        "施工廠商": "裕軒土木包工業",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4MTA0ODg=",
+        "施工前照片": "https://i.ibb.co/G4v70ZHk/1140117.jpg",
+        "施工後照片": "https://i.ibb.co/SzP21CL/1140117.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.3815779999327,
+          23.086475000070184
+        ]
+      },
+      "properties": {
+        "案件編號": "114年道路及公共設施養護維修第1-18案",
+        "完工日期": null,
+        "x1": 186643.7466,
+        "y1": 2553992.884,
+        "派工時機": "N/A",
+        "搶修類型": "路面坑洞修補",
+        "案件狀態": "已完成",
+        "決標金額": 17209,
+        "施工廠商": "裕軒土木包工業",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4MTA0ODg=",
+        "施工前照片": "https://i.ibb.co/KpCFTd7b/1140118-1.jpg,https://i.ibb.co/Cpts8zMn/1140118-2.jpg",
+        "施工後照片": "https://i.ibb.co/nNmqH87T/1140118-1.jpg,https://i.ibb.co/mC3QdxsN/1140118-2.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.38083400030503,
+          23.08567699672842
+        ]
+      },
+      "properties": {
+        "案件編號": "114年道路及公共設施養護維修第2-01案",
+        "完工日期": null,
+        "x1": 186567.1486,
+        "y1": 2553904.837,
+        "派工時機": "N/A",
+        "搶修類型": "既有道路路面破損修復",
+        "案件狀態": "已完成",
+        "決標金額": 46812,
+        "施工廠商": "裕軒土木包工業",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4MTA0ODg=",
+        "施工前照片": "https://i.ibb.co/BxHKWGN/1140201.jpg",
+        "施工後照片": "https://i.ibb.co/1VZQ1Yt/1140201.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.35945199973985,
+          23.09555199769561
+        ]
+      },
+      "properties": {
+        "案件編號": "114年道路及公共設施養護維修第2-02案",
+        "完工日期": null,
+        "x1": 184381.3193,
+        "y1": 2555007.828,
+        "派工時機": "N/A",
+        "搶修類型": "路面高差修復",
+        "案件狀態": "已完成",
+        "決標金額": 28225,
+        "施工廠商": "裕軒土木包工業",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4MTA0ODg=",
+        "施工前照片": "https://i.ibb.co/svKDKQhT/1140202.jpg",
+        "施工後照片": "https://i.ibb.co/ksWMp90f/1140202.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.35786399956497,
+          23.10184399628053
+        ]
+      },
+      "properties": {
+        "案件編號": "114年道路及公共設施養護維修第2-03案",
+        "完工日期": null,
+        "x1": 184221.7012,
+        "y1": 2555705.313,
+        "派工時機": "N/A",
+        "搶修類型": "路面坑洞修復",
+        "案件狀態": "已完成",
+        "決標金額": 20652,
+        "施工廠商": "裕軒土木包工業",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4MTA0ODg=",
+        "施工前照片": "https://i.ibb.co/fdKBxBRd/1140203.jpg",
+        "施工後照片": "https://i.ibb.co/HLrJ7gCN/1140203.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.33982500029214,
+          23.107654003967323
+        ]
+      },
+      "properties": {
+        "案件編號": "114年道路及公共設施養護維修第2-04案",
+        "完工日期": null,
+        "x1": 182376.6985,
+        "y1": 2556356.951,
+        "派工時機": "N/A",
+        "搶修類型": "路面坑洞修復",
+        "案件狀態": "已完成",
+        "決標金額": 23234,
+        "施工廠商": "裕軒土木包工業",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4MTA0ODg=",
+        "施工前照片": "https://i.ibb.co/qFnJCwQZ/1140204.jpg",
+        "施工後照片": "https://i.ibb.co/G4jnBTbB/1140204.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.35487399955231,
+          23.097223997203713
+        ]
+      },
+      "properties": {
+        "案件編號": "114年道路及公共設施養護維修第2-05案",
+        "完工日期": null,
+        "x1": 183913.1463,
+        "y1": 2555195.048,
+        "派工時機": "N/A",
+        "搶修類型": "路面凹陷修復",
+        "案件狀態": "已完成",
+        "決標金額": 19276,
+        "施工廠商": "裕軒土木包工業",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4MTA0ODg=",
+        "施工前照片": "https://i.ibb.co/7wwdvVY/1140205.jpg",
+        "施工後照片": "https://i.ibb.co/Jj9jz1Qb/1140205.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.36379400016212,
+          23.09764699640419
+        ]
+      },
+      "properties": {
+        "案件編號": "114年道路及公共設施養護維修第2-06案",
+        "完工日期": null,
+        "x1": 184827.1436,
+        "y1": 2555237.882,
+        "派工時機": "N/A",
+        "搶修類型": "側溝溝蓋掉落修復",
+        "案件狀態": "已完成",
+        "決標金額": 28915,
+        "施工廠商": "裕軒土木包工業",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4MTA0ODg=",
+        "施工前照片": "https://i.ibb.co/zVBVLf14/1140206.jpg",
+        "施工後照片": "https://i.ibb.co/ynMFvq9K/1140206.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.36305299955282,
+          23.09494599916135
+        ]
+      },
+      "properties": {
+        "案件編號": "114年道路及公共設施養護維修第2-07案",
+        "完工日期": null,
+        "x1": 184749.929,
+        "y1": 2554939.107,
+        "派工時機": "N/A",
+        "搶修類型": "側溝溝蓋損壞修復",
+        "案件狀態": "已完成",
+        "決標金額": 100469,
+        "施工廠商": "裕軒土木包工業",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4MTA0ODg=",
+        "施工前照片": "https://i.ibb.co/k6SS7vg6/1140207.jpg",
+        "施工後照片": "https://i.ibb.co/wrsVysxP/1140207.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.35432600012211,
+          23.102059003871126
+        ]
+      },
+      "properties": {
+        "案件編號": "114年道路及公共設施養護維修第2-08案",
+        "完工日期": null,
+        "x1": 183859.3748,
+        "y1": 2555730.721,
+        "派工時機": "N/A",
+        "搶修類型": "溝蓋抬升及損壞修復",
+        "案件狀態": "已完成",
+        "決標金額": 30443,
+        "施工廠商": "裕軒土木包工業",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4MTA0ODg=",
+        "施工前照片": "https://i.ibb.co/bgBtfTK1/1140208.jpg",
+        "施工後照片": "https://i.ibb.co/qFgFFFyW/1140208.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.36383999999815,
+          23.097021000049487
+        ]
+      },
+      "properties": {
+        "案件編號": "114年道路及公共設施養護維修第2-09案",
+        "完工日期": null,
+        "x1": "184831.553994,184815.389029",
+        "y1": "2555168.539228,2555196.959384",
+        "派工時機": "N/A",
+        "搶修類型": "側溝及溝蓋損壞修復",
+        "案件狀態": "已完成",
+        "決標金額": 28131,
+        "施工廠商": "裕軒土木包工業",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4MTA0ODg=",
+        "施工前照片": "https://i.ibb.co/v6YyPnBR/1140209-1.jpg,https://i.ibb.co/3m1nyG2K/1140209-2.jpg",
+        "施工後照片": "https://i.ibb.co/0RVdnmjj/1140209-1.jpg,https://i.ibb.co/5Xm3M3n2/1140209-2.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.35390399995373,
+          23.098075003188807
+        ]
+      },
+      "properties": {
+        "案件編號": "114年道路及公共設施養護維修第2-10案",
+        "完工日期": null,
+        "x1": 183814.1933,
+        "y1": 2555289.727,
+        "派工時機": "N/A",
+        "搶修類型": "路面坑洞修復",
+        "案件狀態": "已完成",
+        "決標金額": 19275,
+        "施工廠商": "裕軒土木包工業",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4MTA0ODg=",
+        "施工前照片": "https://i.ibb.co/4ZNRzgcP/1140210.jpg",
+        "施工後照片": "https://i.ibb.co/prkTy0fC/1140210.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.37712799992116,
+          23.08538300082829
+        ]
+      },
+      "properties": {
+        "案件編號": "114年道路及公共設施養護維修第2-11案",
+        "完工日期": null,
+        "x1": 186187.3239,
+        "y1": 2553873.894,
+        "派工時機": "N/A",
+        "搶修類型": "路面坑洞修復",
+        "案件狀態": "已完成",
+        "決標金額": 19276,
+        "施工廠商": "裕軒土木包工業",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4MTA0ODg=",
+        "施工前照片": "https://i.ibb.co/n8MFKN1n/1140211.jpg",
+        "施工後照片": "https://i.ibb.co/QvhvfFSK/1140211.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.37734000024537,
+          23.097901999310327
+        ]
+      },
+      "properties": {
+        "案件編號": "114年道路及公共設施養護維修第2-12案",
+        "完工日期": null,
+        "x1": 186214.9529,
+        "y1": 2555260.14,
+        "派工時機": "N/A",
+        "搶修類型": "路面坑洞修復",
+        "案件狀態": "已完成",
+        "決標金額": 19276,
+        "施工廠商": "裕軒土木包工業",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4MTA0ODg=",
+        "施工前照片": "https://i.ibb.co/YTjZ7LVL/1140212.jpg",
+        "施工後照片": "https://i.ibb.co/gZgP9JPF/1140212.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.38691499986726,
+          23.10072599616392
+        ]
+      },
+      "properties": {
+        "案件編號": "114年道路及公共設施養護維修第2-13案",
+        "完工日期": null,
+        "x1": 187197.1513,
+        "y1": 2555568.716,
+        "派工時機": "N/A",
+        "搶修類型": "路面凹陷修復",
+        "案件狀態": "已完成",
+        "決標金額": 52837,
+        "施工廠商": "裕軒土木包工業",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4MTA0ODg=",
+        "施工前照片": "https://i.ibb.co/1JPLHg6j/1140213.jpg",
+        "施工後照片": "https://i.ibb.co/CKm7RBmM/1140213.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.38083400030503,
+          23.08567699672842
+        ]
+      },
+      "properties": {
+        "案件編號": "114年道路及公共設施養護維修第2-14案",
+        "完工日期": null,
+        "x1": 186567.1486,
+        "y1": 2553904.837,
+        "派工時機": "N/A",
+        "搶修類型": "側溝溝蓋損壞修復",
+        "案件狀態": "已完成",
+        "決標金額": 34624,
+        "施工廠商": "裕軒土木包工業",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4MTA0ODg=",
+        "施工前照片": "https://i.ibb.co/ksthByHw/1140214.jpg",
+        "施工後照片": "https://i.ibb.co/rGV5LHqs/1140214.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.36772999974642,
+          23.087257001251544
+        ]
+      },
+      "properties": {
+        "案件編號": "114年道路及公共設施養護維修第2-15案",
+        "完工日期": null,
+        "x1": 185225.3782,
+        "y1": 2554085.554,
+        "派工時機": "N/A",
+        "搶修類型": "既有圍籬損壞修復",
+        "案件狀態": "已完成",
+        "決標金額": 148311,
+        "施工廠商": "裕軒土木包工業",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4MTA0ODg=",
+        "施工前照片": "https://i.ibb.co/FbPWVhjP/1140215.jpg",
+        "施工後照片": "https://i.ibb.co/cKqPtYxf/1140215.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.33660700044203,
+          23.102954001306156
+        ]
+      },
+      "properties": {
+        "案件編號": "114年道路及公共設施養護維修第2-16案",
+        "完工日期": null,
+        "x1": 182044.6959,
+        "y1": 2555837.969,
+        "派工時機": "N/A",
+        "搶修類型": "廢棄樹穴處路面不平修復",
+        "案件狀態": "已完成",
+        "決標金額": 59148,
+        "施工廠商": "裕軒土木包工業",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4MTA0ODg=",
+        "施工前照片": "https://i.ibb.co/gbpwtCHb/1140216.jpg",
+        "施工後照片": "https://i.ibb.co/NdvZRs1Q/1140216.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.35252200003269,
+          23.102064997167574
+        ]
+      },
+      "properties": {
+        "案件編號": "114年道路及公共設施養護維修第2-17案",
+        "完工日期": null,
+        "x1": 183674.5767,
+        "y1": 2555732.203,
+        "派工時機": "N/A",
+        "搶修類型": "路面坑洞修復",
+        "案件狀態": "已完成",
+        "決標金額": 19276,
+        "施工廠商": "裕軒土木包工業",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4MTA0ODg=",
+        "施工前照片": "https://i.ibb.co/JwrgrZqb/1140217.jpg",
+        "施工後照片": "https://i.ibb.co/G3Cf7srg/1140217.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.33701699996601,
+          23.10693400379424
+        ]
+      },
+      "properties": {
+        "案件編號": "114年道路及公共設施養護維修第2-18案",
+        "完工日期": null,
+        "x1": 182088.6973,
+        "y1": 2556278.522,
+        "派工時機": "N/A",
+        "搶修類型": "路面坑洞修復",
+        "案件狀態": "已完成",
+        "決標金額": 19276,
+        "施工廠商": "裕軒土木包工業",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4MTA0ODg=",
+        "施工前照片": "https://i.ibb.co/1YsQqTdQ/1140218.jpg",
+        "施工後照片": "https://i.ibb.co/CKgP7bLr/1140218.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.3376159998984,
+          23.11038100455181
+        ]
+      },
+      "properties": {
+        "案件編號": "114年道路及公共設施養護維修第2-19案",
+        "完工日期": null,
+        "x1": 182151.7886,
+        "y1": 2556659.963,
+        "派工時機": "N/A",
+        "搶修類型": "路面坑洞修復",
+        "案件狀態": "已完成",
+        "決標金額": 19276,
+        "施工廠商": "裕軒土木包工業",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4MTA0ODg=",
+        "施工前照片": "https://i.ibb.co/7xVpkNYD/1140219-1.jpg,https://i.ibb.co/5gJBGtsK/1140219-2.jpg",
+        "施工後照片": "https://i.ibb.co/49XRm7q/1140219-1.jpg,https://i.ibb.co/5hDmQ4K0/1140219-2.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.33592600008157,
+          23.11046899865833
+        ]
+      },
+      "properties": {
+        "案件編號": "114年道路及公共設施養護維修第2-20案",
+        "完工日期": null,
+        "x1": 181978.7203,
+        "y1": 2556670.494,
+        "派工時機": "N/A",
+        "搶修類型": "路面坑洞修復",
+        "案件狀態": "已完成",
+        "決標金額": 19276,
+        "施工廠商": "裕軒土木包工業",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4MTA0ODg=",
+        "施工前照片": "https://i.ibb.co/9kX6Jxb6/1140220.jpg",
+        "施工後照片": "https://i.ibb.co/yFCB9V1q/1140220.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.35150300019919,
+          23.10216899606151
+        ]
+      },
+      "properties": {
+        "案件編號": "114年道路及公共設施養護維修第3-01案",
+        "完工日期": null,
+        "x1": 183570.2419,
+        "y1": 2555744.183,
+        "派工時機": "N/A",
+        "搶修類型": "側溝及溝蓋損壞修復",
+        "案件狀態": "已完成",
+        "決標金額": 28099,
+        "施工廠商": "裕軒土木包工業",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4MTA0ODg=",
+        "施工前照片": "https://i.ibb.co/JRKtJmcX/1140301.jpg",
+        "施工後照片": "https://i.ibb.co/FqXNQbQ0/1140301.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.36584399977448,
+          23.095511997881356
+        ]
+      },
+      "properties": {
+        "案件編號": "114年道路及公共設施養護維修第3-02案",
+        "完工日期": null,
+        "x1": 185036.1247,
+        "y1": 2555000.541,
+        "派工時機": "N/A",
+        "搶修類型": "路面凹陷修復",
+        "案件狀態": "已完成",
+        "決標金額": 19276,
+        "施工廠商": "裕軒土木包工業",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4MTA0ODg=",
+        "施工前照片": "https://i.ibb.co/m5m8n8MJ/1140302.jpg",
+        "施工後照片": "https://i.ibb.co/Wpyq2Ynk/1140302.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.34712999960077,
+          23.091471996684287
+        ]
+      },
+      "properties": {
+        "案件編號": "114年道路及公共設施養護維修第3-03案",
+        "完工日期": null,
+        "x1": 183116.9783,
+        "y1": 2554561.601,
+        "派工時機": "N/A",
+        "搶修類型": "側溝損壞修復",
+        "案件狀態": "已完成",
+        "決標金額": "併入3-02案",
+        "施工廠商": "裕軒土木包工業",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4MTA0ODg=",
+        "施工前照片": "https://i.ibb.co/SDdfsBSf/1140303.jpg",
+        "施工後照片": "https://i.ibb.co/sdXWP7b4/1140303.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.35509899992293,
+          23.095135998888136
+        ]
+      },
+      "properties": {
+        "案件編號": "114年道路及公共設施養護維修第3-04案",
+        "完工日期": null,
+        "x1": 183935.1751,
+        "y1": 2554963.723,
+        "派工時機": "N/A",
+        "搶修類型": "側溝損壞修復",
+        "案件狀態": "已完成",
+        "決標金額": 33388,
+        "施工廠商": "裕軒土木包工業",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4MTA0ODg=",
+        "施工前照片": "https://i.ibb.co/HfkVNhrr/1140304.jpg",
+        "施工後照片": "https://i.ibb.co/84SKSNSf/1140304.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.35395299999556,
+          23.10225999843932
+        ]
+      },
+      "properties": {
+        "案件編號": "114年道路及公共設施養護維修第3-05案",
+        "完工日期": null,
+        "x1": 183821.2633,
+        "y1": 2555753.148,
+        "派工時機": "N/A",
+        "搶修類型": "溝蓋損壞修復",
+        "案件狀態": "已完成",
+        "決標金額": 15679,
+        "施工廠商": "裕軒土木包工業",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzA4MTA0ODg=",
+        "施工前照片": "https://i.ibb.co/rRjzCfFH/1140305.jpg",
+        "施工後照片": "https://i.ibb.co/rKV2Pr4Z/1140305.jpg"
+      }
+    }
+  ]
+}

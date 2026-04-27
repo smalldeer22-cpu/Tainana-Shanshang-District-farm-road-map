@@ -13,6 +13,81 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
+          120.38885742561351,
+          23.091805156847734
+        ]
+      },
+      "properties": {
+        "案件編號": "114057-山上牛稠埔段 305-34 地號農路災復工程",
+        "完工日期": 1150410,
+        "x1": 187392,
+        "y1": 2554580,
+        "派工時機": "一般案件",
+        "搶修類型": "混凝土路面,擋土牆",
+        "案件狀態": "已完成",
+        "決標金額": 1360000,
+        "施工廠商": "琮富土木包工有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzEwNjAyNTI=",
+        "施工前照片": null,
+        "施工後照片": null
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.39517891059803,
+          23.092642221937698
+        ]
+      },
+      "properties": {
+        "案件編號": "114056-114年8月楊柳颱風草鞋仙農路災後復建工程",
+        "完工日期": 1150422,
+        "x1": 188040,
+        "y1": 2554670,
+        "派工時機": "一般案件",
+        "搶修類型": "混凝土路面,擋土牆",
+        "案件狀態": "已完成",
+        "決標金額": 1030000,
+        "施工廠商": "琮富土木包工有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzEwNTIzNjI=",
+        "施工前照片": null,
+        "施工後照片": null
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.37229008672405,
+          23.092381314384426
+        ]
+      },
+      "properties": {
+        "案件編號": "114054-牛稠埔社區排水新建工程",
+        "完工日期": 1150126,
+        "x1": 185695,
+        "y1": 2554651,
+        "派工時機": "一般案件",
+        "搶修類型": "暗溝,鍍鋅隔柵板,混凝土路面修復",
+        "案件狀態": "已完成",
+        "決標金額": 600000,
+        "施工廠商": "福森土木包工業",
+        "監造廠商": "丞信工程顧問有限公司",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzEwMzUyMTM=",
+        "施工前照片": null,
+        "施工後照片": null
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
           120.34400223039762,
           23.10444808236549
         ]
@@ -29,31 +104,6 @@
         "施工廠商": "佑昌營造股份有限公司",
         "監造廠商": "丞信工程顧問有限公司",
         "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzEwMjYwOTc=",
-        "施工前照片": null,
-        "施工後照片": null
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          120.37229008672405,
-          23.092381314384426
-        ]
-      },
-      "properties": {
-        "案件編號": "114042-牛稠埔社區排水新建工程",
-        "完工日期": 1150126,
-        "x1": 185695,
-        "y1": 2554651,
-        "派工時機": "一般案件",
-        "搶修類型": "混凝土路面,矩形溝",
-        "案件狀態": "已完成",
-        "決標金額": 600000,
-        "施工廠商": "福森土木包工業",
-        "監造廠商": "丞信工程顧問有限公司",
-        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzEwMzUyMTM=",
         "施工前照片": null,
         "施工後照片": null
       }
@@ -463,15 +513,15 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120.38885742561351,
-          23.091805156847734
+          120.38877917437252,
+          23.091840975064223
         ]
       },
       "properties": {
         "案件編號": "114018-牛稠埔段305-34地號農路改善工程",
         "完工日期": 1140610,
-        "x1": 187392,
-        "y1": 2554580,
+        "x1": 187384,
+        "y1": 2554584,
         "派工時機": "一般案件",
         "搶修類型": "擋土牆,混凝土路面",
         "案件狀態": "已完成",

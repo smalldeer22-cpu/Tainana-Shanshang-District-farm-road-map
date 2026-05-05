@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0430_V2)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0505_V1)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -1050,12 +1050,56 @@
 .glass-desc-box { font-size: 12px; color: #334155; line-height: 1.6; font-weight: 500; }
 .slide-section-title { font-size: 11px; font-weight: 900; color: #475569; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid rgba(0,0,0,0.08); display: flex; align-items: center; gap: 6px; }
 
-/* 第三頁：施工全歷程照片 */
-.process-photos-scroll { display: flex; overflow-x: auto; gap: 10px; padding-bottom: 8px; -webkit-overflow-scrolling: touch; }
-.process-photo-item { min-width: 120px; height: 95px; position: relative; border-radius: 0.75rem; overflow: hidden; border: 1.5px solid rgba(255,255,255,0.5); flex-shrink: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-.process-photo-item img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
-.process-photo-label { position: absolute; bottom: 0; width: 100%; background: rgba(0,0,0,0.6); color: white; font-size: 10px; text-align: center; padding: 2px 0; }
-.no-process-photo { display: flex; align-items: center; justify-content: center; height: 80px; color: #94a3b8; font-size: 13px; background: rgba(255,255,255,0.2); border-radius: 1rem; }
+/* 第三頁：施工全歷程照片（直式排列・捲軸在左） */
+.process-photos-scroll {
+  display: flex;
+  flex-direction: column;       /* 改成上下排列 */
+  overflow-y: auto;             /* 改成上下捲動 */
+  overflow-x: hidden;
+  max-height: 400px;            /* 捲動區域的高度（想更高/更矮就改這裡） */
+  gap: 12px;                    /* 照片之間的間距 */
+  padding: 4px 4px 8px 8px;     /* 留一點邊,避免照片貼著捲軸 */
+  direction: rtl;               /* 🌟 關鍵:讓捲軸跑到左邊 */
+  -webkit-overflow-scrolling: touch;
+}
+.process-photo-item {
+  direction: ltr;               /* 🌟 把方向轉回來,避免照片內容被翻轉 */
+  width: 100%;                  /* 撐滿整個泡泡窗寬度 */
+  height: 200px;                /* 每張照片的高度（想更高/更矮就改這裡） */
+  position: relative;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  border: 1.5px solid rgba(255,255,255,0.5);
+  flex-shrink: 0;               /* 重要:避免照片被壓扁 */
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+.process-photo-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+.process-photo-label {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  background: rgba(0,0,0,0.65);
+  color: white;
+  font-size: 11px;              /* 標籤字稍微放大一點 */
+  text-align: center;
+  padding: 3px 0;
+  font-weight: bold;
+}
+.no-process-photo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 80px;
+  color: #94a3b8;
+  font-size: 13px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 1rem;
+}
 
 /* 舊的詳細資訊展開區（保留相容） */
 .details-toggle { display: none; }

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0505_V3)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0505_V7)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -1739,6 +1739,77 @@
 .entry-desc { font-size: 12px; color: var(--c-text-sub); font-weight: 500; margin-top: 2px; }
 .entry-arrow { color: var(--c-text-soft); font-size: 18px; font-weight: 500; flex-shrink: 0; }
 
+/* === 新增：綠能治理儀表板樣式 === */
+#ecoDashboardBtn {
+  position: absolute;
+  bottom: 30px;
+  right: 20px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: var(--primary-color);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  cursor: pointer;
+  z-index: 2000; /* 確保在最上層 */
+  transition: transform 0.3s ease, background 0.3s;
+}
+#ecoDashboardBtn:hover {
+  transform: scale(1.1);
+  background: var(--accent-color);
+}
+#ecoDashboardPanel {
+  position: absolute;
+  bottom: 90px;
+  right: 20px;
+  width: 280px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255,255,255,0.6);
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  z-index: 2000;
+  padding: 20px;
+  display: none; /* 預設收合 */
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.3s ease;
+}
+#ecoDashboardPanel.show {
+  display: block;
+  opacity: 1;
+  transform: translateY(0);
+}
+.eco-dash-title {
+  font-size: 16px;
+  font-weight: bold;
+  color: var(--primary-color);
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 2px solid rgba(0,0,0,0.05);
+  padding-bottom: 10px;
+}
+.eco-stat-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+.eco-stat-label { color: #444; font-weight: bold; }
+.eco-stat-val { font-size: 18px; font-weight: 900; }
+.val-pending { color: #7f8c8d; }
+.val-working { color: #ff9800; }
+.val-done { color: #004080; }
+.val-carbon { color: #28a745; font-size: 20px;}
+.carbon-note { font-size: 11px; color: #888; margin-top: 10px; line-height: 1.4; border-top: 1px dashed #ccc; padding-top: 10px;}
+
 </style>
 </head>
 <body>
@@ -2084,7 +2155,7 @@
     
     <div id="vendorPendingListBlock" style="margin-bottom: 20px;">
         <div style="font-size:15px; font-weight:bold; color:#004080; margin-bottom:10px; border-bottom:2px solid #004080; padding-bottom:5px;">
-            <i class="fas fa-list-ol"></i> 您的派工中案件 (點擊即可編輯)
+            <i class="fas fa-list-ol"></i> 您的已派工/施工中案件 (點擊即可編輯)
         </div>
         <div id="vendorPendingListContent" style="max-height: 250px; overflow-y: auto; background: #fff; border: 1px solid #ddd; border-radius: 8px;">
             <div style="padding:15px; text-align:center; color:#666;"><i class="fas fa-spinner fa-spin"></i> 正在載入派工清單...</div>
@@ -2247,12 +2318,12 @@
       <div class="card-title" style="color:#e65100;"><i class="fas fa-satellite-dish"></i> 民眾通報即時看板</div>
       <label class="toggle-switch">
         <input type="checkbox" id="realtimeToggle" onchange="toggleRealtimeLayer(this)"> 顯示即時通報案件
-      </label>
-      <div class="small" style="color:#666; margin-top:5px; display:flex; gap:10px;">
-        <span><span style="color:#ff9800;">●</span> 派工中</span>
-        <span><span style="color:#004080;">●</span> 已完工</span>
-        <span><span style="color:#7f8c8d;">●</span> 待處理</span>
-      </div>
+       </label>
+       <div class="small" style="color:#666; margin-top:5px; display:flex; gap:10px;">
+         <span><span style="color:#7f8c8d;">●</span> 待處理</span>
+         <span style="line-height:1.2;"><span style="color:#ff9800;">●</span> 已派工<br>&nbsp;&nbsp;&nbsp;施工中</span>
+         <span><span style="color:#004080;">●</span> 已完工</span>
+       </div>
     </div>
 
     <div class="card-section">
@@ -2372,8 +2443,8 @@
     </div>
     <div class="card-section">
       <div class="card-title"><i class="fas fa-map-marker-alt"></i> 座標查詢工具</div>
-      <div class="small" style="margin-bottom:5px;">輸入 TWD97 座標 (X,Y)，每行一組</div>
-      <textarea id="coordsInput" rows="4" placeholder="例如：181924,2555825"></textarea>
+      <div class="small" style="margin-bottom:5px;">輸入 TWD97 或 WGS84 座標 (X,Y)，每行一組</div>
+      <textarea id="coordsInput" rows="4" placeholder="例如：181924,2555825 &#10;例如：23.102880, 120.335451"></textarea>
       <div style="display:flex; gap:5px; margin-top:5px;">
         <button id="plotBtn" class="primary" style="margin-top:0;">顯示點位</button>
         <button id="clearBtn" class="secondary" style="margin-top:0;">清除</button>
@@ -2406,8 +2477,8 @@
       <label class="toggle-switch" style="margin-bottom:10px;">
         <input type="checkbox" id="autoDupCheckToggle"> 啟動自動檢核重複性案件
       </label>
-      <div class="small" style="margin-bottom:5px;">輸入 TWD97 座標 (X,Y)</div>
-      <input type="text" id="dupCheckInput" placeholder="例如：181924,2555825">
+      <div class="small" style="margin-bottom:5px;">輸入 TWD97 或 WGS84 座標 (X,Y)</div>
+      <input type="text" id="dupCheckInput" placeholder="例如：181924,2555825或23.102880, 120.335451">
       <div style="display:flex; gap:5px; margin-top:5px;">
         <button id="dupCheckBtn" class="primary" style="background:#e65100; margin-top:0;"><i class="fas fa-search"></i> 開始檢核</button>
         <button id="dupClearBtn" class="secondary" style="width:auto; margin-top:0; white-space:nowrap; flex-shrink:0;">清除</button>
@@ -2456,8 +2527,8 @@
   <div id="tab-dengue" class="tab-content-container tab-pane">
     <div class="card-section">
       <div class="card-title"><i class="fas fa-map-pin"></i> 座標輸入</div>
-      <div class="small" style="margin-bottom:5px;">輸入 TWD97 座標 (X,Y)，每行一組</div>
-      <textarea id="dengueCoordsInput" rows="4" placeholder="例如：181924,2555825"></textarea>
+      <div class="small" style="margin-bottom:5px;">輸入 TWD97 或 WGS84 座標 (X,Y)，每行一組</div>
+      <textarea id="dengueCoordsInput" rows="4" placeholder="例如：181924,2555825 &#10;例如：23.102880, 120.335451"></textarea>
       <div style="display:flex; gap:5px; margin-top:5px;">
         <button id="plotDengueBtn" class="primary" style="background:#7f8c8d; margin-top:0;">顯示點位</button>
         <button id="clearDengueBtn" class="secondary" style="margin-top:0;">清除</button>
@@ -2502,6 +2573,29 @@
 </div>
 
 <div id="map"></div>
+<!-- === 新增：綠能治理儀表板介面 === -->
+<div id="ecoDashboardBtn" onclick="toggleEcoDashboard()"><i class="fas fa-chart-pie"></i></div>
+<div id="ecoDashboardPanel">
+    <div class="eco-dash-title"><i class="fas fa-leaf" style="color:#28a745;"></i> 數位治理與減碳成效</div>
+    <div class="eco-stat-item">
+        <span class="eco-stat-label">待處理案件</span>
+        <span class="eco-stat-val val-pending" id="dashPending">0</span>
+    </div>
+    <div class="eco-stat-item">
+        <span class="eco-stat-label">施工中案件</span>
+        <span class="eco-stat-val val-working" id="dashWorking">0</span>
+    </div>
+    <div class="eco-stat-item">
+        <span class="eco-stat-label">已完工案件</span>
+        <span class="eco-stat-val val-done" id="dashDone">0</span>
+    </div>
+    <div class="eco-stat-item" style="margin-top:15px;">
+        <span class="eco-stat-label">🌿 累計減碳量</span>
+        <span class="eco-stat-val val-carbon" id="dashCarbon">0 <span style="font-size:12px;">kg</span></span>
+    </div>
+    <div class="carbon-note">※ 依據每件電子化流程約省下 10 張 A4 紙估算 (每張 0.0068 kg CO2e)。</div>
+</div>
+
 <div id="floatingCoords"></div>
 <div id="reportDetailModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:10000; align-items:center; justify-content:center;">
   <div style="position:relative; max-width:960px; width:95%; max-height:90vh; overflow-y:auto; background:transparent; display:flex; flex-direction:column;">
@@ -3357,7 +3451,7 @@ function createPopup(data) {
           <!-- 進度條 -->
           <div class="progress-container">
             <div class="progress-step active"><div class="step-circle"></div><div class="step-label">待處理</div><div class="step-date">${props['通報日期ROC'] || '-'}</div></div>
-            <div class="progress-step ${step>=2 ? 'active' : ''}"><div class="step-circle"></div><div class="step-label">派工中</div><div class="step-date">${props['派工日期'] || '-'}</div></div>
+            <div class="progress-step ${step>=2 ? 'active' : ''}"><div class="step-circle"></div><div class="step-label" style="line-height:1.2;">已派工<br>施工中</div><div class="step-date">${props['派工日期'] || '-'}</div></div>
             <div class="progress-step ${step>=3 ? 'active' : ''}"><div class="step-circle"></div><div class="step-label">已完工</div><div class="step-date">${props['完工日期'] || '-'}</div></div>
           </div>
         </div>
@@ -3626,7 +3720,7 @@ async function toggleRealtimeLayer(checkbox) {
         const status = props['案件狀態'] || '待處理';
         let color = '#7f8c8d', radius = 8;
         
-        if(status === '派工中') { color = '#ff9800'; radius = 10; } 
+        if(status === '已派工/施工中') { color = '#ff9800'; radius = 10; } 
         else if(status === '已完工') { color = '#004080'; } 
         
         const latlng = L.latLng(f.geometry.coordinates[1], f.geometry.coordinates[0]);
@@ -4577,19 +4671,34 @@ document.getElementById('dupCheckBtn').addEventListener('click', function() {
   dupMarkersMap = {}; 
   CURRENT_DUPLICATE_GROUPS = [];
   
-  if (!input) return alert('請輸入 TWD97 座標'); 
+  if (!input) return alert('請輸入 TWD97 或 WGS84 座標'); 
   
-  const parts = input.split(/[, \t]+/); 
-  const x = parseFloat(parts[0]), y = parseFloat(parts[1]); 
-  if (isNaN(x) || isNaN(y)) return alert('座標數值錯誤'); 
-  
+  const parts = input.split(/[, \t]+/);
+    const a = parseFloat(parts[0]), b = parseFloat(parts[1]);
+    if (isNaN(a) || isNaN(b)) return alert('座標數值錯誤');
   try {
-    const w = proj4('EPSG:3826', 'EPSG:4326', [x, y]); 
-    const centerLatLng = L.latLng(w[1], w[0]);
+     // 自動辨識：若兩數值皆 < 200，視為 WGS84 (緯度,經度)；否則視為 TWD97 (X,Y)
+     let x, y, centerLatLng, popupCoordText;
+     if (Math.abs(a) < 200 && Math.abs(b) < 200) {
+        // WGS84：使用者輸入順序為 (緯度, 經度)，與 Google Maps 一致
+        const lat = a, lng = b;
+        centerLatLng = L.latLng(lat, lng);
+        // 反向換算回 TWD97，以維持後續比對及顯示邏輯不變
+        const t = proj4('EPSG:4326', 'EPSG:3826', [lng, lat]);
+        x = Math.round(t[0]);
+        y = Math.round(t[1]);
+        popupCoordText = `WGS84: ${lat}, ${lng}`;
+     } else {
+        // TWD97：原本的轉換邏輯
+        x = a; y = b;
+        const w = proj4('EPSG:3826', 'EPSG:4326', [x, y]);
+        centerLatLng = L.latLng(w[1], w[0]);
+        popupCoordText = `TWD97: ${x}, ${y}`;
+     }
     
     map.setView(centerLatLng, 18); 
     L.circle(centerLatLng, { color: 'red', fillColor: '#f03', fillOpacity: 0.2, radius: 50 }).addTo(dupCheckLayer);
-    L.marker(centerLatLng).addTo(dupCheckLayer).bindPopup(`檢核中心點<br>TWD97: ${x}, ${y}`).openPopup();
+    L.marker(centerLatLng).addTo(dupCheckLayer).bindPopup(`檢核中心點<br>${popupCoordText}`).openPopup();
     
     // --- 👇 開始取代 👇 ---
         const matches = []; 
@@ -5834,40 +5943,55 @@ document.getElementById('toggleCadastralBtn').onclick = function() {
 };
 
 document.getElementById('plotBtn').onclick = () => {
-  pointLayer.clearLayers(); 
-  const input = document.getElementById('coordsInput').value.trim(); 
+  pointLayer.clearLayers();
+  const input = document.getElementById('coordsInput').value.trim();
   if (!input) return;
-  
-  const lines = input.split(/\r?\n/).filter(line => line.trim() !== ''); 
-  const bounds = L.latLngBounds(); 
+
+
+  const lines = input.split(/\r?\n/).filter(line => line.trim() !== '');
+  const bounds = L.latLngBounds();
   let markerCount = 0;
-  
+
+
   lines.forEach(line => {
-    const parts = line.trim().split(/[, \t]+/).filter(p => p !== '');
-    if (parts.length >= 2) {
-      const x = parseFloat(parts[0]), y = parseFloat(parts[1]);
-      if (!isNaN(x) && !isNaN(y)) {
-        try {
-          const w = proj4('EPSG:3826', 'EPSG:4326', [x, y]); 
-          const latlng = L.latLng(w[1], w[0]);
-          L.marker(latlng).addTo(pointLayer).bindPopup(`X:${x}, Y:${y}<br>行政區: ${getVillageName(w[1], w[0])}`); 
-          markerCount++; 
-          bounds.extend(latlng);
-        } catch (e) { }
+     const parts = line.trim().split(/[, \t]+/).filter(p => p !== '');
+     if (parts.length >= 2) {
+         const a = parseFloat(parts[0]), b = parseFloat(parts[1]);
+         if (!isNaN(a) && !isNaN(b)) {
+             try {
+                let latlng, popupText;
+                // 自動辨識：若第一個數值 < 200，視為 WGS84 (緯度,經度)；否則視為 TWD97 (X,Y)
+                if (Math.abs(a) < 200 && Math.abs(b) < 200) {
+                    // WGS84：使用者輸入順序為 (緯度, 經度)，與 Google Maps 一致
+                    const lat = a, lng = b;
+                    latlng = L.latLng(lat, lng);
+                    popupText = `WGS84: ${lat}, ${lng}<br>行政區: ${getVillageName(lat, lng)}`;
+                } else {
+                    // TWD97：原本的轉換邏輯
+                    const x = a, y = b;
+                    const w = proj4('EPSG:3826', 'EPSG:4326', [x, y]);
+                    latlng = L.latLng(w[1], w[0]);
+                    popupText = `X:${x}, Y:${y}<br>行政區: ${getVillageName(w[1], w[0])}`;
+                }
+                L.marker(latlng).addTo(pointLayer).bindPopup(popupText);
+                markerCount++;
+                bounds.extend(latlng);
+          } catch (e) { }
+        }
       }
-    }
   });
-  
-  if (markerCount > 0) { 
-    if (markerCount === 1) { 
-      map.setView(bounds.getCenter(), 16); 
-      pointLayer.getLayers()[0].openPopup(); 
-    } else { 
-      map.fitBounds(bounds, { padding: [50, 50] }); 
-    } 
-  } else { 
-    alert('請輸入有效的 TWD97 座標'); 
-  }
+
+
+  if (markerCount > 0) {
+      if (markerCount === 1) {
+          map.setView(bounds.getCenter(), 16);
+          pointLayer.getLayers()[0].openPopup();
+      } else {
+             map.fitBounds(bounds, { padding: [50, 50] });
+        }
+     } else {
+        alert('請輸入有效的 TWD97 或 WGS84 座標');
+     }
 };
 
 window.updateDengueRadius = function() {
@@ -5889,27 +6013,41 @@ window.updateDengueRadius = function() {
 };
 
 document.getElementById('plotDengueBtn').onclick = () => {
-  dengueLayer.clearLayers(); 
-  const val = document.getElementById('dengueCoordsInput').value.trim(); 
+  dengueLayer.clearLayers();
+  const val = document.getElementById('dengueCoordsInput').value.trim();
   if(!val) return;
-  
-  let plotted = false;
-  val.split(/\r?\n/).forEach(line => {
-    const parts = line.split(/[, \t]+/);
-    if(parts.length>=2) {
-      const x = parseFloat(parts[0]), y = parseFloat(parts[1]);
-      if(!isNaN(x)&&!isNaN(y)) {
-        const w = proj4('EPSG:3826','EPSG:4326',[x,y]);
-        L.marker([w[1],w[0]], {icon: L.divIcon({ className: 'custom-div-icon', html: "<div class='gray-dot-marker'></div>", iconSize: [14, 14], iconAnchor: [7, 7] })}).addTo(dengueLayer).bindPopup(`確診戶座標: ${x}, ${y}`); 
-        map.setView([w[1],w[0]], 16);
-        plotted = true;
-      }
-    }
-  });
-  
-  if (plotted) {
-    updateDengueRadius();
-  }
+
+
+     let plotted = false;
+     val.split(/\r?\n/).forEach(line => {
+       const parts = line.split(/[, \t]+/);
+       if(parts.length>=2) {
+          const a = parseFloat(parts[0]), b = parseFloat(parts[1]);
+          if(!isNaN(a)&&!isNaN(b)) {
+              let lat, lng, popupText;
+              // 自動辨識：若第一個數值 < 200，視為 WGS84 (緯度,經度)；否則視為 TWD97 (X,Y)
+              if (Math.abs(a) < 200 && Math.abs(b) < 200) {
+                  // WGS84：使用者輸入順序為 (緯度, 經度)，與 Google Maps 一致
+                  lat = a; lng = b;
+                  popupText = `確診戶座標 (WGS84): ${lat}, ${lng}`;
+              } else {
+                  // TWD97：原本的轉換邏輯
+                  const x = a, y = b;
+                  const w = proj4('EPSG:3826','EPSG:4326',[x,y]);
+                  lat = w[1]; lng = w[0];
+                  popupText = `確診戶座標: ${x}, ${y}`;
+              }
+              L.marker([lat,lng], {icon: L.divIcon({ className: 'custom-div-icon', html:"<div class='gray-dot-marker'></div>", iconSize: [14, 14], iconAnchor: [7, 7] })}).addTo(dengueLayer).bindPopup(popupText);
+              map.setView([lat,lng], 16);
+              plotted = true;
+           }
+       }
+     });
+
+
+     if (plotted) {
+         updateDengueRadius();
+     }
 };
 
 document.getElementById('clearDengueBtn').onclick = () => { 
@@ -8370,5 +8508,90 @@ async function exportAllRiskGroups() {
     if (dupSection) dupSection.style.display = 'none';
   }
 </script>
+
+<!-- === 新增：綠能治理儀表板邏輯 === -->
+<script>
+function toggleEcoDashboard() {
+    const panel = document.getElementById('ecoDashboardPanel');
+    if (panel.classList.contains('show')) {
+        panel.classList.remove('show');
+        panel.style.opacity = '0';
+        setTimeout(() => panel.style.display = 'none', 300); // 動畫過渡
+    } else {
+        updateEcoDashboardStats(); // 展開時先計算最新數字
+        panel.style.display = 'block';
+        setTimeout(() => {
+            panel.classList.add('show');
+            panel.style.opacity = '1';
+        }, 10);
+    }
+}
+
+// 點擊地圖空白處，自動收起儀表板 (為了手機版好操作)
+if (typeof map !== 'undefined') {
+    map.on('click', function() {
+        const panel = document.getElementById('ecoDashboardPanel');
+        if (panel && panel.classList.contains('show')) {
+            toggleEcoDashboard();
+        }
+    });
+}
+
+function updateEcoDashboardStats() {
+    let pendingCount = 0;
+    let workingCount = 0;
+    let doneCount = 0;
+    let processedCases = new Set(); // 避免同一個案號重複計算
+
+    // 分類邏輯函數
+    const processProps = (props) => {
+        const caseNo = props['案件編號'];
+        if (caseNo && processedCases.has(caseNo)) return; 
+        if (caseNo) processedCases.add(caseNo);
+
+        const status = props['案件狀態'] || props['狀態'] || '';
+        if (status.includes('完工') || status.includes('結案')) {
+            doneCount++;
+        } else if (status.includes('施工') || status.includes('派工')) {
+            workingCount++;
+        } else {
+            pendingCount++; // 如果都不是，預設為待處理
+        }
+    };
+
+    // 1. 抓取歷史案件資料 (REPAIR_DATA_CACHE)
+    if (typeof REPAIR_DATA_CACHE !== 'undefined') {
+        Object.keys(REPAIR_DATA_CACHE).forEach(key => {
+            const data = REPAIR_DATA_CACHE[key];
+            if (data && data.features) {
+                data.features.forEach(f => processProps(f.properties));
+            }
+        });
+    }
+
+    // 2. 抓取即時通報資料 (realtimeLayer)
+    if (typeof realtimeLayer !== 'undefined') {
+        realtimeLayer.eachLayer(layer => {
+            if (layer.customData && layer.customData.props) {
+                processProps(layer.customData.props);
+            }
+        });
+    }
+
+    // 計算總減碳量
+    // 假設 1 案件 = 10 張 A4 紙，1 張 = 0.0068 kg CO2e
+    const totalCases = pendingCount + workingCount + doneCount;
+    const carbonSaved = (totalCases * 10 * 0.0068).toFixed(2); // 取小數點後兩位
+
+    // 將數字更新到畫面上
+    document.getElementById('dashPending').innerText = pendingCount;
+    document.getElementById('dashWorking').innerText = workingCount;
+    document.getElementById('dashDone').innerText = doneCount;
+    document.getElementById('dashCarbon').innerHTML = carbonSaved + ' <span style="font-size:12px;">kg</span>';
+}
+</script>
+
 </body>
 </html>
+
+

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0505_V7)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0510_V5)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -1808,6 +1808,7 @@
 .val-working { color: #ff9800; }
 .val-done { color: #004080; }
 .val-carbon { color: #28a745; font-size: 20px;}
+/* === 新增：儀表板列表區樣式 === */ .eco-stat-val.clickable { cursor: pointer; text-decoration: underline; transition: color 0.2s; } .eco-stat-val.clickable:hover { color: #d35400; } .eco-stat-val.clickable.active { color: #d35400; } #dashCaseListBox { display: none; margin-top: 12px; padding-top: 10px; border-top: 1px dashed #ccc; max-height: 360px; overflow-y: auto; } #dashCaseListBox .case-item { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 6px; cursor: pointer; transition: background 0.2s; margin-bottom: 6px; background: #f8f9fa; } #dashCaseListBox .case-item:hover { background: #fff3e0; } #dashCaseListBox .case-thumb { width: 80px; height: 80px; flex-shrink: 0; border-radius: 4px; object-fit: cover; background: #e0e0e0; } #dashCaseListBox .case-thumb-empty { width: 80px; height: 80px; flex-shrink: 0; border-radius: 4px; background: #e0e0e0; display: flex; align-items: center; justify-content: center; color: #888; font-size: 11px; } #dashCaseListBox .case-info { flex: 1; min-width: 0; } #dashCaseListBox .case-id { font-size: 13px; font-weight: bold; color: #004080; word-break: break-all; } #dashCaseListBox .case-vendor { font-size: 11px; color: #666; margin-top: 3px; } #dashCaseListBox .case-pager { display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 8px; padding: 6px; } #dashCaseListBox .case-pager button { padding: 4px 12px; border: 1px solid #ccc; background: #fff; border-radius: 4px; cursor: pointer; font-size: 12px; } #dashCaseListBox .case-pager button:disabled { opacity: 0.3; cursor: not-allowed; } .case-list-title { font-size: 13px; font-weight: bold; color: #d35400; margin-bottom: 8px; padding: 4px 8px; background: #fff3e0; border-radius: 4px; } /* 自動勾選圖層的 toast 提示 */ #autoLayerToast { position: fixed; bottom: 30px; right: 30px; background: rgba(0,64,128,0.95); color: white; padding: 12px 20px; border-radius: 8px; font-size: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 99999; opacity: 0; transition: opacity 0.3s; pointer-events: none; } #autoLayerToast.show { opacity: 1; }
 .carbon-note { font-size: 11px; color: #888; margin-top: 10px; line-height: 1.4; border-top: 1px dashed #ccc; padding-top: 10px;}
 
 </style>
@@ -2590,11 +2591,35 @@
         <span class="eco-stat-val val-done" id="dashDone">0</span>
     </div>
     <div class="eco-stat-item" style="margin-top:15px;">
-        <span class="eco-stat-label">🌿 累計減碳量</span>
+        <span class="eco-stat-label">🌿 累計減碳量(含預估)</span>
         <span class="eco-stat-val val-carbon" id="dashCarbon">0 <span style="font-size:12px;">kg</span></span>
     </div>
-    <div class="carbon-note">※ 依據每件電子化流程約省下 10 張 A4 紙估算 (每張 0.0068 kg CO2e)。</div>
+    <div class="carbon-note">
+       ※ 含省紙本、通話、車程估算
+       <span id="carbonInfoBtn" onclick="toggleCarbonTooltip(event)" 
+             style="display:inline-block; width:16px; height:16px; line-height:16px; 
+                    text-align:center; background:#004080; color:#fff; border-radius:50%; 
+                    font-size:11px; font-weight:bold; cursor:pointer; margin-left:4px;">i</span>
+       <div id="carbonTooltip" style="display:none; position:absolute; right:10px; bottom:50px; 
+                                       width:280px; background:#fff; border:1px solid #004080; 
+                                       border-radius:8px; padding:12px; box-shadow:0 4px 12px rgba(0,0,0,0.2); 
+                                       font-size:11px; color:#333; line-height:1.6; z-index:99;">
+           <div style="font-weight:bold; color:#004080; margin-bottom:6px; border-bottom:1px solid #ddd; padding-bottom:4px;">
+               🌿 減碳量計算依據
+           </div>
+           <div id="carbonTooltipContent" style="font-family: 'Microsoft JhengHei', sans-serif;"></div>
+           <div style="margin-top:8px; padding-top:6px; border-top:1px solid #ddd; color:#888; font-size:10px;">
+               排放係數來源：DEFRA / EPA<br>1張A4=0.0068kg、1通電話=0.005kg、1km車程=0.15kg
+           </div>
+       </div>
+   </div>
+   
+   <!-- === 新增：可點擊案件列表展開區 === -->
+   <div id="dashCaseListBox"></div>
 </div>
+
+<!-- === 新增：自動勾選圖層 Toast 提示 === -->
+<div id="autoLayerToast"></div>
 
 <div id="floatingCoords"></div>
 <div id="reportDetailModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:10000; align-items:center; justify-content:center;">
@@ -3216,7 +3241,7 @@ function createPopup(data) {
     paginationHtml += '</div>';
   }
 
-  const status = (props['案件狀態'] || '已完工').trim();
+  const status = (props['案件狀態'] || '待處理').trim();
   const contractor = props['施工廠商'] || '-';
   const supervisor = props['監造廠商'] || '-';
   const priceDisplay = formatMoneyWan(props['決標金額'] || '0');
@@ -5167,6 +5192,29 @@ async function loadRepairSettings() {
   preloadAllDataForContractors();
 }
 loadRepairSettings();
+silentLoadRealtimeForDashboard();
+
+// === 新增：系統開啟時靜默載入即時案件資料供儀表板統計 (不顯示藍點) ===
+let DASHBOARD_REALTIME_CACHE = [];
+async function silentLoadRealtimeForDashboard() {
+  if (GOOGLE_SCRIPT_URL.includes("您的SCRIPT_ID")) return;
+  try {
+    const res = await fetch(`${GOOGLE_SCRIPT_URL}?t=${Date.now()}`);
+    const data = await res.json();
+    if (data && data.features) {
+      DASHBOARD_REALTIME_CACHE = data.features;
+    }
+  } catch(e) {
+    console.warn("即時案件靜默載入失敗", e);
+  } finally {
+    // 不論成功失敗，等 GeoJSON 也載完後刷新一次儀表板
+    setTimeout(() => {
+      if (typeof updateEcoDashboardStats === 'function') {
+        updateEcoDashboardStats();
+      }
+    }, 1500);
+  }
+}
 
 window.toggleYear = function(source) { 
   source.closest('.year-group').querySelectorAll('.repair-cb').forEach(cb => cb.checked = source.checked); 
@@ -8543,20 +8591,31 @@ function updateEcoDashboardStats() {
     let doneCount = 0;
     let processedCases = new Set(); // 避免同一個案號重複計算
 
+    // 【新增】收集待處理 / 施工中案件的詳細資料（給點擊列表用）
+    window.DASH_PENDING_LIST = [];
+    window.DASH_WORKING_LIST = [];
+    
     // 分類邏輯函數
-    const processProps = (props) => {
+    const processProps = (props, sourceKey) => {
         const caseNo = props['案件編號'];
-        if (caseNo && processedCases.has(caseNo)) return; 
-        if (caseNo) processedCases.add(caseNo);
+          if (caseNo && processedCases.has(caseNo)) return;
+          if (caseNo) processedCases.add(caseNo);
 
-        const status = props['案件狀態'] || props['狀態'] || '';
-        if (status.includes('完工') || status.includes('結案')) {
-            doneCount++;
-        } else if (status.includes('施工') || status.includes('派工')) {
-            workingCount++;
-        } else {
-            pendingCount++; // 如果都不是，預設為待處理
-        }
+          const status = (props['案件狀態'] || props['狀態'] || '').trim();
+          
+          // 【方案 B】狀態空白的案件不計入統計，避免 GeoJSON 歷史檔污染數據
+          if (!status) return;
+          
+          if (status.includes('完工') || status.includes('結案')) {
+                doneCount++;
+          } else if (status.includes('施工') || status.includes('派工')) {
+                workingCount++;
+                window.DASH_WORKING_LIST.push({ props: props, sourceKey: sourceKey || '' });
+          } else if (status.includes('待處理')) {
+                pendingCount++;
+                window.DASH_PENDING_LIST.push({ props: props, sourceKey: sourceKey || '' });
+          }
+          // 其他無法分類的狀態（例如自訂特殊狀態）不計入
     };
 
     // 1. 抓取歷史案件資料 (REPAIR_DATA_CACHE)
@@ -8569,28 +8628,391 @@ function updateEcoDashboardStats() {
         });
     }
 
-    // 2. 抓取即時通報資料 (realtimeLayer)
-    if (typeof realtimeLayer !== 'undefined') {
-        realtimeLayer.eachLayer(layer => {
-            if (layer.customData && layer.customData.props) {
-                processProps(layer.customData.props);
+    // 2. 抓取即時通報資料 (優先用靜默載入的快取，未載入時 fallback 到 realtimeLayer)
+    if (typeof DASHBOARD_REALTIME_CACHE !== 'undefined' && DASHBOARD_REALTIME_CACHE.length > 0) {
+          DASHBOARD_REALTIME_CACHE.forEach(f => processProps(f.properties));
+    } else if (typeof realtimeLayer !== 'undefined') {
+          realtimeLayer.eachLayer(layer => {
+                  if (layer.customData && layer.customData.props) {
+                         processProps(layer.customData.props);
+                  }
+            });
+    }
+
+    // === 計算減碳量(四面向: 紙本/廠商通話/開車/民眾通話) ===
+    const totalCases = pendingCount + workingCount + doneCount;
+    
+    // 計算「已完工點位數」(掃 GeoJSON + 即時通報資料)
+    let donePoints = 0;
+    if (typeof REPAIR_DATA_CACHE !== 'undefined') {
+        Object.keys(REPAIR_DATA_CACHE).forEach(key => {
+            const data = REPAIR_DATA_CACHE[key];
+            if (data && data.features) {
+                data.features.forEach(f => {
+                    const s = (f.properties && (f.properties['案件狀態'] || f.properties['狀態']) || '').toString().trim();
+                    if (s.includes('完工') || s.includes('結案') || s.includes('完成')) donePoints++;
+                });
             }
         });
     }
-
-    // 計算總減碳量
-    // 假設 1 案件 = 10 張 A4 紙，1 張 = 0.0068 kg CO2e
-    const totalCases = pendingCount + workingCount + doneCount;
-    const carbonSaved = (totalCases * 10 * 0.0068).toFixed(2); // 取小數點後兩位
+    if (typeof DASHBOARD_REALTIME_CACHE !== 'undefined') {
+        DASHBOARD_REALTIME_CACHE.forEach(f => {
+            const s = (f.properties && (f.properties['案件狀態'] || f.properties['狀態']) || '').toString().trim();
+            if (s.includes('完工') || s.includes('結案') || s.includes('完成')) donePoints++;
+        });
+    }
+    
+    // 排放係數
+    const PAPER_CO2 = 0.0068;   // kg/張
+    const PHONE_CO2 = 0.005;    // kg/通
+    const DRIVE_CO2 = 0.15;     // kg/km
+    
+    // A. 省紙本: 派工單(案件數) + 會勘表(已完工點位) + 完工照(已完工點位×4.5張)
+    const paperCO2 = (totalCases + donePoints + donePoints * 4.5) * PAPER_CO2;
+    // B. 省廠商通話: 案件數 × 5 通
+    const phoneVendorCO2 = totalCases * 5 * PHONE_CO2;
+    // C. 省開車找尋(保守版): 案件數 × 1km × 20%機率
+    const driveCO2 = totalCases * 1 * DRIVE_CO2 * 0.2;
+    // D. 省民眾通話: 案件數 × 2 通
+    const phoneReporterCO2 = totalCases * 2 * PHONE_CO2;
+    
+    const carbonSaved = (paperCO2 + phoneVendorCO2 + driveCO2 + phoneReporterCO2).toFixed(2);
+    
+    // 把分項數字暴露給 tooltip 用
+    window.CARBON_BREAKDOWN = {
+        totalCases, donePoints,
+        paperCO2: paperCO2.toFixed(2),
+        phoneVendorCO2: phoneVendorCO2.toFixed(2),
+        driveCO2: driveCO2.toFixed(2),
+        phoneReporterCO2: phoneReporterCO2.toFixed(2),
+        total: carbonSaved
+    };
 
     // 將數字更新到畫面上
     document.getElementById('dashPending').innerText = pendingCount;
-    document.getElementById('dashWorking').innerText = workingCount;
-    document.getElementById('dashDone').innerText = doneCount;
-    document.getElementById('dashCarbon').innerHTML = carbonSaved + ' <span style="font-size:12px;">kg</span>';
+     document.getElementById('dashWorking').innerText = workingCount;
+     document.getElementById('dashDone').innerText = doneCount;
+     document.getElementById('dashCarbon').innerHTML = carbonSaved + ' <span style="font-size:12px;">kg</span>';
+     
+     // === 新增：讓數字 ≥1 時變可點 ===
+     setupClickableDashNumbers();
 }
-</script>
 
+// === 新增：讓待處理/施工中數字可點，點擊展開列表 ===
+let DASH_LIST_MODE = null; // 'pending' | 'working' | null
+let DASH_LIST_PAGE = 1;
+const DASH_LIST_PAGE_SIZE = 10;
+
+function setupClickableDashNumbers() {
+    const pendingEl = document.getElementById('dashPending');
+    const workingEl = document.getElementById('dashWorking');
+    const pendingCount = (window.DASH_PENDING_LIST || []).length;
+    const workingCount = (window.DASH_WORKING_LIST || []).length;
+    
+    // 待處理
+    pendingEl.classList.toggle('clickable', pendingCount >= 1);
+    pendingEl.onclick = pendingCount >= 1 ? () => toggleDashList('pending') : null;
+    
+    // 施工中
+    workingEl.classList.toggle('clickable', workingCount >= 1);
+    workingEl.onclick = workingCount >= 1 ? () => toggleDashList('working') : null;
+    
+    // 同步可點態
+    pendingEl.classList.toggle('active', DASH_LIST_MODE === 'pending');
+    workingEl.classList.toggle('active', DASH_LIST_MODE === 'working');
+}
+
+function toggleDashList(mode) {
+    if (DASH_LIST_MODE === mode) {
+        // 同個按鈕再點一次 → 收起
+        DASH_LIST_MODE = null;
+        document.getElementById('dashCaseListBox').style.display = 'none';
+    } else {
+        DASH_LIST_MODE = mode;
+        DASH_LIST_PAGE = 1;
+        renderDashCaseList();
+        document.getElementById('dashCaseListBox').style.display = 'block';
+    }
+    setupClickableDashNumbers();
+}
+
+function renderDashCaseList() {
+    const box = document.getElementById('dashCaseListBox');
+    const list = DASH_LIST_MODE === 'pending' ? (window.DASH_PENDING_LIST || []) : (window.DASH_WORKING_LIST || []);
+    const titleText = DASH_LIST_MODE === 'pending' ? '🔴 待處理案件清單' : '🟠 施工中案件清單';
+    const total = list.length;
+    const totalPages = Math.max(1, Math.ceil(total / DASH_LIST_PAGE_SIZE));
+    if (DASH_LIST_PAGE > totalPages) DASH_LIST_PAGE = totalPages;
+    const start = (DASH_LIST_PAGE - 1) * DASH_LIST_PAGE_SIZE;
+    const end = Math.min(start + DASH_LIST_PAGE_SIZE, total);
+    const pageItems = list.slice(start, end);
+    
+    let html = `<div class="case-list-title">${titleText}（共 ${total} 件）</div>`;
+    
+    pageItems.forEach((item, idx) => {
+        const props = item.props;
+        const caseId = props['案件編號'] || '無編號';
+        const vendor = props['施工廠商'] || '未指定廠商';
+        
+        // 取施工前照片（相容字串/JSON陣列兩種格式）
+        let thumbUrl = '';
+        let rawPhoto = props['施工前照片'] || '';
+        try {
+            if (typeof rawPhoto === 'string' && rawPhoto.trim().startsWith('[')) {
+                const arr = JSON.parse(rawPhoto);
+                if (Array.isArray(arr) && arr.length > 0) thumbUrl = arr[0];
+            } else if (typeof rawPhoto === 'string' && rawPhoto.trim()) {
+                thumbUrl = rawPhoto.trim();
+            }
+        } catch(e) {}
+        
+        // Google Drive 連結轉成可顯示的 thumbnail
+        if (thumbUrl.includes('drive.google.com')) {
+            const m = thumbUrl.match(/\/d\/([a-zA-Z0-9_-]+)/) || thumbUrl.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+            if (m) thumbUrl = `https://drive.google.com/thumbnail?id=${m[1]}&sz=w200`;
+        }
+        
+        const thumbHtml = thumbUrl 
+            ? `<img class="case-thumb" src="${thumbUrl}" onerror="this.outerHTML='<div class=\\'case-thumb-empty\\'>無照片</div>'">`
+            : `<div class="case-thumb-empty">無照片</div>`;
+        
+        html += `
+            <div class="case-item" onclick="jumpToDashCase(${start + idx})">
+                ${thumbHtml}
+                <div class="case-info">
+                    <div class="case-id">${caseId}</div>
+                    <div class="case-vendor">🏗️ ${vendor}</div>
+                </div>
+            </div>`;
+    });
+    
+    // 分頁控制（總頁數 > 1 才顯示）
+    if (totalPages > 1) {
+        html += `
+            <div class="case-pager">
+                <button onclick="changeDashPage(-1)" ${DASH_LIST_PAGE <= 1 ? 'disabled' : ''}>‹ 上一頁</button>
+                <span style="font-size:12px;">第 ${DASH_LIST_PAGE} / ${totalPages} 頁</span>
+                <button onclick="changeDashPage(1)" ${DASH_LIST_PAGE >= totalPages ? 'disabled' : ''}>下一頁 ›</button>
+            </div>`;
+    }
+    
+    box.innerHTML = html;
+}
+
+function changeDashPage(delta) {
+    DASH_LIST_PAGE += delta;
+    renderDashCaseList();
+}
+
+// 點擊列表中某筆案件 → 自動勾選對應圖層 → 飛去開泡泡窗
+window.jumpToDashCase = async function(globalIdx) {
+    const list = DASH_LIST_MODE === 'pending' ? (window.DASH_PENDING_LIST || []) : (window.DASH_WORKING_LIST || []);
+    const item = list[globalIdx];
+    if (!item) return;
+    
+    const props = item.props;
+    const caseId = props['案件編號'];
+    
+    // 1. 先判斷案件來源：歷史圖層 or 即時通報
+    let belongsToFileKey = null;
+    if (typeof REPAIR_DATA_CACHE !== 'undefined') {
+        Object.keys(REPAIR_DATA_CACHE).forEach(key => {
+            const data = REPAIR_DATA_CACHE[key];
+            if (data && data.features) {
+                if (data.features.some(f => (f.properties['案件編號'] || '') === caseId)) {
+                    belongsToFileKey = key;
+                }
+            }
+        });
+    }
+    
+    // 2-A. 若屬於歷史圖層 → 自動勾選對應 checkbox
+    let needWaitForRebuild = false;
+    if (belongsToFileKey) {
+        const checkbox = document.querySelector(`.repair-cb[value="${belongsToFileKey}"]`);
+        if (checkbox && !checkbox.checked) {
+            checkbox.checked = true;
+            const config = (typeof REPAIR_CONFIG !== 'undefined') ? REPAIR_CONFIG.find(c => c.value === belongsToFileKey) : null;
+            const layerLabel = config ? config.label : belongsToFileKey;
+            showAutoLayerToast(`已自動載入「${layerLabel}」圖層`);
+            if (typeof updateRepairPoints === 'function') {
+                updateRepairPoints();
+                needWaitForRebuild = true;
+            }
+        }
+    } else {
+        // 2-B. 不屬於任何歷史圖層 → 視為即時通報案件，自動勾「顯示即時通報案件」
+        const rtToggle = document.getElementById('realtimeToggle');
+        if (rtToggle && !rtToggle.checked) {
+            rtToggle.checked = true;
+            showAutoLayerToast(`已自動載入「即時通報案件」圖層`);
+            if (typeof toggleRealtimeLayer === 'function') {
+                try {
+                    await toggleRealtimeLayer(rtToggle); // 等資料載入完成
+                } catch(e) {
+                    console.warn('即時通報載入失敗', e);
+                }
+            }
+            needWaitForRebuild = true;
+        }
+    }
+    
+    // 3. 等 markers 重建完成
+    const waitMs = needWaitForRebuild ? 900 : 100;
+    setTimeout(() => locateMarkerAndOpenPopup(props), waitMs);
+};
+
+// 在所有圖層中找指定案件的 marker，飛過去並開泡泡窗
+function locateMarkerAndOpenPopup(props) {
+    const caseId = props['案件編號'];
+    const x1 = parseFloat(props['x1']);
+    const y1 = parseFloat(props['y1']);
+    let targetMarker = null;
+    
+    // 【修正1】activeRepairLayers 是 marker 陣列，直接遍歷
+    if (typeof activeRepairLayers !== 'undefined' && activeRepairLayers.length > 0) {
+        for (let i = 0; i < activeRepairLayers.length; i++) {
+            const m = activeRepairLayers[i];
+            if (!m || !m.customData) continue;
+            // 直接比對 props
+            if (m.customData.props && m.customData.props['案件編號'] === caseId) {
+                targetMarker = m;
+                break;
+            }
+            // 同一個 marker 可能合併了多筆同座標案件，比對 group
+            if (Array.isArray(m.customData.group)) {
+                const found = m.customData.group.find(g => 
+                    g.feature && g.feature.properties && g.feature.properties['案件編號'] === caseId
+                );
+                if (found) { targetMarker = m; break; }
+            }
+        }
+    }
+    
+    // 在 realtimeLayer 中找
+    if (!targetMarker && typeof realtimeLayer !== 'undefined') {
+        realtimeLayer.eachLayer(m => {
+            if (targetMarker) return;
+            if (m.customData && m.customData.props && m.customData.props['案件編號'] === caseId) {
+                targetMarker = m;
+            }
+        });
+    }
+    
+    // 開泡泡窗的閉包
+    const openIt = (marker) => {
+        if (typeof window.openDetailPopupFromMarker === 'function') {
+            window.openDetailPopupFromMarker(marker);
+        } else {
+            marker.openPopup();
+        }
+    };
+    
+    if (targetMarker) {
+        const latlng = targetMarker.getLatLng();
+        
+        // 【修正2】處理 markersClusterGroup：若 marker 在 cluster 裡，先展開
+        if (typeof markersClusterGroup !== 'undefined' && markersClusterGroup && 
+            typeof markersClusterGroup.hasLayer === 'function' && 
+            markersClusterGroup.hasLayer(targetMarker)) {
+            const visibleParent = markersClusterGroup.getVisibleParent(targetMarker);
+            if (visibleParent && visibleParent !== targetMarker) {
+                // 在 cluster 裡 → 用 zoomToShowLayer 展開後再開泡泡窗
+                map.flyTo(latlng, 18, { duration: 0.8 });
+                setTimeout(() => {
+                    markersClusterGroup.zoomToShowLayer(targetMarker, () => openIt(targetMarker));
+                }, 900);
+                return;
+            }
+        }
+        
+        // 不在 cluster 裡或已展開 → 直接飛過去開
+        map.flyTo(latlng, 18, { duration: 0.8 });
+        map.once('moveend', () => openIt(targetMarker));
+        setTimeout(() => openIt(targetMarker), 1200);
+    } else {
+        // Fallback：找不到 marker，但有座標 → 直接飛過去顯示簡易資訊
+        if (!isNaN(x1) && !isNaN(y1)) {
+            const latlng = L.latLng(y1, x1);
+            map.flyTo(latlng, 18, { duration: 0.8 });
+            setTimeout(() => {
+                L.popup({ maxWidth: 280 })
+                    .setLatLng(latlng)
+                    .setContent(`<div style="padding:5px;"><b>${caseId}</b><br>狀態：${props['案件狀態']||''}<br>廠商：${props['施工廠商']||''}<br><span style="color:#d32f2f; font-size:12px;">⚠️ 該圖層的 marker 暫時無法載入</span></div>`)
+                    .openOn(map);
+            }, 1000);
+        } else {
+            showAutoLayerToast(`⚠️ 找不到案件「${caseId}」的位置資料`);
+        }
+    }
+}
+
+function showAutoLayerToast(text) {
+    const toast = document.getElementById('autoLayerToast');
+    if (!toast) return;
+    toast.innerText = text;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2500);
+}
+
+// === 新增：減碳公式 tooltip 切換 ===
+window.toggleCarbonTooltip = function(e) {
+    if (e) e.stopPropagation();
+    const tooltip = document.getElementById('carbonTooltip');
+    const content = document.getElementById('carbonTooltipContent');
+    if (!tooltip || !content) return;
+    
+    if (tooltip.style.display === 'block') {
+        tooltip.style.display = 'none';
+        return;
+    }
+    
+    // 從全域變數取得分項數字
+    const cb = window.CARBON_BREAKDOWN || {};
+    const tc = cb.totalCases || 0;
+    const dp = cb.donePoints || 0;
+    
+    content.innerHTML = `
+        <div style="margin-bottom:6px;"><b>📋 案件總數：</b>${tc} 件　<b>已完工點位：</b>${dp} 個</div>
+        <table style="width:100%; border-collapse:collapse; font-size:11px;">
+            <tr style="background:#f4f4f4;">
+                <td style="padding:4px; border:1px solid #ddd;">面向</td>
+                <td style="padding:4px; border:1px solid #ddd; text-align:right;">減碳量</td>
+            </tr>
+            <tr>
+                <td style="padding:4px; border:1px solid #ddd;">A. 省紙本<br><span style="color:#888; font-size:10px;">派工單${tc}張+會勘表${dp}張+完工照${dp}×4.5張</span></td>
+                <td style="padding:4px; border:1px solid #ddd; text-align:right; font-weight:bold; color:#004080;">${cb.paperCO2 || 0} kg</td>
+            </tr>
+            <tr>
+                <td style="padding:4px; border:1px solid #ddd;">B. 省廠商通話<br><span style="color:#888; font-size:10px;">${tc}件×5通</span></td>
+                <td style="padding:4px; border:1px solid #ddd; text-align:right; font-weight:bold; color:#004080;">${cb.phoneVendorCO2 || 0} kg</td>
+            </tr>
+            <tr>
+                <td style="padding:4px; border:1px solid #ddd;">C. 省開車找尋<br><span style="color:#888; font-size:10px;">${tc}件×1km×20%機率</span></td>
+                <td style="padding:4px; border:1px solid #ddd; text-align:right; font-weight:bold; color:#004080;">${cb.driveCO2 || 0} kg</td>
+            </tr>
+            <tr>
+                <td style="padding:4px; border:1px solid #ddd;">D. 省民眾通話<br><span style="color:#888; font-size:10px;">${tc}件×2通</span></td>
+                <td style="padding:4px; border:1px solid #ddd; text-align:right; font-weight:bold; color:#004080;">${cb.phoneReporterCO2 || 0} kg</td>
+            </tr>
+            <tr style="background:#e8f5e9;">
+                <td style="padding:4px; border:1px solid #ddd; font-weight:bold;">合計</td>
+                <td style="padding:4px; border:1px solid #ddd; text-align:right; font-weight:bold; color:#27ae60;">${cb.total || 0} kg</td>
+            </tr>
+        </table>`;
+    
+    tooltip.style.display = 'block';
+};
+
+// 點擊 tooltip 以外區域 → 收起
+document.addEventListener('click', function(e) {
+    const tooltip = document.getElementById('carbonTooltip');
+    const btn = document.getElementById('carbonInfoBtn');
+    if (!tooltip || tooltip.style.display !== 'block') return;
+    if (e.target === btn || tooltip.contains(e.target)) return;
+    tooltip.style.display = 'none';
+});
+</script>
 </body>
 </html>
 

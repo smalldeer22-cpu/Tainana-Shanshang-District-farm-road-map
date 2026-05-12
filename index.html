@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0512_V2)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0512_V3)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -1762,63 +1762,62 @@
   transform: scale(1.1);
   background: var(--accent-color);
 }
-/* === 新增：儀表板縮合按鈕 === */
+/* === 儀表板右上角的收起按鈕 ◀ === */
 #dashCollapseBtn {
     position: absolute;
-    top: 50%;
-    left: -22px;
-    transform: translateY(-50%);
-    width: 24px;
-    height: 60px;
+    top: 10px;
+    right: 10px;
+    width: 26px;
+    height: 26px;
     background: #004080;
     color: white;
-    border-radius: 8px 0 0 8px;
+    border-radius: 50%;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 14px;
+    font-size: 12px;
     font-weight: bold;
-    box-shadow: -2px 0 6px rgba(0,0,0,0.15);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     z-index: 10;
     user-select: none;
     transition: background 0.2s;
 }
 #dashCollapseBtn:hover { background: #002b5c; }
 
-/* 縮起狀態：儀表板移到螢幕右側外，只露出按鈕 */
+/* 縮起狀態：儀表板完全滑出螢幕右側 */
 #ecoDashboardPanel.collapsed {
     transform: translateX(calc(100% + 20px)) !important;
     opacity: 1 !important;
-}
-#ecoDashboardPanel.collapsed #dashCollapseBtn {
-    /* 縮起時按鈕保持在螢幕內(往左推) */
-    left: -22px;
+    pointer-events: none;
 }
 
-/* 縮起後的窄條:獨立元素,固定在右側邊緣 */
+/* === 縮起後的細長窄條：緊貼右邊框，高度跟儀表板一致 === */
 #dashCollapsedStrip {
     display: none;
     position: absolute;
-    top: 50%;
+    bottom: 90px;       /* 跟儀表板對齊 */
     right: 0;
-    transform: translateY(-50%);
-    width: 25px;
-    height: 80px;
-    background: #004080;
+    width: 20px;
+    /* 高度跟儀表板差不多 */
+    height: 500px;
+    max-height: 75vh;   /* 視窗太小時自動縮 */
+    background: rgba(0, 64, 128, 0.92);
+    backdrop-filter: blur(10px);
     color: white;
     border-radius: 8px 0 0 8px;
     cursor: pointer;
     align-items: center;
     justify-content: center;
-    font-size: 16px;
+    font-size: 14px;
     font-weight: bold;
     box-shadow: -3px 0 10px rgba(0,0,0,0.25);
     z-index: 2001;
     user-select: none;
+    transition: background 0.2s;
 }
 #dashCollapsedStrip.show { display: flex; }
-#dashCollapsedStrip:hover { background: #002b5c; }
+#dashCollapsedStrip:hover { background: rgba(0, 43, 92, 0.95); }
 
 #ecoDashboardPanel {
   position: absolute;
@@ -2636,6 +2635,9 @@
 <div id="ecoDashboardBtn" onclick="toggleEcoDashboard()"><i class="fas fa-chart-pie"></i></div>
 <div id="ecoDashboardPanel">
     
+    
+    <!-- 右上角收起按鈕 -->
+    <div id="dashCollapseBtn" onclick="collapseDashboard()" title="收起儀表板">◀</div>
     
     <div class="eco-dash-title"><i class="fas fa-leaf" style="color:#28a745;"></i> 數位治理與減碳成效</div>
     <div class="eco-stat-item">
@@ -9084,15 +9086,15 @@ function updateStripState() {
     if (!strip) {
         strip = document.createElement('div');
         strip.id = 'dashCollapsedStrip';
+        strip.innerHTML = '▶';
+        strip.title = '展開儀表板';
+        strip.onclick = window.expandDashboard;
         document.body.appendChild(strip);
     }
     const panel = document.getElementById('ecoDashboardPanel');
     const isCollapsed = panel && panel.classList.contains('collapsed');
-    strip.innerHTML = isCollapsed ? '▶' : '◀';
-    strip.title = isCollapsed ? '展開儀表板' : '收起儀表板';
-    strip.onclick = isCollapsed ? window.expandDashboard : window.collapseDashboard;
-    // 只要儀表板開著(不管縮合與否),窄條都顯示
-    if (panel && (panel.classList.contains('show') || panel.style.display === 'block')) {
+    // 只有在「縮起時」才顯示窄條;展開時或關閉時都不顯示
+    if (isCollapsed) {
         strip.classList.add('show');
     } else {
         strip.classList.remove('show');

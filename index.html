@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0510_V5)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0512_V2)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -1762,6 +1762,64 @@
   transform: scale(1.1);
   background: var(--accent-color);
 }
+/* === 新增：儀表板縮合按鈕 === */
+#dashCollapseBtn {
+    position: absolute;
+    top: 50%;
+    left: -22px;
+    transform: translateY(-50%);
+    width: 24px;
+    height: 60px;
+    background: #004080;
+    color: white;
+    border-radius: 8px 0 0 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: bold;
+    box-shadow: -2px 0 6px rgba(0,0,0,0.15);
+    z-index: 10;
+    user-select: none;
+    transition: background 0.2s;
+}
+#dashCollapseBtn:hover { background: #002b5c; }
+
+/* 縮起狀態：儀表板移到螢幕右側外，只露出按鈕 */
+#ecoDashboardPanel.collapsed {
+    transform: translateX(calc(100% + 20px)) !important;
+    opacity: 1 !important;
+}
+#ecoDashboardPanel.collapsed #dashCollapseBtn {
+    /* 縮起時按鈕保持在螢幕內(往左推) */
+    left: -22px;
+}
+
+/* 縮起後的窄條:獨立元素,固定在右側邊緣 */
+#dashCollapsedStrip {
+    display: none;
+    position: absolute;
+    top: 50%;
+    right: 0;
+    transform: translateY(-50%);
+    width: 25px;
+    height: 80px;
+    background: #004080;
+    color: white;
+    border-radius: 8px 0 0 8px;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: bold;
+    box-shadow: -3px 0 10px rgba(0,0,0,0.25);
+    z-index: 2001;
+    user-select: none;
+}
+#dashCollapsedStrip.show { display: flex; }
+#dashCollapsedStrip:hover { background: #002b5c; }
+
 #ecoDashboardPanel {
   position: absolute;
   bottom: 90px;
@@ -2577,6 +2635,8 @@
 <!-- === 新增：綠能治理儀表板介面 === -->
 <div id="ecoDashboardBtn" onclick="toggleEcoDashboard()"><i class="fas fa-chart-pie"></i></div>
 <div id="ecoDashboardPanel">
+    
+    
     <div class="eco-dash-title"><i class="fas fa-leaf" style="color:#28a745;"></i> 數位治理與減碳成效</div>
     <div class="eco-stat-item">
         <span class="eco-stat-label">待處理案件</span>
@@ -2594,6 +2654,10 @@
         <span class="eco-stat-label">🌿 累計減碳量(含預估)</span>
         <span class="eco-stat-val val-carbon" id="dashCarbon">0 <span style="font-size:12px;">kg</span></span>
     </div>
+    <div class="eco-stat-item" style="margin-top:4px;">
+        <span class="eco-stat-label" style="font-size:12px; color:#666;">📄 相當於</span>
+        <span class="eco-stat-val" id="dashPaperSheets" style="font-size:14px; color:#27ae60; font-weight:bold;">0 張 A4 紙</span>
+    </div>
     <div class="carbon-note">
        ※ 含省紙本、通話、車程估算
        <span id="carbonInfoBtn" onclick="toggleCarbonTooltip(event)" 
@@ -2601,7 +2665,7 @@
                     text-align:center; background:#004080; color:#fff; border-radius:50%; 
                     font-size:11px; font-weight:bold; cursor:pointer; margin-left:4px;">i</span>
        <div id="carbonTooltip" style="display:none; position:absolute; right:10px; bottom:50px; 
-                                       width:280px; background:#fff; border:1px solid #004080; 
+                                       width:340px; max-height:500px; overflow-y:auto; background:#fff; border:1px solid #004080; 
                                        border-radius:8px; padding:12px; box-shadow:0 4px 12px rgba(0,0,0,0.2); 
                                        font-size:11px; color:#333; line-height:1.6; z-index:99;">
            <div style="font-weight:bold; color:#004080; margin-bottom:6px; border-bottom:1px solid #ddd; padding-bottom:4px;">
@@ -8560,14 +8624,21 @@ async function exportAllRiskGroups() {
 <!-- === 新增：綠能治理儀表板邏輯 === -->
 <script>
 function toggleEcoDashboard() {
-    const panel = document.getElementById('ecoDashboardPanel');
-    if (panel.classList.contains('show')) {
-        panel.classList.remove('show');
-        panel.style.opacity = '0';
-        setTimeout(() => panel.style.display = 'none', 300); // 動畫過渡
+     const panel = document.getElementById('ecoDashboardPanel');
+     if (panel.classList.contains('show')) {
+            panel.classList.remove('show');
+            panel.style.opacity = '0';
+            setTimeout(() => panel.style.display = 'none', 300); // 動畫過渡
+            // 順便隱藏縮合窄條
+            const strip = document.getElementById('dashCollapsedStrip');
+            if (strip) strip.classList.remove('show');
     } else {
-        updateEcoDashboardStats(); // 展開時先計算最新數字
-        panel.style.display = 'block';
+          // 強制取消縮合狀態,確保儀表板正常顯示
+          panel.classList.remove('collapsed');
+          updateEcoDashboardStats(); // 展開時先計算最新數字
+            panel.style.display = 'block';
+            // 讓窄條跟著一起出現(可雙向切換)
+            setTimeout(() => { if (typeof updateStripState === 'function') updateStripState(); }, 50);
         setTimeout(() => {
             panel.classList.add('show');
             panel.style.opacity = '1';
@@ -8662,29 +8733,69 @@ function updateEcoDashboardStats() {
         });
     }
     
-    // 排放係數
-    const PAPER_CO2 = 0.0068;   // kg/張
-    const PHONE_CO2 = 0.005;    // kg/通
-    const DRIVE_CO2 = 0.15;     // kg/km
+    // === 排放係數 ===
+    const PAPER_CO2 = 0.0068;        // kg/張 A4
+    const PHOTOCOPY_CO2 = 0.0015;    // kg/張 影印機耗電
+    const PHONE_CO2 = 0.005;         // kg/通
+    const DRIVE_MOTOR_CO2 = 0.069;   // kg/km 機車
+    const DRIVE_TRUCK_CO2 = 0.235;   // kg/km 小貨車
+    const WORK_TIME_CO2 = 0.05;      // kg/hr 辦公工時
     
-    // A. 省紙本: 派工單(案件數) + 會勘表(已完工點位) + 完工照(已完工點位×4.5張)
-    const paperCO2 = (totalCases + donePoints + donePoints * 4.5) * PAPER_CO2;
-    // B. 省廠商通話: 案件數 × 5 通
-    const phoneVendorCO2 = totalCases * 5 * PHONE_CO2;
-    // C. 省開車找尋(保守版): 案件數 × 1km × 20%機率
-    const driveCO2 = totalCases * 1 * DRIVE_CO2 * 0.2;
-    // D. 省民眾通話: 案件數 × 2 通
-    const phoneReporterCO2 = totalCases * 2 * PHONE_CO2;
+    // === 自訂參數 ===
+    const PHONE_VENDOR = 1.5;        // 廠商↔機關 每案通話次數
+    const PHONE_REPORTER = 1;        // 民眾↔機關 每案通話次數
+    const INSPECTION_REPORTS = 12;   // 巡查報告數/年
     
-    const carbonSaved = (paperCO2 + phoneVendorCO2 + driveCO2 + phoneReporterCO2).toFixed(2);
+    // ====== 1. 施作廠商端 ======
+    const vendor_paper = donePoints * 4.5 * PAPER_CO2;
+    const vendor_copy  = donePoints * 4.5 * PHOTOCOPY_CO2;
+    const vendor_layout = totalCases * 0.5 * WORK_TIME_CO2;
+    const vendor_phone = totalCases * PHONE_VENDOR * PHONE_CO2;
+    const vendor_drive = totalCases * 1 * DRIVE_TRUCK_CO2 * 0.5;
+    const v1_total = vendor_paper + vendor_copy + vendor_layout + vendor_phone + vendor_drive;
     
-    // 把分項數字暴露給 tooltip 用
+    // ====== 2. 機關端 ======
+    const gov_paper = (totalCases + donePoints) * PAPER_CO2;
+    const gov_copy  = (totalCases + donePoints) * PHOTOCOPY_CO2;
+    const gov_review = totalCases * 0.3 * WORK_TIME_CO2;
+    const gov_phoneV = totalCases * PHONE_VENDOR * PHONE_CO2;
+    const gov_drive = totalCases * 1 * DRIVE_MOTOR_CO2 * 0.5;
+    const gov_phoneR = totalCases * PHONE_REPORTER * PHONE_CO2;
+    const v2_total = gov_paper + gov_copy + gov_review + gov_phoneV + gov_drive + gov_phoneR;
+    
+    // ====== 3. 民眾端 ======
+    const v3_total = totalCases * PHONE_REPORTER * PHONE_CO2;
+    
+    // ====== 4. 巡檢廠商端 ======
+    const insp_paper = INSPECTION_REPORTS * 7 * PAPER_CO2;
+    const insp_layout = INSPECTION_REPORTS * 0.5 * WORK_TIME_CO2;
+    const insp_phone = INSPECTION_REPORTS * 1 * PHONE_CO2;
+    const v4_total = insp_paper + insp_layout + insp_phone;
+    
+    const carbonSaved = (v1_total + v2_total + v3_total + v4_total).toFixed(2);
+    
+    // 把所有分項暴露給 tooltip 用
     window.CARBON_BREAKDOWN = {
         totalCases, donePoints,
-        paperCO2: paperCO2.toFixed(2),
-        phoneVendorCO2: phoneVendorCO2.toFixed(2),
-        driveCO2: driveCO2.toFixed(2),
-        phoneReporterCO2: phoneReporterCO2.toFixed(2),
+        inspectionReports: INSPECTION_REPORTS,
+        vendor_paper: vendor_paper.toFixed(2),
+        vendor_copy: vendor_copy.toFixed(2),
+        vendor_layout: vendor_layout.toFixed(2),
+        vendor_phone: vendor_phone.toFixed(2),
+        vendor_drive: vendor_drive.toFixed(2),
+        v1_total: v1_total.toFixed(2),
+        gov_paper: gov_paper.toFixed(2),
+        gov_copy: gov_copy.toFixed(2),
+        gov_review: gov_review.toFixed(2),
+        gov_phoneV: gov_phoneV.toFixed(2),
+        gov_drive: gov_drive.toFixed(2),
+        gov_phoneR: gov_phoneR.toFixed(2),
+        v2_total: v2_total.toFixed(2),
+        v3_total: v3_total.toFixed(2),
+        insp_paper: insp_paper.toFixed(2),
+        insp_layout: insp_layout.toFixed(2),
+        insp_phone: insp_phone.toFixed(2),
+        v4_total: v4_total.toFixed(2),
         total: carbonSaved
     };
 
@@ -8693,6 +8804,10 @@ function updateEcoDashboardStats() {
      document.getElementById('dashWorking').innerText = workingCount;
      document.getElementById('dashDone').innerText = doneCount;
      document.getElementById('dashCarbon').innerHTML = carbonSaved + ' <span style="font-size:12px;">kg</span>';
+     
+     // 換算等值 A4 紙張數 (每張 0.0068 kg CO2e)
+     const paperEquivSheets = Math.round(carbonSaved / 0.0068).toLocaleString();
+     document.getElementById('dashPaperSheets').innerText = paperEquivSheets + ' 張 A4 紙';
      
      // === 新增：讓數字 ≥1 時變可點 ===
      setupClickableDashNumbers();
@@ -8955,6 +9070,41 @@ function showAutoLayerToast(text) {
     setTimeout(() => toast.classList.remove('show'), 2500);
 }
 
+// === 新增：儀表板縮放控制 ===
+window.collapseDashboard = function() {
+    const panel = document.getElementById('ecoDashboardPanel');
+    if (!panel) return;
+    panel.classList.add('collapsed');
+    updateStripState();
+};
+
+// 切換窄條狀態與圖示
+function updateStripState() {
+    let strip = document.getElementById('dashCollapsedStrip');
+    if (!strip) {
+        strip = document.createElement('div');
+        strip.id = 'dashCollapsedStrip';
+        document.body.appendChild(strip);
+    }
+    const panel = document.getElementById('ecoDashboardPanel');
+    const isCollapsed = panel && panel.classList.contains('collapsed');
+    strip.innerHTML = isCollapsed ? '▶' : '◀';
+    strip.title = isCollapsed ? '展開儀表板' : '收起儀表板';
+    strip.onclick = isCollapsed ? window.expandDashboard : window.collapseDashboard;
+    // 只要儀表板開著(不管縮合與否),窄條都顯示
+    if (panel && (panel.classList.contains('show') || panel.style.display === 'block')) {
+        strip.classList.add('show');
+    } else {
+        strip.classList.remove('show');
+    }
+}
+
+window.expandDashboard = function() {
+    const panel = document.getElementById('ecoDashboardPanel');
+    if (panel) panel.classList.remove('collapsed');
+    updateStripState();
+};
+
 // === 新增：減碳公式 tooltip 切換 ===
 window.toggleCarbonTooltip = function(e) {
     if (e) e.stopPropagation();
@@ -8967,39 +9117,60 @@ window.toggleCarbonTooltip = function(e) {
         return;
     }
     
-    // 從全域變數取得分項數字
     const cb = window.CARBON_BREAKDOWN || {};
     const tc = cb.totalCases || 0;
     const dp = cb.donePoints || 0;
+    const ir = cb.inspectionReports || 12;
+    
+    // 表格樣式
+    const thStyle = 'padding:4px 6px; border:1px solid #ddd; background:#f4f4f4; font-weight:bold;';
+    const tdStyle = 'padding:4px 6px; border:1px solid #ddd;';
+    const numStyle = 'padding:4px 6px; border:1px solid #ddd; text-align:right; font-weight:bold; color:#004080;';
+    const groupHeader = 'padding:5px; border:1px solid #ddd; background:#e3f2fd; font-weight:bold; color:#004080;';
+    const subTotal = 'padding:4px 6px; border:1px solid #ddd; text-align:right; font-weight:bold; color:#d35400;';
     
     content.innerHTML = `
-        <div style="margin-bottom:6px;"><b>📋 案件總數：</b>${tc} 件　<b>已完工點位：</b>${dp} 個</div>
-        <table style="width:100%; border-collapse:collapse; font-size:11px;">
-            <tr style="background:#f4f4f4;">
-                <td style="padding:4px; border:1px solid #ddd;">面向</td>
-                <td style="padding:4px; border:1px solid #ddd; text-align:right;">減碳量</td>
-            </tr>
+        <div style="margin-bottom:8px; font-size:11px; color:#444;">
+            <b>📋 案件總數：</b>${tc} 件　<b>已完工點位：</b>${dp} 個　<b>巡查報告：</b>${ir} 份/年
+        </div>
+        <table style="width:100%; border-collapse:collapse; font-size:10.5px; line-height:1.4;">
             <tr>
-                <td style="padding:4px; border:1px solid #ddd;">A. 省紙本<br><span style="color:#888; font-size:10px;">派工單${tc}張+會勘表${dp}張+完工照${dp}×4.5張</span></td>
-                <td style="padding:4px; border:1px solid #ddd; text-align:right; font-weight:bold; color:#004080;">${cb.paperCO2 || 0} kg</td>
+                <th style="${thStyle}; width:65%;">面向</th>
+                <th style="${thStyle}; width:35%; text-align:right;">減碳量</th>
             </tr>
-            <tr>
-                <td style="padding:4px; border:1px solid #ddd;">B. 省廠商通話<br><span style="color:#888; font-size:10px;">${tc}件×5通</span></td>
-                <td style="padding:4px; border:1px solid #ddd; text-align:right; font-weight:bold; color:#004080;">${cb.phoneVendorCO2 || 0} kg</td>
-            </tr>
-            <tr>
-                <td style="padding:4px; border:1px solid #ddd;">C. 省開車找尋<br><span style="color:#888; font-size:10px;">${tc}件×1km×20%機率</span></td>
-                <td style="padding:4px; border:1px solid #ddd; text-align:right; font-weight:bold; color:#004080;">${cb.driveCO2 || 0} kg</td>
-            </tr>
-            <tr>
-                <td style="padding:4px; border:1px solid #ddd;">D. 省民眾通話<br><span style="color:#888; font-size:10px;">${tc}件×2通</span></td>
-                <td style="padding:4px; border:1px solid #ddd; text-align:right; font-weight:bold; color:#004080;">${cb.phoneReporterCO2 || 0} kg</td>
-            </tr>
+            
+            <tr><td colspan="2" style="${groupHeader}">🏗️ 1. 施作廠商端</td></tr>
+            <tr><td style="${tdStyle}">(1) 省紙張(驗收照片)<br><span style="color:#888;">${dp}點位×4.5張×0.0068</span></td><td style="${numStyle}">${cb.vendor_paper} kg</td></tr>
+            <tr><td style="${tdStyle}">(2) 省影印機耗電<br><span style="color:#888;">${dp}×4.5張×0.0015</span></td><td style="${numStyle}">${cb.vendor_copy} kg</td></tr>
+            <tr><td style="${tdStyle}">(3) 省排版時間<br><span style="color:#888;">${tc}案×0.5hr×0.05</span></td><td style="${numStyle}">${cb.vendor_layout} kg</td></tr>
+            <tr><td style="${tdStyle}">(4) 省與機關通話<br><span style="color:#888;">${tc}案×1.5通×0.005</span></td><td style="${numStyle}">${cb.vendor_phone} kg</td></tr>
+            <tr><td style="${tdStyle}">(5) 省開車找尋<br><span style="color:#888;">${tc}案×1km×50%×0.235</span></td><td style="${numStyle}">${cb.vendor_drive} kg</td></tr>
+            <tr><td style="${tdStyle}">　小計</td><td style="${subTotal}">${cb.v1_total} kg</td></tr>
+            
+            <tr><td colspan="2" style="${groupHeader}">🏛️ 2. 機關端</td></tr>
+            <tr><td style="${tdStyle}">(1) 省紙張(派工單+會勘表)<br><span style="color:#888;">(${tc}+${dp})張×0.0068</span></td><td style="${numStyle}">${cb.gov_paper} kg</td></tr>
+            <tr><td style="${tdStyle}">(2) 省影印機耗電<br><span style="color:#888;">(${tc}+${dp})×0.0015</span></td><td style="${numStyle}">${cb.gov_copy} kg</td></tr>
+            <tr><td style="${tdStyle}">(3) 省照片核對時間<br><span style="color:#888;">${tc}案×0.3hr×0.05</span></td><td style="${numStyle}">${cb.gov_review} kg</td></tr>
+            <tr><td style="${tdStyle}">(4) 省與廠商通話<br><span style="color:#888;">${tc}案×1.5通×0.005</span></td><td style="${numStyle}">${cb.gov_phoneV} kg</td></tr>
+            <tr><td style="${tdStyle}">(5) 省開車找尋通報地點<br><span style="color:#888;">${tc}案×1km×50%×0.069</span></td><td style="${numStyle}">${cb.gov_drive} kg</td></tr>
+            <tr><td style="${tdStyle}">(6) 省與民眾通話<br><span style="color:#888;">${tc}案×1通×0.005</span></td><td style="${numStyle}">${cb.gov_phoneR} kg</td></tr>
+            <tr><td style="${tdStyle}">　小計</td><td style="${subTotal}">${cb.v2_total} kg</td></tr>
+            
+            <tr><td colspan="2" style="${groupHeader}">👨 3. 民眾端</td></tr>
+            <tr><td style="${tdStyle}">省與機關通報通話<br><span style="color:#888;">${tc}案×1通×0.005</span></td><td style="${numStyle}">${cb.v3_total} kg</td></tr>
+            
+            <tr><td colspan="2" style="${groupHeader}">🔍 4. 巡檢廠商端</td></tr>
+            <tr><td style="${tdStyle}">(1) 省紙張(巡查報告)<br><span style="color:#888;">${ir}份×7張×0.0068</span></td><td style="${numStyle}">${cb.insp_paper} kg</td></tr>
+            <tr><td style="${tdStyle}">(2) 省排版時間<br><span style="color:#888;">${ir}份×0.5hr×0.05</span></td><td style="${numStyle}">${cb.insp_layout} kg</td></tr>
+            <tr><td style="${tdStyle}">(3) 省與機關通話<br><span style="color:#888;">${ir}份×1通×0.005</span></td><td style="${numStyle}">${cb.insp_phone} kg</td></tr>
+            <tr><td style="${tdStyle}">　小計</td><td style="${subTotal}">${cb.v4_total} kg</td></tr>
+            
             <tr style="background:#e8f5e9;">
-                <td style="padding:4px; border:1px solid #ddd; font-weight:bold;">合計</td>
-                <td style="padding:4px; border:1px solid #ddd; text-align:right; font-weight:bold; color:#27ae60;">${cb.total || 0} kg</td>
+                <td style="padding:6px; border:2px solid #27ae60; font-weight:bold; font-size:12px;">🌿 四端合計</td>
+                <td style="padding:6px; border:2px solid #27ae60; text-align:right; font-weight:bold; color:#27ae60; font-size:13px;">${cb.total} kg</td>
             </tr>
-        </table>`;
+        </table>
+    `;
     
     tooltip.style.display = 'block';
 };

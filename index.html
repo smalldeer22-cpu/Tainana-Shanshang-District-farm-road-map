@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0512_V3)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0512_V4)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -1764,24 +1764,22 @@
 }
 /* === 儀表板右上角的收起按鈕 ◀ === */
 #dashCollapseBtn {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    width: 26px;
-    height: 26px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
     background: #004080;
     color: white;
     border-radius: 50%;
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: bold;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    z-index: 10;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
     user-select: none;
     transition: background 0.2s;
+    vertical-align: middle;
+    margin-right: 6px;
 }
 #dashCollapseBtn:hover { background: #002b5c; }
 
@@ -2636,9 +2634,6 @@
 <div id="ecoDashboardPanel">
     
     
-    <!-- 右上角收起按鈕 -->
-    <div id="dashCollapseBtn" onclick="collapseDashboard()" title="收起儀表板">◀</div>
-    
     <div class="eco-dash-title"><i class="fas fa-leaf" style="color:#28a745;"></i> 數位治理與減碳成效</div>
     <div class="eco-stat-item">
         <span class="eco-stat-label">待處理案件</span>
@@ -2661,6 +2656,7 @@
         <span class="eco-stat-val" id="dashPaperSheets" style="font-size:14px; color:#27ae60; font-weight:bold;">0 張 A4 紙</span>
     </div>
     <div class="carbon-note">
+       <span id="dashCollapseBtn" onclick="collapseDashboard()" title="收起儀表板">◀</span>
        ※ 含省紙本、通話、車程估算
        <span id="carbonInfoBtn" onclick="toggleCarbonTooltip(event)" 
              style="display:inline-block; width:16px; height:16px; line-height:16px; 

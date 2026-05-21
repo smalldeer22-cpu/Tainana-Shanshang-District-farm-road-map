@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0512_V4)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0521_V6)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -1280,22 +1280,33 @@
   .measure-label { background: rgba(255,255,255,0.9); border: 1px solid #333; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 12px; white-space: nowrap; display: flex; align-items: center; gap: 5px; }
   .measure-close-btn { color: red; cursor: pointer; font-weight: bold; padding: 0 4px; }
   
-  .stats-columns { display: flex; gap: 8px; margin-top: 5px; }
-  .stats-col { flex: 1; padding: 8px; border-radius: 6px; overflow: hidden; }
-  .col-general { background: #e3f2fd; border: 1px solid #bbdefb; } 
-  .col-emergency { background: #ffebee; border: 1px solid #ffcdd2; } 
+  .stats-columns { display: flex; flex-direction: column; gap: 8px; margin-top: 5px; }
+
+  .stats-col { width: 100%; padding: 10px; border-radius: 6px; overflow: hidden; box-sizing: border-box; }
+
+  .col-general { background: #e3f2fd; border: 1px solid #bbdefb; }
+
+  .col-emergency { background: #ffebee; border: 1px solid #ffcdd2; }
+
+  .col-maintain { background: #e8f5e9; border: 1px solid #c8e6c9; }
+
   .stats-header { font-size: 14px; font-weight: bold; text-align: center; margin-bottom: 8px; padding-bottom: 5px; border-bottom: 2px solid rgba(0,0,0,0.1); }
+
   .col-general .stats-header { color: #004080; }
+
   .col-emergency .stats-header { color: #d32f2f; }
-  .stat-year-row { margin-bottom: 8px; border-bottom: 1px dashed rgba(0,0,0,0.1); padding-bottom: 6px; }
-  .stat-year-row:last-child { border-bottom: none; }
-  .stat-year-title { font-size: 13px; font-weight: bold; color: #444; display: flex; justify-content: space-between; align-items: center; }
-  .stat-percent-text { font-size: 11px; color: #777; background: rgba(255,255,255,0.6); padding: 1px 4px; border-radius: 3px; }
-  .stat-data-row { font-size: 13px; margin-top: 3px; color: #222; font-weight: bold; }
-  .stat-bar-bg { background: rgba(0,0,0,0.1); height: 5px; border-radius: 3px; width: 100%; margin-top: 5px; overflow: hidden; }
-  .stat-bar-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
-  .col-general .stat-bar-fill { background-color: var(--primary-color); }
-  .col-emergency .stat-bar-fill { background-color: #d32f2f; }
+
+  .col-maintain .stats-header { color: #2e7d32; }
+
+  .stat-year-row { margin-bottom: 8px; border-bottom: 1px dashed rgba(0,0,0,0.15); padding-bottom: 6px; }
+
+  .stat-year-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+
+  .stat-year-title { font-size: 13px; font-weight: bold; color: #444; display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+
+  .stat-percent-text { font-size: 11px; color: #555; background: rgba(255,255,255,0.7); padding: 2px 6px; border-radius: 3px; white-space: nowrap; }
+
+  .stat-data-row { font-size: 13px; margin-top: 4px; color: #222; font-weight: bold; }
   
   /* === 案件通報三步驟介面 (手機版溢出修正) === */
   #reportOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; height: 100dvh; background: rgba(0,0,0,0.6); z-index: 9999; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
@@ -2382,15 +2393,15 @@
        </div>
     </div>
 
-    <div class="card-section">
-      <div class="card-title"><i class="fas fa-road"></i> 歷史施工/維修案件公告</div>
+    <div class="card-section" style="border-left: 5px solid #2c3e50;">
+      <div class="card-title" style="color:#2c3e50;"><i class="fas fa-road"></i> 歷史施工/維修案件公告</div>
       <div class="small" style="margin-bottom:8px; color:#666;">勾選年份批次顯示位置 (<span style="color:#004080">●</span>近 / <span style="color:red">●</span>遠)</div>
       <div id="repairCheckboxes" style="max-height:400px; overflow-y:auto;"></div>
       <button class="secondary" id="clearRepairBtn"><i class="fas fa-eraser"></i> 清除所有顯示</button>
     </div>
 
-    <div class="card-section">
-      <div class="card-title"><i class="fas fa-calculator"></i> 里別維修統計</div>
+    <div class="card-section" style="border-left: 5px solid #16a085;">
+      <div class="card-title" style="color:#16a085;"><i class="fas fa-calculator"></i> 里別維修統計</div>
       <div class="small" style="margin-bottom:5px; color:#666;">系統將自動排除同案件重複計算</div>
       <select id="statsVillageSelect" style="margin-bottom:10px;">
         <option value="">-- 請選擇里別 --</option>
@@ -2405,6 +2416,10 @@
             <div class="stats-header">搶險搶修</div>
             <div id="statsEmgList"></div>
           </div>
+          <div class="stats-col col-maintain">
+            <div class="stats-header">道路及公共設施養護維修</div>
+            <div id="statsMtnList"></div>
+          </div>
         </div>
       </div>
       <button class="secondary" id="clearStatsBtn" style="margin-top:10px;"><i class="fas fa-eraser"></i> 清除所有顯示</button>
@@ -2412,13 +2427,13 @@
   </div>
 
   <div id="tab-search" class="tab-content-container tab-pane">
-    <div class="search-card">
-      <div class="card-title"><i class="fas fa-route"></i> 公眾通行道路圖資查詢</div>
+    <div class="search-card" style="border-left: 5px solid #673ab7;">
+      <div class="card-title" style="color:#673ab7;"><i class="fas fa-route"></i> 公眾通行道路圖資查詢</div>
       <select id="roadSelect"><option>載入中...</option></select>
     </div>
 
-    <div class="search-card">
-      <div class="card-title"><i class="fas fa-search-plus"></i> 案件進階搜尋</div>
+    <div class="search-card" style="border-left: 5px solid #fb8c00;">
+      <div class="card-title" style="color:#fb8c00;"><i class="fas fa-search-plus"></i> 案件進階搜尋</div>
       
       <div class="search-block-label"><i class="fas fa-map-marked-alt"></i> 依里別快篩</div>
       <select id="villageSelect">
@@ -2438,6 +2453,10 @@
           <div class="stats-col col-emergency">
             <div class="stats-header">搶險搶修</div>
             <div id="contractorEmgList"></div>
+          </div>
+          <div class="stats-col col-maintain">
+            <div class="stats-header">道路及公共設施養護維修</div>
+            <div id="contractorMtnList"></div>
           </div>
         </div>
         <button class="secondary" id="clearContractorStatsBtn" style="margin-top:10px;"><i class="fas fa-eraser"></i> 清除所有顯示</button>
@@ -2488,17 +2507,8 @@
   </div>
 
   <div id="tab-tools" class="tab-content-container tab-pane">
-<div class="card-section" style="border-left: 5px solid #28a745;">
-      <div class="card-title" style="color:#28a745;"><i class="fas fa-download"></i> 開放資料 (Open Data) 下載</div>
-      <div class="small" style="margin-bottom:10px; color:#666;">
-        提供學術單位或民眾下載去識別化後的歷史維修數據 (CSV格式)，包含座標、廠商、金額與完工日期等。
-      </div>
-      <button class="primary" style="background:#28a745;" onclick="exportOpenDataCSV()">
-        <i class="fas fa-file-csv"></i> 下載去識別化資料 (CSV)
-      </button>
-    </div>
-    <div class="card-section">
-      <div class="card-title"><i class="fas fa-map-marker-alt"></i> 座標查詢工具</div>
+<div class="card-section" style="border-left: 5px solid #3498db;">
+      <div class="card-title" style="color:#3498db;"><i class="fas fa-map-marker-alt"></i> 座標查詢工具</div>
       <div class="small" style="margin-bottom:5px;">輸入 TWD97 或 WGS84 座標 (X,Y)，每行一組</div>
       <textarea id="coordsInput" rows="4" placeholder="例如：181924,2555825 &#10;例如：23.102880, 120.335451"></textarea>
       <div style="display:flex; gap:5px; margin-top:5px;">
@@ -2507,41 +2517,13 @@
       </div>
     </div>
     
-    <div class="card-section">
-      <div class="card-title"><i class="fas fa-home"></i> 門牌查詢</div>
+    <div class="card-section" style="border-left: 5px solid #1abc9c;">
+      <div class="card-title" style="color:#1abc9c;"><i class="fas fa-home"></i> 門牌查詢</div>
       <a href="https://addressrs.moi.gov.tw/address/index.cfm?city_id=67000" target="_blank" class="popup-btn" style="background:#28a745; color:white; border:none; width:100%; box-sizing:border-box; text-align:center; display:block; padding:10px; border-radius:8px; text-decoration:none;">
         <i class="fas fa-map-marked-alt"></i> 臺南市門牌電子地圖查詢系統
       </a>
     </div>
     
-    <div class="card-section">
-      <div class="card-title"><i class="fas fa-chart-network"></i> 空間群聚分析</div>
-      <label class="toggle-switch">
-        <input type="checkbox" id="clusterToggle"> 啟動熱區分析
-      </label>
-      <div class="analysis-control">
-        <div style="font-size:12px; color:#666;">群聚閾值 (半徑)：</div>
-        <div class="slider-container">
-          <input type="range" id="clusterSlider" min="0" max="500" step="10" value="50">
-          <span id="clusterValue" class="slider-value">50m</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="card-section" id="duplicateCheckSection">
-      <div class="card-title"><i class="fas fa-history"></i> 重複性案件檢核</div>
-      <label class="toggle-switch" style="margin-bottom:10px;">
-        <input type="checkbox" id="autoDupCheckToggle"> 啟動自動檢核重複性案件
-      </label>
-      <div class="small" style="margin-bottom:5px;">輸入 TWD97 或 WGS84 座標 (X,Y)</div>
-      <input type="text" id="dupCheckInput" placeholder="例如：181924,2555825或23.102880, 120.335451">
-      <div style="display:flex; gap:5px; margin-top:5px;">
-        <button id="dupCheckBtn" class="primary" style="background:#e65100; margin-top:0;"><i class="fas fa-search"></i> 開始檢核</button>
-        <button id="dupClearBtn" class="secondary" style="width:auto; margin-top:0; white-space:nowrap; flex-shrink:0;">清除</button>
-      </div>
-      <div id="dupCheckResult" style="margin-top:10px; font-size:13px; color:#333;"></div>
-    </div>
-
     <div class="card-section" style="border-left: 5px solid #9b59b6;">
       <div class="card-title" style="color:#8e44ad;"><i class="fas fa-brain"></i> 智慧演算道路風險預測</div>
       <div class="small" style="margin-bottom:8px; color:#666;">
@@ -2578,34 +2560,73 @@
         </div>
       </div>
     </div>
+
+    <div class="card-section" style="border-left: 5px solid #28a745;">
+      <div class="card-title" style="color:#28a745;"><i class="fas fa-download"></i> 開放資料 (Open Data) 下載</div>
+      <div class="small" style="margin-bottom:10px; color:#666;">
+        提供學術單位或民眾下載去識別化後的歷史維修數據 (CSV格式)，包含座標、廠商、金額與完工日期等。
+      </div>
+      <button class="primary" style="background:#28a745;" onclick="exportOpenDataCSV()">
+        <i class="fas fa-file-csv"></i> 下載去識別化資料 (CSV)
+      </button>
+    </div>
+
+    <div class="card-section" style="border-left: 5px solid #e67e22;">
+      <div class="card-title" style="color:#e67e22;"><i class="fas fa-chart-network"></i> 空間群聚分析</div>
+      <label class="toggle-switch">
+        <input type="checkbox" id="clusterToggle"> 啟動熱區分析
+      </label>
+      <div class="analysis-control">
+        <div style="font-size:12px; color:#666;">群聚閾值 (半徑)：</div>
+        <div class="slider-container">
+          <input type="range" id="clusterSlider" min="0" max="500" step="10" value="50">
+          <span id="clusterValue" class="slider-value">50m</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-section" id="duplicateCheckSection" style="border-left: 5px solid #c0392b;">
+      <div class="card-title" style="color:#c0392b;"><i class="fas fa-history"></i> 重複性案件檢核</div>
+      <label class="toggle-switch" style="margin-bottom:10px;">
+        <input type="checkbox" id="autoDupCheckToggle"> 啟動自動檢核重複性案件
+      </label>
+      <div class="small" style="margin-bottom:5px;">輸入 TWD97 或 WGS84 座標 (X,Y)</div>
+      <input type="text" id="dupCheckInput" placeholder="例如：181924,2555825或23.102880, 120.335451">
+      <div style="display:flex; gap:5px; margin-top:5px;">
+        <button id="dupCheckBtn" class="primary" style="background:#e65100; margin-top:0;"><i class="fas fa-search"></i> 開始檢核</button>
+        <button id="dupClearBtn" class="secondary" style="width:auto; margin-top:0; white-space:nowrap; flex-shrink:0;">清除</button>
+      </div>
+      <div id="dupCheckResult" style="margin-top:10px; font-size:13px; color:#333;"></div>
+    </div>
   </div>
   
   <div id="tab-dengue" class="tab-content-container tab-pane">
-    <div class="card-section">
-      <div class="card-title"><i class="fas fa-map-pin"></i> 座標輸入</div>
+    <div class="card-section" style="border-left: 5px solid #7f8c8d;">
+      <div class="card-title" style="color:#7f8c8d;"><i class="fas fa-map-pin"></i> 座標輸入</div>
       <div class="small" style="margin-bottom:5px;">輸入 TWD97 或 WGS84 座標 (X,Y)，每行一組</div>
       <textarea id="dengueCoordsInput" rows="4" placeholder="例如：181924,2555825 &#10;例如：23.102880, 120.335451"></textarea>
       <div style="display:flex; gap:5px; margin-top:5px;">
         <button id="plotDengueBtn" class="primary" style="background:#7f8c8d; margin-top:0;">顯示點位</button>
         <button id="clearDengueBtn" class="secondary" style="margin-top:0;">清除</button>
       </div>
+      <div style="margin-top:15px; padding-top:12px; border-top:1px dashed #ccc;">
+        <div class="card-title" style="color:#7f8c8d; font-size:14px;"><i class="fas fa-circle-notch"></i> 選擇方圓半徑</div>
+        <div style="display:flex; flex-direction:column; gap:8px; margin-top:10px;">
+          <label class="dengue-option"><input type="radio" name="dengueRadius" value="50" onchange="updateDengueRadius()"> 50 公尺</label>
+          <label class="dengue-option"><input type="radio" name="dengueRadius" value="150" onchange="updateDengueRadius()"> 150 公尺</label>
+          <label class="dengue-option"><input type="radio" name="dengueRadius" value="200" onchange="updateDengueRadius()"> 200 公尺</label>
+        </div>
+      </div>
     </div>
 
-    <div class="card-section">
-      <div class="card-title"><i class="fas fa-home"></i> 門牌查詢</div>
+    <div class="card-section" style="border-left: 5px solid #1abc9c;">
+      <div class="card-title" style="color:#1abc9c;"><i class="fas fa-home"></i> 門牌查詢</div>
       <a href="https://addressrs.moi.gov.tw/address/index.cfm?city_id=67000" target="_blank" class="popup-btn" style="background:#28a745; color:white; border:none; width:100%; box-sizing:border-box; text-align:center; display:block; padding:10px; border-radius:8px; text-decoration:none;">
         <i class="fas fa-map-marked-alt"></i> 臺南市門牌電子地圖查詢系統
       </a>
     </div>
 
-    <div class="card-section">
-      <div class="card-title"><i class="fas fa-circle-notch"></i> 選擇方圓半徑</div>
-      <div style="display:flex; flex-direction:column; gap:8px; margin-top:10px;">
-        <label class="dengue-option"><input type="radio" name="dengueRadius" value="50" onchange="updateDengueRadius()"> 50 公尺</label>
-        <label class="dengue-option"><input type="radio" name="dengueRadius" value="150" onchange="updateDengueRadius()"> 150 公尺</label>
-        <label class="dengue-option"><input type="radio" name="dengueRadius" value="200" onchange="updateDengueRadius()"> 200 公尺</label>
-      </div>
-    </div>
+    
   </div>
 
   <div id="tab-news" class="tab-content-container tab-pane">
@@ -5072,10 +5093,12 @@ document.getElementById('statsVillageSelect').addEventListener('change', functio
   const statsResult = document.getElementById('statsResult');
   const statsGenList = document.getElementById('statsGenList');
   const statsEmgList = document.getElementById('statsEmgList');
+  const statsMtnList = document.getElementById('statsMtnList');
   
   searchResultLayer.clearLayers(); 
   statsGenList.innerHTML = ''; 
   statsEmgList.innerHTML = '';
+  statsMtnList.innerHTML = '';
   
   if (!selectedVillage || selectedVillage === "") { 
     statsResult.style.display = 'none'; 
@@ -5085,17 +5108,23 @@ document.getElementById('statsVillageSelect').addEventListener('change', functio
   const villageFeature = villageGeoJSON.features.find(f => (f.properties.VILLAGE || f.properties.VILLNAME) === selectedVillage); 
   if (!villageFeature) return;
   
+  // 分類函數：依 label 關鍵字分到 gen / emg / mtn 三類
+  function classifyConf(label) {
+    if (/養護/.test(label)) return 'mtn';
+    if (/搶修|災害|緊急/.test(label)) return 'emg';
+    return 'gen';
+  }
+  
   let globalYearTotals = {};
   let globalProcessedCases = new Set();
   
   REPAIR_CONFIG.forEach(conf => {
     const data = REPAIR_DATA_CACHE[conf.value]; 
     if (!data || !data.features) return;
-    
     const year = (conf.label.match(/(\d{3})年/) || [])[1] || '其他'; 
-    const isEmergency = /搶修|災害|緊急/.test(conf.label);
+    const category = classifyConf(conf.label);
     
-    if (!globalYearTotals[year]) globalYearTotals[year] = { gen: 0, emg: 0 };
+    if (!globalYearTotals[year]) globalYearTotals[year] = { gen: 0, emg: 0, mtn: 0 };
     
     data.features.forEach(f => {
       const caseNo = f.properties['案件編號'];
@@ -5104,12 +5133,10 @@ document.getElementById('statsVillageSelect').addEventListener('change', functio
       if (caseNo && caseNo.trim() !== "") { 
         if (!globalProcessedCases.has(caseNo)) { 
           globalProcessedCases.add(caseNo); 
-          if (isEmergency) globalYearTotals[year].emg += amount; 
-          else globalYearTotals[year].gen += amount; 
+          globalYearTotals[year][category] += amount;
         } 
       } else { 
-        if (isEmergency) globalYearTotals[year].emg += amount; 
-        else globalYearTotals[year].gen += amount; 
+        globalYearTotals[year][category] += amount;
       }
     });
   });
@@ -5120,11 +5147,14 @@ document.getElementById('statsVillageSelect').addEventListener('change', functio
   REPAIR_CONFIG.forEach(conf => {
     const data = REPAIR_DATA_CACHE[conf.value]; 
     if (!data || !data.features) return;
-    
     const year = (conf.label.match(/(\d{3})年/) || [])[1] || '其他'; 
-    const isEmergency = /搶修|災害|緊急/.test(conf.label);
+    const category = classifyConf(conf.label);
     
-    if (!villageYearStats[year]) villageYearStats[year] = { genCount: 0, genAmount: 0, emgCount: 0, emgAmount: 0 };
+    if (!villageYearStats[year]) villageYearStats[year] = { 
+      genCount: 0, genAmount: 0, 
+      emgCount: 0, emgAmount: 0,
+      mtnCount: 0, mtnAmount: 0
+    };
     
     data.features.forEach(f => {
       if (f.geometry.type === 'Point' && turf.booleanPointInPolygon(turf.point(f.geometry.coordinates), villageFeature)) {
@@ -5149,7 +5179,10 @@ document.getElementById('statsVillageSelect').addEventListener('change', functio
         }
         
         if (shouldAdd) { 
-          if (isEmergency) { 
+          if (category === 'mtn') { 
+            villageYearStats[year].mtnCount++; 
+            villageYearStats[year].mtnAmount += amount; 
+          } else if (category === 'emg') { 
             villageYearStats[year].emgCount++; 
             villageYearStats[year].emgAmount += amount; 
           } else { 
@@ -5163,24 +5196,29 @@ document.getElementById('statsVillageSelect').addEventListener('change', functio
   
   Object.keys(villageYearStats).sort().reverse().forEach(y => {
     const stats = villageYearStats[y];
-    const globalTotals = globalYearTotals[y] || { gen: 1, emg: 1 };
+    const globalTotals = globalYearTotals[y] || { gen: 1, emg: 1, mtn: 1 };
     
     if (stats.genCount > 0) {
       const pct = globalTotals.gen > 0 ? (stats.genAmount / globalTotals.gen * 100).toFixed(0) : 0;
-      statsGenList.innerHTML += `<div class="stat-year-row"><div class="stat-year-title"><span>${y}年度</span><span class="stat-percent-text">佔全區 ${pct}%</span></div><div class="stat-data-row">${stats.genCount} 件 / $ ${stats.genAmount.toLocaleString()}</div><div class="stat-bar-bg"><div class="stat-bar-fill" style="width:${pct}%"></div></div></div>`;
+      statsGenList.innerHTML += `<div class="stat-year-row"><div class="stat-year-title"><span>${y}年度</span><span class="stat-percent-text">佔全區 ${pct}%</span></div><div class="stat-data-row">${stats.genCount} 件 / $ ${stats.genAmount.toLocaleString()}</div></div>`;
     }
     if (stats.emgCount > 0) {
       const pct = globalTotals.emg > 0 ? (stats.emgAmount / globalTotals.emg * 100).toFixed(0) : 0;
-      statsEmgList.innerHTML += `<div class="stat-year-row"><div class="stat-year-title"><span>${y}年度</span><span class="stat-percent-text">佔全區 ${pct}%</span></div><div class="stat-data-row">${stats.emgCount} 件 / $ ${stats.emgAmount.toLocaleString()}</div><div class="stat-bar-bg"><div class="stat-bar-fill" style="width:${pct}%"></div></div></div>`;
+      statsEmgList.innerHTML += `<div class="stat-year-row"><div class="stat-year-title"><span>${y}年度</span><span class="stat-percent-text">佔全區 ${pct}%</span></div><div class="stat-data-row">${stats.emgCount} 件 / $ ${stats.emgAmount.toLocaleString()}</div></div>`;
+    }
+    if (stats.mtnCount > 0) {
+      const pct = globalTotals.mtn > 0 ? (stats.mtnAmount / globalTotals.mtn * 100).toFixed(0) : 0;
+      statsMtnList.innerHTML += `<div class="stat-year-row"><div class="stat-year-title"><span>${y}年度</span><span class="stat-percent-text">佔全區 ${pct}%</span></div><div class="stat-data-row">${stats.mtnCount} 件 / $ ${stats.mtnAmount.toLocaleString()}</div></div>`;
     }
   });
   
   if (statsGenList.innerHTML === '') statsGenList.innerHTML = '<div style="color:#999;font-size:12px;text-align:center;padding:10px;">無資料</div>';
   if (statsEmgList.innerHTML === '') statsEmgList.innerHTML = '<div style="color:#999;font-size:12px;text-align:center;padding:10px;">無資料</div>';
+  if (statsMtnList.innerHTML === '') statsMtnList.innerHTML = '<div style="color:#999;font-size:12px;text-align:center;padding:10px;">無資料</div>';
   
   map.fitBounds(L.geoJSON(villageFeature).getBounds()); 
-  if(window.innerWidth <= 768) document.body.classList.remove('sidebar-open'); 
   statsResult.style.display = 'block';
+  if(window.innerWidth <= 768) document.body.classList.remove('sidebar-open'); 
 });
 
 document.getElementById('clearStatsBtn').addEventListener('click', function() { 
@@ -5690,13 +5728,22 @@ function updateContractorStats(contractorName) {
   const statsResult = document.getElementById('contractorStatsResult');
   const genList = document.getElementById('contractorGenList');
   const emgList = document.getElementById('contractorEmgList');
+  const mtnList = document.getElementById('contractorMtnList');
   
   genList.innerHTML = ''; 
   emgList.innerHTML = '';
+  mtnList.innerHTML = '';
   
   if (!contractorName) { 
     statsResult.style.display = 'none'; 
     return; 
+  }
+  
+  // 分類函數：依 label 關鍵字分到 gen / emg / mtn 三類
+  function classifyConf(label) {
+    if (/養護/.test(label)) return 'mtn';
+    if (/搶修|災害|緊急/.test(label)) return 'emg';
+    return 'gen';
   }
   
   let globalYearTotals = {};
@@ -5706,9 +5753,9 @@ function updateContractorStats(contractorName) {
     const data = REPAIR_DATA_CACHE[conf.value]; 
     if (!data || !data.features) return;
     const year = (conf.label.match(/(\d{3})年/) || [])[1] || '其他'; 
-    const isEmergency = /搶修|災害|緊急/.test(conf.label);
+    const category = classifyConf(conf.label);
     
-    if (!globalYearTotals[year]) globalYearTotals[year] = { gen: 0, emg: 0 };
+    if (!globalYearTotals[year]) globalYearTotals[year] = { gen: 0, emg: 0, mtn: 0 };
     
     data.features.forEach(f => {
       const caseNo = f.properties['案件編號'];
@@ -5716,12 +5763,10 @@ function updateContractorStats(contractorName) {
       if (caseNo && caseNo.trim() !== "") { 
         if (!globalProcessedCases.has(caseNo)) { 
           globalProcessedCases.add(caseNo); 
-          if (isEmergency) globalYearTotals[year].emg += amount; 
-          else globalYearTotals[year].gen += amount; 
+          globalYearTotals[year][category] += amount;
         } 
       } else { 
-        if (isEmergency) globalYearTotals[year].emg += amount; 
-        else globalYearTotals[year].gen += amount; 
+        globalYearTotals[year][category] += amount;
       }
     });
   });
@@ -5733,9 +5778,13 @@ function updateContractorStats(contractorName) {
     const data = REPAIR_DATA_CACHE[conf.value]; 
     if (!data || !data.features) return;
     const year = (conf.label.match(/(\d{3})年/) || [])[1] || '其他'; 
-    const isEmergency = /搶修|災害|緊急/.test(conf.label);
+    const category = classifyConf(conf.label);
     
-    if (!contractorYearStats[year]) contractorYearStats[year] = { genCount: 0, genAmount: 0, emgCount: 0, emgAmount: 0 };
+    if (!contractorYearStats[year]) contractorYearStats[year] = { 
+      genCount: 0, genAmount: 0, 
+      emgCount: 0, emgAmount: 0,
+      mtnCount: 0, mtnAmount: 0
+    };
     
     data.features.forEach(f => {
       if (f.properties['施工廠商']?.trim() === contractorName) {
@@ -5753,7 +5802,10 @@ function updateContractorStats(contractorName) {
         }
         
         if (shouldAdd) { 
-          if (isEmergency) { 
+          if (category === 'mtn') { 
+            contractorYearStats[year].mtnCount++; 
+            contractorYearStats[year].mtnAmount += amount; 
+          } else if (category === 'emg') { 
             contractorYearStats[year].emgCount++; 
             contractorYearStats[year].emgAmount += amount; 
           } else { 
@@ -5767,19 +5819,24 @@ function updateContractorStats(contractorName) {
   
   Object.keys(contractorYearStats).sort().reverse().forEach(y => {
     const stats = contractorYearStats[y];
-    const globalTotals = globalYearTotals[y] || { gen: 1, emg: 1 };
+    const globalTotals = globalYearTotals[y] || { gen: 1, emg: 1, mtn: 1 };
     if (stats.genCount > 0) { 
       const pct = globalTotals.gen > 0 ? (stats.genAmount / globalTotals.gen * 100).toFixed(0) : 0; 
-      genList.innerHTML += `<div class="stat-year-row"><div class="stat-year-title"><span>${y}年度</span><span class="stat-percent-text">市佔 ${pct}%</span></div><div class="stat-data-row">${stats.genCount} 件 / $ ${stats.genAmount.toLocaleString()}</div><div class="stat-bar-bg"><div class="stat-bar-fill" style="width:${pct}%"></div></div></div>`; 
+      genList.innerHTML += `<div class="stat-year-row"><div class="stat-year-title"><span>${y}年度</span><span class="stat-percent-text">市佔 ${pct}%</span></div><div class="stat-data-row">${stats.genCount} 件 / $ ${stats.genAmount.toLocaleString()}</div></div>`; 
     }
     if (stats.emgCount > 0) { 
       const pct = globalTotals.emg > 0 ? (stats.emgAmount / globalTotals.emg * 100).toFixed(0) : 0; 
-      emgList.innerHTML += `<div class="stat-year-row"><div class="stat-year-title"><span>${y}年度</span><span class="stat-percent-text">市佔 ${pct}%</span></div><div class="stat-data-row">${stats.emgCount} 件 / $ ${stats.emgAmount.toLocaleString()}</div><div class="stat-bar-bg"><div class="stat-bar-fill" style="width:${pct}%"></div></div></div>`; 
+      emgList.innerHTML += `<div class="stat-year-row"><div class="stat-year-title"><span>${y}年度</span><span class="stat-percent-text">市佔 ${pct}%</span></div><div class="stat-data-row">${stats.emgCount} 件 / $ ${stats.emgAmount.toLocaleString()}</div></div>`; 
+    }
+    if (stats.mtnCount > 0) { 
+      const pct = globalTotals.mtn > 0 ? (stats.mtnAmount / globalTotals.mtn * 100).toFixed(0) : 0; 
+      mtnList.innerHTML += `<div class="stat-year-row"><div class="stat-year-title"><span>${y}年度</span><span class="stat-percent-text">市佔 ${pct}%</span></div><div class="stat-data-row">${stats.mtnCount} 件 / $ ${stats.mtnAmount.toLocaleString()}</div></div>`; 
     }
   });
   
   if (genList.innerHTML === '') genList.innerHTML = '<div style="color:#999;font-size:12px;text-align:center;padding:10px;">無資料</div>';
   if (emgList.innerHTML === '') emgList.innerHTML = '<div style="color:#999;font-size:12px;text-align:center;padding:10px;">無資料</div>';
+  if (mtnList.innerHTML === '') mtnList.innerHTML = '<div style="color:#999;font-size:12px;text-align:center;padding:10px;">無資料</div>';
   statsResult.style.display = 'block';
 }
 

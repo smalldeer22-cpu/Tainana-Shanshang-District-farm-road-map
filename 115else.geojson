@@ -29,8 +29,8 @@
         "施工廠商": "金定土木包工業",
         "監造廠商": "鼎麒水土保持技師事務所",
         "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzExMTg4MzA=",
-        "施工前照片": null,
-        "施工後照片": null
+        "施工前照片": "https://i.ibb.co/cXsjYbgw/115008-01.jpg",
+        "施工後照片": "https://i.ibb.co/zTVZ7Nyj/115008-02.jpg"
       }
     },
     {
@@ -101,7 +101,7 @@
         "搶修類型": "擋土牆,混凝土路面,塊狀護欄",
         "案件狀態": "已派工/施工中",
         "決標金額": 1170000,
-        "施工廠商": " 福森土木包工業",
+        "施工廠商": "福森土木包工業",
         "監造廠商": "丞信工程顧問有限公司",
         "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzExNjI0NDE=",
         "施工前照片": null,
@@ -153,7 +153,108 @@
         "決標金額": 1100000,
         "施工廠商": "元第土木包工業",
         "監造廠商": "鼎麒水土保持技師事務所",
-        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzExNTU1MjI="
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzExNTU1MjI=",
+        "施工前照片": null,
+        "施工後照片": null
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.3675092741753,
+          23.087747778586664
+        ]
+      },
+      "properties": {
+        "案件編號": "115014-楊柳颱風山上區舊178道路災後復建工程",
+        "完工日期": null,
+        "x1": 185203,
+        "y1": 2554140,
+        "派工時機": "一般案件",
+        "搶修類型": "擋土牆,塊狀護欄",
+        "案件狀態": "已派工/施工中",
+        "決標金額": 29892000,
+        "施工廠商": "競捷營造股份有限公司",
+        "監造廠商": "丞信工程顧問有限公司",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzExNzY1Njk=",
+        "施工前照片": null,
+        "施工後照片": null
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.35516345080045,
+          23.09968096772081
+        ]
+      },
+      "properties": {
+        "案件編號": "115016-山上國小側門旁至16之2號前道路改善工程",
+        "完工日期": null,
+        "x1": 183944,
+        "y1": 2555467,
+        "派工時機": "一般案件",
+        "搶修類型": "瀝青混凝土路面",
+        "案件狀態": "已派工/施工中",
+        "決標金額": 610000,
+        "施工廠商": "再生營造有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzExNjc0MDA=",
+        "施工前照片": null,
+        "施工後照片": null
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.35707696116432,
+          23.099634591114363
+        ]
+      },
+      "properties": {
+        "案件編號": "115017-115年山上區公兒二公園景觀改善工程",
+        "完工日期": null,
+        "x1": 184140,
+        "y1": 2555461,
+        "派工時機": "一般案件",
+        "搶修類型": "搖搖樂,地墊更換,攝影機",
+        "案件狀態": "已派工/施工中",
+        "決標金額": 437800,
+        "施工廠商": "和晟營造有限公司",
+        "監造廠商": "丞信工程顧問有限公司",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzExNjc1NTk=",
+        "施工前照片": null,
+        "施工後照片": null
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.34491298603187,
+          23.089759705800386
+        ]
+      },
+      "properties": {
+        "案件編號": "115018-丹娜絲颱風山上區明南段1003地號旁排水災後復建工程",
+        "完工日期": null,
+        "x1": 182889,
+        "y1": 2554373,
+        "派工時機": "一般案件",
+        "搶修類型": "排水溝牆身修復",
+        "案件狀態": "已派工/施工中",
+        "決標金額": 4520000,
+        "施工廠商": "通友營造股份有限公司",
+        "監造廠商": null,
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzExODM3MzU=",
+        "施工前照片": "https://i.ibb.co/C308cfRF/115018-01.jpg"
       }
     }
   ]

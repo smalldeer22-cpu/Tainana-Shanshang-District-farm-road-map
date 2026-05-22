@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0521_V6)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0521_V7)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -8543,28 +8543,71 @@ function openRiskCaseList(pointsArray) {
     container.innerHTML = ""; 
  
     pointsArray.forEach((pt, index) => {
+
         let props = pt.props || {};
+
         let title = props['案件編號'] || props['案件類型'] || '歷史通報案件';
+
         let date = props['完工日期'] || props['通報日期'] || props['通報日期ROC'] || '日期未知';
-        
+
+        // 座標處理：WGS84 已存在 pt.lat / pt.lng，TWD97 透過 twd97FromWgs84 轉換
+        let coordHtml = '';
+        if (typeof pt.lat === 'number' && typeof pt.lng === 'number' && !isNaN(pt.lat) && !isNaN(pt.lng)) {
+            const wgsLat = pt.lat.toFixed(6);
+            const wgsLng = pt.lng.toFixed(6);
+            let twdStr = '無法轉換';
+            if (typeof twd97FromWgs84 === 'function') {
+                try {
+                    const twd = twd97FromWgs84(pt.lat, pt.lng);
+                    twdStr = `${twd.x}, ${twd.y}`;
+                } catch (e) { twdStr = '無法轉換'; }
+            }
+            coordHtml = `
+                <div style="font-size:12px; color:#666; margin-top:4px;"><i class="fas fa-map-marker-alt" style="color:#1976d2;"></i> TWD97：${twdStr}</div>
+                <div style="font-size:12px; color:#666; margin-top:4px;"><i class="fas fa-globe-asia" style="color:#2e7d32;"></i> WGS84：${wgsLat}, ${wgsLng}</div>
+            `;
+        } else {
+            coordHtml = `<div style="font-size:12px; color:#999; margin-top:4px;"><i class="fas fa-map-marker-alt"></i> 座標未知</div>`;
+        }
+
         let pUrlBefore = props['施工前照片'] || props['p_url'] || 'https://via.placeholder.com/300x200?text=無施工前照片';
+
         let pUrlAfter = props['施工後照片'] || props['p_finish_url'] || 'https://via.placeholder.com/300x200?text=無施工後照片';
+
         
+
         if(pUrlBefore.startsWith('[')) { try{ pUrlBefore = JSON.parse(pUrlBefore)[0] || pUrlBefore; }catch(e){} }
+
         if(pUrlAfter.startsWith('[')) { try{ pUrlAfter = JSON.parse(pUrlAfter)[0] || pUrlAfter; }catch(e){} }
+
  
+
         let card = document.createElement('div');
+
         card.className = "risk-case-card";
+
         card.innerHTML = `
+
             <div style="font-weight:bold; color:#004080; font-size:15px;">${index + 1}. 案件編號：${title}</div>
+
             <div style="font-size:12px; color:#666; margin-top:4px;"><i class="fas fa-calendar-alt"></i> 日期：${date}</div>
+
+            ${coordHtml}
+
             <div style="font-size:12px; margin-top:4px;"><span style="background:#d32f2f; color:white; padding:2px 6px; border-radius:4px;">${pt.type || '一般搶修'}</span></div>
+
             <div class="risk-img-compare">
+
                 <div style="width:50%; text-align:center;"><small style="color:#555;">施工前</small><br><img src="${pUrlBefore}" onclick="zoomImg(this.src)" oncontextmenu="return false;" ondragstart="return false;"></div>
+
                 <div style="width:50%; text-align:center;"><small style="color:#555;">施工後</small><br><img src="${pUrlAfter}" onclick="zoomImg(this.src)" oncontextmenu="return false;" ondragstart="return false;"></div>
+
             </div>
+
         `;
+
         container.appendChild(card);
+
     });
  
     panel.classList.add('active');
@@ -8668,7 +8711,7 @@ async function exportAllRiskGroups() {
   // 設為 true = 開啟，前端可見可操作
   // 設為 false = 關閉，前端完全隱藏
   // =====================================================
-  const ENABLE_DUPLICATE_CHECK = true;
+  const ENABLE_DUPLICATE_CHECK = false;
 
   if (!ENABLE_DUPLICATE_CHECK) {
     const dupSection = document.getElementById('duplicateCheckSection');

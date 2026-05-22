@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0521_V1)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0521_V6)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -4574,8 +4574,8 @@ document.getElementById('dupClearBtn').addEventListener('click', function() {
 window.focusDupMarker = function(index) { 
   const marker = dupMarkersMap[index]; 
   if(marker) { 
-        // === 【修改】使用置中函數，讓泡泡顯示在畫面正中央 ===
-    window.flyToWithPopupCentered(marker, 18);  
+    map.flyTo(marker.getLatLng(), 18); 
+    marker.openPopup(); 
     if(window.innerWidth <= 768) document.body.classList.remove('sidebar-open'); 
   } 
 };
@@ -4596,8 +4596,7 @@ window.showMapDetailPopup = function(key, index) {
     const item = group[index];
     const dist = distToRoad(item.latlng, roadsLayer);
     const content = createPopup({ fileName: item.configLabel, props: item.feature.properties, lat: item.latlng.lat, lng: item.latlng.lng, dist: dist });
-        // === 【修改】使用置中函數，讓泡泡顯示在畫面正中央 ===
-    window.openPopupCentered(item.latlng, content, {className:'custom-popup', maxWidth:960});
+    L.popup({className:'custom-popup', maxWidth:960}).setLatLng(item.latlng).setContent(content).openOn(map);
 };
 
 document.getElementById('autoDupCheckToggle').addEventListener('change', function() {
@@ -5463,76 +5462,6 @@ window.triggerMarkerPopup = function(idx) {
   }
 };
 
-// ============================================================
-// === 【新增】共用函數：飛到 marker 並讓泡泡窗在畫面正中央 ===
-// === 用途：解決點擊地圖點位後泡泡窗偏上看不到的問題 ===
-// === 適用：手機板 + 電腦板都生效 ===
-// ============================================================
-window.flyToWithPopupCentered = function(marker, zoom = 18) {
-    if (!marker) return;
-    const latlng = marker.getLatLng();
-    
-    // 第一步：飛到目標點
-    map.flyTo(latlng, zoom, { duration: 0.8 });
-    
-    // 第二步：飛行結束後開啟泡泡窗
-    map.once('moveend', () => {
-        marker.openPopup();
-        
-        // 第三步：等泡泡 DOM 渲染完成後，量測高度並把地圖往上推
-        setTimeout(() => {
-            const popup = marker.getPopup();
-            if (popup && popup.isOpen() && popup.getElement()) {
-                const popupHeight = popup.getElement().offsetHeight;
-                // 把地圖中心往下偏移半個泡泡高度 + 20px 留白
-                // 這樣泡泡會剛好落在畫面正中央
-                map.panBy([0, -(popupHeight / 2 + 20)], { 
-                    animate: true, 
-                    duration: 0.3 
-                });
-            }
-        }, 150);
-    });
-    
-    // 雙重保險：1.2 秒後再試一次（萬一 moveend 沒觸發）
-    setTimeout(() => {
-        if (!marker.getPopup() || !marker.getPopup().isOpen()) {
-            marker.openPopup();
-        }
-    }, 1200);
-};
- 
-// ============================================================
-// === 【新增】共用函數：以指定座標和內容開啟 popup 並置中 ===
-// === 用途：給 L.popup().openOn(map) 這種非 marker 觸發的用 ===
-// ============================================================
-window.openPopupCentered = function(latlng, content, options = {}) {
-    const defaultOptions = { className: 'custom-popup', maxWidth: 960 };
-    const popupOptions = Object.assign({}, defaultOptions, options);
-    
-    // 先飛到目標點
-    map.flyTo(latlng, map.getZoom() < 17 ? 18 : map.getZoom(), { duration: 0.6 });
-    
-    // 飛行結束後開泡泡 + 置中
-    map.once('moveend', () => {
-        const popup = L.popup(popupOptions)
-            .setLatLng(latlng)
-            .setContent(content)
-            .openOn(map);
-        
-        // 等 DOM 渲染後置中
-        setTimeout(() => {
-            if (popup && popup.isOpen() && popup.getElement()) {
-                const popupHeight = popup.getElement().offsetHeight;
-                map.panBy([0, -(popupHeight / 2 + 20)], { 
-                    animate: true, 
-                    duration: 0.3 
-                });
-            }
-        }, 150);
-    });
-};
- 
 window.openDetailPopupFromMarker = function(marker) {
     const data = marker.customData;
     if(!data) return;
@@ -5557,25 +5486,10 @@ window.openDetailPopupFromMarker = function(marker) {
                 </div>`; 
         });
         
-                L.popup({ className: 'custom-popup', maxWidth: 300 })
+        L.popup({ className: 'custom-popup', maxWidth: 300 })
          .setLatLng(marker.getLatLng())
          .setContent(listHtml + `</div>`)
          .openOn(map);
-        // === 【修改】重複案件清單泡泡也置中顯示 ===
-        const popupList = L.popup({ className: 'custom-popup', maxWidth: 300 })
-         .setLatLng(marker.getLatLng())
-         .setContent(listHtml + `</div>`)
-         .openOn(map);
-        
-        setTimeout(() => {
-            if (popupList && popupList.isOpen() && popupList.getElement()) {
-                const popupHeight = popupList.getElement().offsetHeight;
-                map.panBy([0, -(popupHeight / 2 + 20)], { 
-                    animate: true, 
-                    duration: 0.3 
-                });
-            }
-        }, 150);
     } 
     // 🌟 如果是單一案件：點擊才開啟原本的詳細資料泡泡窗
     else {
@@ -5588,22 +5502,10 @@ window.openDetailPopupFromMarker = function(marker) {
             dist: dist 
         });
         
-                // === 【修改】使用置中函數，讓泡泡顯示在畫面正中央 ===
-        const popup = L.popup({className:'custom-popup', maxWidth:960})
+        L.popup({className:'custom-popup', maxWidth:960})
          .setLatLng(marker.getLatLng())
          .setContent(content)
          .openOn(map);
-        
-        // 等泡泡渲染後置中
-        setTimeout(() => {
-            if (popup && popup.isOpen() && popup.getElement()) {
-                const popupHeight = popup.getElement().offsetHeight;
-                map.panBy([0, -(popupHeight / 2 + 20)], { 
-                    animate: true, 
-                    duration: 0.3 
-                });
-            }
-        }, 150);
          
         // 載入留言功能
         if(typeof fetchAndRefreshComments === 'function') {
@@ -6532,18 +6434,10 @@ function toggleAiRiskLayer(checkbox) {
 }
 
 window.zoomToAiMarker = function(lat, lng) {
-  // === 【修改】找到 marker 後用置中函數開啟泡泡 ===
-  let targetMarker = null;
+  map.flyTo([lat, lng], 18);
   aiRiskLayer.eachLayer(l => {
-    if(Math.abs(l.getLatLng().lat - lat) < 0.000001 && Math.abs(l.getLatLng().lng - lng) < 0.000001) {
-      targetMarker = l;
-    }
+    if(Math.abs(l.getLatLng().lat - lat) < 0.000001 && Math.abs(l.getLatLng().lng - lng) < 0.000001) l.openPopup();
   });
-  if (targetMarker) {
-    window.flyToWithPopupCentered(targetMarker, 18);
-  } else {
-    map.flyTo([lat, lng], 18);
-  }
 };
 
 // === 【V17 精準熱區版】智慧演算 (同類型>=2次才觸發 + 排除不用列計 + 30m範圍) ===
@@ -6759,22 +6653,14 @@ window.globalAiRiskResults = riskResults;
 
 window.zoomToAiMarker = function(lat, lng) {
   if(window.innerWidth <= 768) document.body.classList.remove('sidebar-open');
-  // === 【修改】找到 marker 後用置中函數開啟泡泡 ===
+  map.flyTo([lat, lng], 18, {duration: 1.2});
   setTimeout(() => {
-    let targetMarker = null;
     if (window.aiPureLayer) {
        window.aiPureLayer.eachLayer(l => {
-         if(l instanceof L.Marker && Math.abs(l.getLatLng().lat - lat) < 0.000001 && Math.abs(l.getLatLng().lng - lng) < 0.000001) {
-           targetMarker = l;
-         }
+         if(l instanceof L.Marker && Math.abs(l.getLatLng().lat - lat) < 0.000001 && Math.abs(l.getLatLng().lng - lng) < 0.000001) l.openPopup();
        });
     }
-    if (targetMarker) {
-      window.flyToWithPopupCentered(targetMarker, 18);
-    } else {
-      map.flyTo([lat, lng], 18, {duration: 1.2});
-    }
-  }, 100);
+  }, 1200);
 };
 
 window.filterAiResults = function(filter, btn) {
@@ -6960,9 +6846,9 @@ function renderTimeline(matches) {
         if(lockedTimelineMarker && lockedTimelineMarker !== marker) lockedTimelineMarker.setStyle(normalStyle); 
         lockedTimelineMarker = marker; 
         selectedTimelineMarker = marker; 
-                marker.setStyle(highlightStyle); 
-        // === 【修改】使用置中函數，讓泡泡顯示在畫面正中央 ===
-        window.flyToWithPopupCentered(marker, 18); 
+        marker.setStyle(highlightStyle); 
+        map.flyTo([m.lat, m.lng], 18); 
+        marker.openPopup(); 
     };
     
     cont.appendChild(itemDiv);

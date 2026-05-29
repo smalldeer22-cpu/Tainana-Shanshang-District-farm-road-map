@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0521_V7)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0530_V1)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -2168,8 +2168,8 @@
           </div>
           </div>
           <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-            <input type="text" id="reportName" placeholder="通報人姓名" style="flex:1; padding:10px; border:1px solid #ccc; border-radius:6px; box-sizing: border-box;">
-            <input type="tel" id="reportPhone" placeholder="聯絡電話" style="flex:1; padding:10px; border:1px solid #ccc; border-radius:6px; box-sizing: border-box;">
+            <input type="text" id="reportName" placeholder="通報人姓名" style="flex:1; min-width:0; padding:10px; border:1px solid #ccc; border-radius:6px; box-sizing: border-box;">
+            <input type="tel" id="reportPhone" placeholder="聯絡電話" style="flex:1; min-width:0; padding:10px; border:1px solid #ccc; border-radius:6px; box-sizing: border-box;">
           </div>
           <div style="font-size: 11px; color: #666;">
             ※ 此資訊絕對保密，僅供案件聯繫，不會顯示於公開地圖上。
@@ -3957,10 +3957,13 @@ window.goToWizardStep = function(step) {
   // --- 修改：強制要求至少上傳一張照片 ---
   if(step === 2 && currentWizardStep === 1) {
     const img1 = document.getElementById('imgPreview1').src;
-    // 檢查預覽圖是否為空的或是預設圖
-    if(!img1 || !img1.startsWith('data:')) {
+    const img2 = document.getElementById('imgPreview2').src;
+    const has1 = img1 && img1.startsWith('data:');
+    const has2 = img2 && img2.startsWith('data:');
+    // 只要「第一張」或「第二張」任一欄位有照片，即可通過
+    if(!has1 && !has2) {
       alert("⚠️ 請至少上傳一張「現場狀況照片」以供辨識位置，才能進行下一步！");
-      return; // 這裡直接擋住，不讓民眾進入 step 2
+      return; // 兩欄都沒照片才擋住
     }
   }
   // ------------------------------------

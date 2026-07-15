@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0706_V1)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0716_V1)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -2514,6 +2514,12 @@
       <div style="display:flex; gap:5px; margin-top:5px;">
         <button id="plotBtn" class="primary" style="margin-top:0;">顯示點位</button>
         <button id="clearBtn" class="secondary" style="margin-top:0;">清除</button>
+      </div>
+      <!-- 🌟 新增：近3年50公尺重複案件比對結果 -->
+      <div class="collision-warning" id="coordQueryNearbyBox" style="display:none; margin-top:12px;">
+        <div class="collision-title"><i class="fas fa-exclamation-triangle"></i> 此地點附近近期有維修紀錄</div>
+        <div class="small" style="margin-bottom:5px; color:#856404;">近 3 年內、方圓 50 公尺內</div>
+        <div class="collision-list" id="coordQueryNearbyList"></div>
       </div>
     </div>
     
@@ -6126,17 +6132,94 @@ document.getElementById('toggleCadastralBtn').onclick = function() {
   isCadastralVisible = !isCadastralVisible; 
 };
 
+// ====== 🌟 新增：座標查詢工具 ─ 近3年50公尺重複案件比對 ======
+let coordQueryNearbyMatches = [];
+function checkNearbyHistoryForCoordTool(coordList) {
+  const box = document.getElementById('coordQueryNearbyBox');
+  const list = document.getElementById('coordQueryNearbyList');
+  const threeYearsAgo = new Date();
+  threeYearsAgo.setFullYear(new Date().getFullYear() - 3);
+  coordQueryNearbyMatches = [];
+  coordList.forEach((coord, coordIdx) => {
+    const centerLatLng = L.latLng(coord.lat, coord.lng);
+    REPAIR_CONFIG.forEach(conf => {
+      const data = REPAIR_DATA_CACHE[conf.value];
+      if(!data || !data.features) return;
+      data.features.forEach(f => {
+        if(f.geometry.type !== 'Point') return;
+        const pt = L.latLng(f.geometry.coordinates[1], f.geometry.coordinates[0]);
+        const dist = centerLatLng.distanceTo(pt);
+        if(dist <= 50) {
+          const dateStr = String(f.properties['完工日期'] || "").trim();
+          if(dateStr.length === 7) {
+            const finishDate = new Date(parseInt(dateStr.substring(0,3))+1911, parseInt(dateStr.substring(3,5))-1, parseInt(dateStr.substring(5,7)));
+            if(finishDate >= threeYearsAgo) {
+              coordQueryNearbyMatches.push({
+                coordIdx: coordIdx,
+                coordLabel: coord.label,
+                label: conf.label,
+                props: f.properties,
+                lat: pt.lat,
+                lng: pt.lng,
+                dist: dist.toFixed(1),
+                isEmergency: /搶修|災害|緊急/.test(conf.label),
+                jsDate: finishDate,
+                dateStr
+              });
+            }
+          }
+        }
+      });
+    });
+  });
+  list.innerHTML = '';
+  if(coordQueryNearbyMatches.length > 0) {
+    box.style.display = 'block';
+    coordQueryNearbyMatches.sort((a,b) => a.coordIdx - b.coordIdx || b.jsDate - a.jsDate);
+    let lastCoordIdx = -1;
+    coordQueryNearbyMatches.forEach((item, index) => {
+      // 多座標時加上分組標頭
+      if(coordList.length > 1 && item.coordIdx !== lastCoordIdx) {
+        const header = document.createElement('div');
+        header.style.cssText = 'padding:6px 10px; background:#fff3cd; font-weight:bold; font-size:12px; color:#856404; border-bottom:1px solid #ffeeba;';
+        header.textContent = `📍 輸入點:${item.coordLabel}`;
+        list.appendChild(header);
+        lastCoordIdx = item.coordIdx;
+      }
+      const div = document.createElement('div');
+      div.className = 'nearby-item';
+      div.innerHTML = `
+        <div style="flex:1;">
+          <div style="font-weight:bold; color:#004080;">${item.label}</div>
+          <div style="font-size:11px; color:#666;">完工：${item.dateStr} | 距 ${item.dist}m</div>
+        </div>
+        <div class="nearby-tag ${item.isEmergency ? 'tag-emg' : 'tag-gen'}">${item.isEmergency ? '搶修' : '一般'}</div>
+      `;
+      div.onclick = function() { showCoordQueryDetail(index); };
+      list.appendChild(div);
+    });
+  } else {
+    box.style.display = 'none';
+  }
+}
+function showCoordQueryDetail(index) {
+  const item = coordQueryNearbyMatches[index];
+  if(!item) return;
+  const content = createPopup({ fileName: item.label, props: item.props, lat: item.lat, lng: item.lng, dist: parseFloat(item.dist) });
+  document.getElementById('reportDetailContent').innerHTML = content;
+  document.getElementById('reportDetailModal').style.display = 'flex';
+}
+// ====== 🌟 新增結束 ======
+
 document.getElementById('plotBtn').onclick = () => {
   pointLayer.clearLayers();
+  document.getElementById('coordQueryNearbyBox').style.display = 'none';  // 🌟新增：先收起舊比對結果
   const input = document.getElementById('coordsInput').value.trim();
   if (!input) return;
-
-
   const lines = input.split(/\r?\n/).filter(line => line.trim() !== '');
   const bounds = L.latLngBounds();
+  const plottedCoords = [];  // 🌟新增：收集已標的點
   let markerCount = 0;
-
-
   lines.forEach(line => {
      const parts = line.trim().split(/[, \t]+/).filter(p => p !== '');
      if (parts.length >= 2) {
@@ -6160,12 +6243,11 @@ document.getElementById('plotBtn').onclick = () => {
                 L.marker(latlng).addTo(pointLayer).bindPopup(popupText);
                 markerCount++;
                 bounds.extend(latlng);
+                plottedCoords.push({ lat: latlng.lat, lng: latlng.lng, label: line.trim() });  // 🌟新增：記錄此點
           } catch (e) { }
         }
       }
   });
-
-
   if (markerCount > 0) {
       if (markerCount === 1) {
           map.setView(bounds.getCenter(), 16);
@@ -6176,6 +6258,10 @@ document.getElementById('plotBtn').onclick = () => {
      } else {
         alert('請輸入有效的 TWD97 或 WGS84 座標');
      }
+  // 🌟新增：呼叫比對函式
+  if (plottedCoords.length > 0) {
+    checkNearbyHistoryForCoordTool(plottedCoords);
+  }
 };
 
 window.updateDengueRadius = function() {
@@ -6263,6 +6349,8 @@ document.getElementById('clearRepairBtn').addEventListener('click', () => {
   pointLayer.clearLayers(); 
   measureLayer.clearLayers(); 
   document.getElementById('coordsInput').value = '';
+
+document.getElementById('coordQueryNearbyBox').style.display = 'none';  // 🌟新增
   
   if(roadsLayer) roadsLayer.eachLayer(l => l.setStyle({color: DEEP_BLUE, weight:3})); 
   document.getElementById('roadSelect').value = "";
@@ -8740,7 +8828,7 @@ async function exportAllRiskGroups() {
   // 設為 true = 開啟，前端可見可操作
   // 設為 false = 關閉，前端完全隱藏
   // =====================================================
-  const ENABLE_DUPLICATE_CHECK = false;
+  const ENABLE_DUPLICATE_CHECK = true;
 
   if (!ENABLE_DUPLICATE_CHECK) {
     const dupSection = document.getElementById('duplicateCheckSection');

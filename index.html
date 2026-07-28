@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0728_V4)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0729_V2)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -2242,39 +2242,112 @@
      <button onclick="closeVendorModal()" style="background:none;border:none;color:white;font-size:24px;cursor:pointer;"><i class="fas fa-times"></i></button>
    </div>
    <div class="vendor-body" style="padding: 20px; overflow-y: auto; flex: 1;">
-      <div style="color: #d32f2f; font-size: 12px; margin-bottom: 15px; font-weight: bold;">
+      <div id="vendorWarningText" style="color: #d32f2f; font-size: 12px; margin-bottom: 15px; font-weight: bold;">
+
         ※ 本專區僅供機關授權之承攬廠商使用
+
       </div>
       
-      <div id="vendorStage1">
+      <div id="vendorRoleStage">
+        <div style="font-size:14px; font-weight:bold; color:#333; margin-bottom:10px;">請選擇身分：</div>
+        <div style="display:flex; gap:10px;">
+          <button class="vendor-btn" onclick="selectVendorRole('vendor')" style="background:#0056b3; flex:1; padding:12px;"><i class="fas fa-hard-hat"></i> 廠商</button>
+          <button class="vendor-btn" onclick="selectVendorRole('staff')" style="background:#2e7d32; flex:1; padding:12px;"><i class="fas fa-building"></i> 機關</button>
+        </div>
+      </div>
+
+      <div id="vendorStage1" style="display:none;">
+
        <div class="vendor-input-group" style="display:flex; gap:10px;">
+
          <input type="password" id="vendorPwd" placeholder="請輸入廠商授權密碼" style="flex:1;">
+
          <button class="vendor-btn" onclick="verifyVendorPwd()" style="background:#0056b3; width:auto; padding:10px 15px;"><i class="fas fa-key"></i> 登入</button>
+
        </div>
+
      </div>
      
      <div id="vendorStage2" style="display:none;">
+
     <div style="text-align:right; margin-bottom:10px;">
+
         <a href="#" onclick="logoutVendor()" style="font-size:13px; color:#d32f2f; text-decoration:underline; font-weight:bold;">切換帳號 / 登出 <i class="fas fa-sign-out-alt"></i></a>
+
     </div>
-    
+
+    <div id="vendorHistoryBlock" style="display:none; margin-bottom: 20px;">
+
+        <div style="font-size:15px; font-weight:bold; color:#2e7d32; margin-bottom:10px; border-bottom:2px solid #2e7d32; padding-bottom:5px;">
+
+            <i class="fas fa-folder-open"></i> 廠商上傳資料查詢 (機關檢視)
+
+        </div>
+
+        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:10px; background:#f8f9fa; padding:10px; border-radius:8px;">
+
+            <select id="vendorHistDateField" style="padding:8px; border-radius:6px; border:1px solid #ccc;">
+                <option value="finishDate">完工日期</option>
+                <option value="dispatchDate">派工日期</option>
+            </select>
+
+            <span style="font-size:13px; color:#555;">起</span>
+            <input type="date" id="vendorHistStart" style="padding:8px; border-radius:6px; border:1px solid #ccc;">
+            <span style="font-size:13px; color:#555;">迄</span>
+            <input type="date" id="vendorHistEnd" style="padding:8px; border-radius:6px; border:1px solid #ccc;">
+
+            <button class="vendor-btn" onclick="searchVendorHistory()" style="background:#2e7d32; width:auto; padding:8px 15px;"><i class="fas fa-search"></i> 查詢</button>
+
+        </div>
+
+        <div id="vendorHistoryContent" style="max-height: 300px; overflow-y: auto; background: #fff; border: 1px solid #ddd; border-radius: 8px;">
+
+            <div style="padding:15px; text-align:center; color:#999;">請選擇日期區間後點擊查詢</div>
+
+        </div>
+
+        <div style="text-align:right; margin-top:10px;">
+            <a href="#" onclick="toggleVendorFillingBlock()" id="vendorFillingToggleLink" style="font-size:13px; color:#0056b3; text-decoration:underline; font-weight:bold;">▼ 展開代填代傳功能</a>
+        </div>
+
+    </div>
+
+    <div id="vendorFillingBlock">
+
     <div id="vendorPendingListBlock" style="margin-bottom: 20px;">
+
         <div style="font-size:15px; font-weight:bold; color:#004080; margin-bottom:10px; border-bottom:2px solid #004080; padding-bottom:5px;">
+
             <i class="fas fa-list-ol"></i> 您的已派工/施工中案件 (點擊即可編輯)
+
         </div>
+
         <div id="vendorPendingListContent" style="max-height: 250px; overflow-y: auto; background: #fff; border: 1px solid #ddd; border-radius: 8px;">
+
             <div style="padding:15px; text-align:center; color:#666;"><i class="fas fa-spinner fa-spin"></i> 正在載入派工清單...</div>
+
         </div>
+
         <div style="font-size:12px; color:#666; background:#fff3cd; padding:8px; border-radius:6px; margin-top:8px; border-left:3px solid #ffc107;">
+
             💡 提示：若案件過去已上傳「施工後」照片並結案，將不在上方清單中。若需查詢，請直接從下方窗格輸入編號。
+
         </div>
+
     </div>
 
     <div style="font-size:14px; font-weight:bold; color:#555; margin-bottom:5px;">或者手動輸入案件編號：</div>
+
     <div class="vendor-input-group">
+
         <input type="text" id="vendorCaseId" placeholder="請輸入案件編號 (例:1130520001)">
+
         <button class="vendor-btn" onclick="fetchVendorCase()"><i class="fas fa-search"></i> 載入資料</button>
+
     </div>
+
+    </div>
+
 </div>
 
       <div class="vendor-info-box" id="vendorInfoBox">
@@ -2857,12 +2930,27 @@
     </div>
     <div style="padding: 20px; overflow-y:auto; flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-start;">
       <div style="width:100%; max-width: 600px; text-align:left; margin-top: 10px;">
-        <div style="color:#d32f2f; font-size:14px; font-weight:bold; margin-bottom:15px;">
+        <div id="inspWarningText" style="color:#d32f2f; font-size:14px; font-weight:bold; margin-bottom:15px;">
+
           ※ 本專區僅供機關授權之巡檢廠商使用
+
         </div>
-        <div style="display:flex; gap:10px; width:100%;">
-          <input type="password" id="inspPwdInput" placeholder="請輸入巡檢授權密碼" style="flex:1; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; outline:none; box-sizing:border-box; background: white;">
-          <button onclick="verifyInspectionPwd()" style="background:#004080; color: white; border: none; padding: 12px 20px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; white-space: nowrap;"><i class="fas fa-key"></i> 登入</button>
+        <div id="inspRoleStage">
+          <div style="font-size:14px; font-weight:bold; color:#333; margin-bottom:10px;">請選擇身分：</div>
+          <div style="display:flex; gap:10px; width:100%;">
+            <button onclick="selectInspRole('vendor')" style="background:#004080; color:white; border:none; flex:1; padding:12px; border-radius:8px; font-size:16px; font-weight:bold; cursor:pointer;"><i class="fas fa-hard-hat"></i> 廠商</button>
+            <button onclick="selectInspRole('staff')" style="background:#2e7d32; color:white; border:none; flex:1; padding:12px; border-radius:8px; font-size:16px; font-weight:bold; cursor:pointer;"><i class="fas fa-building"></i> 機關</button>
+          </div>
+        </div>
+
+        <div id="inspPwdStage" style="display:none; width:100%;">
+          <div style="display:flex; gap:10px; width:100%;">
+
+            <input type="password" id="inspPwdInput" placeholder="請輸入巡檢授權密碼" style="flex:1; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; outline:none; box-sizing:border-box; background: white;">
+
+            <button onclick="verifyInspectionPwd()" style="background:#004080; color: white; border: none; padding: 12px 20px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; white-space: nowrap;"><i class="fas fa-key"></i> 登入</button>
+
+          </div>
         </div>
       </div>
     </div>
@@ -3110,14 +3198,22 @@ function openEntryModal() {
 // === 全局變數與地圖初始化 ===
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwrS_ENVFM0kTvlHDwwTiIx3KzExZh-QhXdowFlHMYHXPajqBm1_g3tcpq1AQeUlL8i/exec";
 // 【資安新增】把密碼送到後端驗證的共用小工具(true=正確 / false=錯誤 / null=連線失敗)
-async function checkPwdWithServer(pwd) {
+async function checkPwdWithServer(pwd, role) {
+
   try {
+
     const res = await fetch(GOOGLE_SCRIPT_URL, {
+
       method: "POST",
-      body: JSON.stringify({ action: "verifyPwd", appKey: "TainanMap2026_SecureKey_v1", pwd: pwd })
+
+      body: JSON.stringify({ action: "verifyPwd", appKey: "TainanMap2026_SecureKey_v1", pwd: pwd, role: role || "vendor" })
+
     });
+
     const json = await res.json();
+
     return json.result === "success";
+
   } catch (e) {
     alert("⚠️ 連線失敗,請檢查網路後再試。");
     return null;
@@ -7153,21 +7249,120 @@ let vendorCart = [];
     let hasModified = false;
 
     // 階段一：驗證密碼邏輯
+    window.selectVendorRole = function(role) {
+        window.vendorSelectedRole = role;
+        document.getElementById('vendorRoleStage').style.display = 'none';
+        document.getElementById('vendorStage1').style.display = 'block';
+        document.getElementById('vendorPwd').placeholder = (role === 'staff') ? '請輸入機關授權密碼' : '請輸入廠商授權密碼';
+        document.getElementById('vendorWarningText').innerText = (role === 'staff') ? '※ 本專區僅供機關使用' : '※ 本專區僅供機關授權之承攬廠商使用';
+    };
+
     window.verifyVendorPwd = async function() {
+
     const pwd = document.getElementById('vendorPwd').value.trim();
-    if(!pwd) return alert("請輸入廠商授權密碼！");
-    const ok = await checkPwdWithServer(pwd);
+
+    if(!pwd) return alert("請輸入授權密碼！");
+
+    const role = window.vendorSelectedRole || 'vendor';
+
+    const ok = await checkPwdWithServer(pwd, role);
+
     if (ok === null) return; // 連線失敗,不往下判斷
+
     if(ok) {
+
         window.vendorAuthed = true; // 記住本次已登入成功
+        window.vendorRole = role; // 記住這次登入的身分(vendor/staff)
+        window.vendorAuthPwd = pwd; // 記住密碼，供機關的歷史查詢使用
+
         document.getElementById('vendorStage1').style.display = 'none';
+
         document.getElementById('vendorStage2').style.display = 'block';
-        // 第二項需求：登入成功後，立刻連動後台抓取清單
-        fetchVendorPendingList(pwd);
+
+        if (role === 'staff') {
+            // 機關角色：優先顯示歷史查詢，代填代傳功能預設收合
+            document.getElementById('vendorHistoryBlock').style.display = 'block';
+            document.getElementById('vendorFillingBlock').style.display = 'none';
+        } else {
+            // 廠商角色：維持原本行為，直接顯示填寫/上傳畫面
+            document.getElementById('vendorHistoryBlock').style.display = 'none';
+            document.getElementById('vendorFillingBlock').style.display = 'block';
+            // 第二項需求：登入成功後，立刻連動後台抓取清單
+            fetchVendorPendingList(pwd, role);
+        }
+
     } else {
+
         alert(" ❌  密碼錯誤！請確認授權密碼。");
+
     }
+
 };
+
+    window.toggleVendorFillingBlock = function() {
+        const block = document.getElementById('vendorFillingBlock');
+        const link = document.getElementById('vendorFillingToggleLink');
+        const isHidden = (block.style.display === 'none');
+        block.style.display = isHidden ? 'block' : 'none';
+        link.innerHTML = isHidden ? '▲ 收合代填代傳功能' : '▼ 展開代填代傳功能';
+        if (isHidden && window.vendorAuthPwd) {
+            fetchVendorPendingList(window.vendorAuthPwd, window.vendorRole);
+        }
+    };
+
+    window.searchVendorHistory = async function() {
+        const dateField = document.getElementById('vendorHistDateField').value;
+        const startDate = document.getElementById('vendorHistStart').value;
+        const endDate = document.getElementById('vendorHistEnd').value;
+        const listContent = document.getElementById('vendorHistoryContent');
+
+        if (!startDate || !endDate) {
+            alert("請選擇起訖日期！");
+            return;
+        }
+
+        listContent.innerHTML = '<div style="padding:15px; text-align:center; color:#666;"><i class="fas fa-spinner fa-spin"></i> 正在查詢...</div>';
+
+        try {
+            const res = await fetch(GOOGLE_SCRIPT_URL, {
+                method: "POST",
+                body: JSON.stringify({
+                    action: "getVendorHistoryByDate",
+                    appKey: "TainanMap2026_SecureKey_v1",
+                    pwd: window.vendorAuthPwd,
+                    dateField: dateField,
+                    startDate: startDate,
+                    endDate: endDate
+                })
+            });
+            const json = await res.json();
+
+            if (json.result === "success") {
+                const data = json.data;
+                if (data.length === 0) {
+                    listContent.innerHTML = '<div style="padding:15px; text-align:center; color:#999;">此區間查無案件</div>';
+                    return;
+                }
+                let html = '';
+                data.forEach(item => {
+                    const printUrl = GOOGLE_SCRIPT_URL + "?action=acceptance&caseId=" + encodeURIComponent(item.caseId) + "&appKey=TainanMap2026_SecureKey_v1";
+                    html += '<div style="padding:12px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">' +
+                        '<div>' +
+                            '<div style="font-weight:bold; color:#004080;">' + item.caseId + '</div>' +
+                            '<div style="font-size:12px; color:#666;">派工：' + (item.dispatchDate || '無') + '　完工：' + (item.finishDate || '無') + '</div>' +
+                            '<div style="font-size:12px; color:#333;">' + (item.description || '') + '</div>' +
+                        '</div>' +
+                        '<a href="' + printUrl + '" target="_blank" style="background:#0056b3; color:white; padding:6px 12px; border-radius:6px; font-size:13px; text-decoration:none; white-space:nowrap;"><i class="fas fa-eye"></i> 檢視</a>' +
+                    '</div>';
+                });
+                listContent.innerHTML = html;
+            } else {
+                listContent.innerHTML = '<div style="padding:15px; text-align:center; color:red;">查詢失敗：' + (json.error || '未知錯誤') + '</div>';
+            }
+        } catch (e) {
+            listContent.innerHTML = '<div style="padding:15px; text-align:center; color:red;">連線失敗，請稍後再試</div>';
+        }
+    };
 
 
     /// 階段二：退回搜尋畫面 (不清除密碼，解決重登困擾)
@@ -7217,11 +7412,15 @@ window.downloadVendorPhotos = function() {
 };
 
 // === 第二項需求：連動後台抓取派工清單 ===
-window.fetchVendorPendingList = async function(pwd) {
+window.fetchVendorPendingList = async function(pwd, role) {
+
     const listContent = document.getElementById('vendorPendingListContent');
+
     listContent.innerHTML = '<div style="padding:15px; text-align:center; color:#666;"><i class="fas fa-spinner fa-spin"></i> 正在載入派工清單...</div>';
+
     try {
-        const res = await fetch(GOOGLE_SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "getVendorPendingList", appKey: "TainanMap2026_SecureKey_v1", pwd: pwd }) });
+
+        const res = await fetch(GOOGLE_SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "getVendorPendingList", appKey: "TainanMap2026_SecureKey_v1", pwd: pwd, role: role || "vendor" }) });
         const json = await res.json();
         if (json.result === "success") {
             const data = json.data;
@@ -7259,21 +7458,47 @@ window.fetchVendorPendingList = async function(pwd) {
 
 // === 補回遺失的分流三開關功能 ===
     window.openVendorModal = function() {
+
         if(document.getElementById('entryModal')) document.getElementById('entryModal').style.display = 'none';
+
         const overlay = document.getElementById('vendorOverlay');
+
         if(overlay) {
+
             overlay.style.display = 'flex';
+
             overlay.style.zIndex = '9999';
+
             document.getElementById('vendorUploadBlocks').style.display = 'none';
+
             document.getElementById('vendorInfoBox').style.display = 'none';
+
             if (window.vendorAuthed === true) {
+
+                document.getElementById('vendorRoleStage').style.display = 'none';
+
                 document.getElementById('vendorStage1').style.display = 'none';
+
                 document.getElementById('vendorStage2').style.display = 'block';
+
+                if (window.vendorRole === 'staff') {
+                    document.getElementById('vendorHistoryBlock').style.display = 'block';
+                } else {
+                    document.getElementById('vendorFillingBlock').style.display = 'block';
+                }
+
             } else {
-                document.getElementById('vendorStage1').style.display = 'block';
+
+                document.getElementById('vendorRoleStage').style.display = 'block';
+
+                document.getElementById('vendorStage1').style.display = 'none';
+
                 document.getElementById('vendorStage2').style.display = 'none';
+
             }
+
         }
+
     };
 
     window.closeVendorModal = function() {
@@ -7946,27 +8171,60 @@ window.downloadMyPhotos = function() {
 
 // 1. 入口控制
 function showInspectionPwd() {
+
   document.getElementById('entryModal').style.display = 'none';
+
   const pwdOverlay = document.getElementById('inspectionPwdOverlay');
+
   pwdOverlay.style.display = 'flex';
+
   pwdOverlay.style.zIndex = '9999';
+
+  // 每次重新開啟都回到角色選擇畫面
+  document.getElementById('inspRoleStage').style.display = 'block';
+  document.getElementById('inspPwdStage').style.display = 'none';
+
+}
+
+function selectInspRole(role) {
+  window.inspSelectedRole = role;
+  document.getElementById('inspRoleStage').style.display = 'none';
+  document.getElementById('inspPwdStage').style.display = 'block';
+  document.getElementById('inspPwdInput').placeholder = (role === 'staff') ? '請輸入機關授權密碼' : '請輸入巡檢授權密碼';
+  document.getElementById('inspWarningText').innerText = (role === 'staff') ? '※ 本專區僅供機關使用' : '※ 本專區僅供機關授權之巡檢廠商使用';
 }
 
 function cancelInspectionPwd() {
+
   document.getElementById('inspectionPwdOverlay').style.display = 'none';
+
   document.getElementById('entryModal').style.display = 'flex'; 
+
 }
 
 // 2. 驗證與初始化
+
 async function verifyInspectionPwd() {
+
   const pwd = document.getElementById('inspPwdInput').value;
-  if(!pwd) return alert("請輸入巡檢授權密碼！");
-  const ok = await checkPwdWithServer(pwd);
+
+  if(!pwd) return alert("請輸入授權密碼！");
+
+  const role = window.inspSelectedRole || 'vendor';
+
+  const ok = await checkPwdWithServer(pwd, role);
+
   if (ok === null) return; // 連線失敗,不往下判斷
+
   if(ok) { 
+
     window.inspAuthPwd = pwd; // 記住密碼,送出巡查報告與修改紀錄時要攜帶
+    window.inspRole = role; // 記住這次登入的身分(vendor/staff)
+
  
+
     document.getElementById('inspectionPwdOverlay').style.display = 'none';
+
     document.getElementById('inspPwdInput').value = '';
     
     // 每次進入重置按鈕狀態
@@ -7999,8 +8257,10 @@ async function verifyInspectionPwd() {
     document.getElementById('inspPhotoContainer').appendChild(addBtn);
 
     document.getElementById('inspectionFormModal').style.display = 'block';
-   // 補上這一行，讓視窗打開後立刻去抓資料
-   fetchPatrolList(); 
+
+   // 廠商、機關兩種角色都可以看歷史清單並修改
+   fetchPatrolList();
+
   }
 else {
    alert("密碼錯誤！");
@@ -8391,18 +8651,29 @@ function exportInspectionPDF() {
 }
 // === 分流四：連動後台抓取歷史巡查紀錄 ===
 window.fetchPatrolList = async function() {
+
     const listContent = document.getElementById('patrolHistoryContent');
+
     if(!listContent) return;
+
     
+
     listContent.innerHTML = '<div style="padding:15px; text-align:center; color:#666;"><i class="fas fa-spinner fa-spin"></i> 正在載入最新紀錄...</div>';
+
     
+
     try {
-        let staffPwd = sessionStorage.getItem("staffPwd");
-if (!staffPwd) {
-  staffPwd = prompt("請輸入承辦人密碼");
-  if (!staffPwd) return;
-  sessionStorage.setItem("staffPwd", staffPwd);
-}
+
+        const staffPwd = window.inspAuthPwd; // 直接沿用登入時已驗證過的密碼，不再另外詢問
+
+        if (!staffPwd) {
+
+          listContent.innerHTML = '<div style="padding:15px; text-align:center; color:red;">尚未登入，無法讀取歷史紀錄</div>';
+
+          return;
+
+        }
+
 const res = await fetch(`${GOOGLE_SCRIPT_URL}?action=getPatrolList&pwd=${encodeURIComponent(staffPwd)}`);
         const text = await res.text(); // 【防呆機制】先抓純文字
         

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0716_V1)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0728_V2)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -1877,6 +1877,44 @@
 /* === 新增：儀表板列表區樣式 === */ .eco-stat-val.clickable { cursor: pointer; text-decoration: underline; transition: color 0.2s; } .eco-stat-val.clickable:hover { color: #d35400; } .eco-stat-val.clickable.active { color: #d35400; } #dashCaseListBox { display: none; margin-top: 12px; padding-top: 10px; border-top: 1px dashed #ccc; max-height: 360px; overflow-y: auto; } #dashCaseListBox .case-item { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 6px; cursor: pointer; transition: background 0.2s; margin-bottom: 6px; background: #f8f9fa; } #dashCaseListBox .case-item:hover { background: #fff3e0; } #dashCaseListBox .case-thumb { width: 80px; height: 80px; flex-shrink: 0; border-radius: 4px; object-fit: cover; background: #e0e0e0; } #dashCaseListBox .case-thumb-empty { width: 80px; height: 80px; flex-shrink: 0; border-radius: 4px; background: #e0e0e0; display: flex; align-items: center; justify-content: center; color: #888; font-size: 11px; } #dashCaseListBox .case-info { flex: 1; min-width: 0; } #dashCaseListBox .case-id { font-size: 13px; font-weight: bold; color: #004080; word-break: break-all; } #dashCaseListBox .case-vendor { font-size: 11px; color: #666; margin-top: 3px; } #dashCaseListBox .case-pager { display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 8px; padding: 6px; } #dashCaseListBox .case-pager button { padding: 4px 12px; border: 1px solid #ccc; background: #fff; border-radius: 4px; cursor: pointer; font-size: 12px; } #dashCaseListBox .case-pager button:disabled { opacity: 0.3; cursor: not-allowed; } .case-list-title { font-size: 13px; font-weight: bold; color: #d35400; margin-bottom: 8px; padding: 4px 8px; background: #fff3e0; border-radius: 4px; } /* 自動勾選圖層的 toast 提示 */ #autoLayerToast { position: fixed; bottom: 30px; right: 30px; background: rgba(0,64,128,0.95); color: white; padding: 12px 20px; border-radius: 8px; font-size: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 99999; opacity: 0; transition: opacity 0.3s; pointer-events: none; } #autoLayerToast.show { opacity: 1; }
 .carbon-note { font-size: 11px; color: #888; margin-top: 10px; line-height: 1.4; border-top: 1px dashed #ccc; padding-top: 10px;}
 
+#inspectorSuggestBox {
+  position:absolute;
+  top:100%;
+  left:80px;
+  min-width:140px;
+  background:#fff;
+  border:1px solid #ccc;
+  border-radius:6px;
+  box-shadow:0 3px 10px rgba(0,0,0,0.15);
+  z-index:9999;
+  font-size:14px;
+}
+#inspectorSuggestBox .isb-item {
+  padding:8px 12px;
+  cursor:pointer;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  border-bottom:1px solid #eee;
+}
+#inspectorSuggestBox .isb-item:last-child { border-bottom:none; }
+#inspectorSuggestBox .isb-item:hover { background:#f0f7ff; }
+#inspectorSuggestBox .isb-name { flex:1; }
+#inspectorSuggestBox .isb-del {
+  color:#999;
+  margin-left:8px;
+  padding:0 4px;
+  font-size:16px;
+  line-height:1;
+}
+#inspectorSuggestBox .isb-del:hover { color:#c0392b; }
+#inspectorSuggestBox .isb-empty {
+  padding:8px 12px;
+  color:#999;
+  font-style:italic;
+  font-size:12px;
+}
+
 </style>
 </head>
 <body>
@@ -2099,13 +2137,13 @@
       <div class="wizard-step" id="step2">
         <div style="background:#fff5f5; color:#d32f2f; padding:12px; border-radius:6px; font-size:14px; line-height:1.6; margin-bottom:15px; border-left:5px solid #d32f2f; text-align:left;">
           <strong style="font-size:15px;"><i class="fas fa-exclamation-triangle"></i> 通報受理範圍提醒：</strong><br>
-          本系統通報案件僅處理山上區轄內：<br>
+          本系統通報案件僅處理：<br>
           1. 供公眾通行道路本體坑洞及損壞<br>
           2. 供公眾通行道路旁側溝排水問題<br>
           3. 供公眾通行道路旁擋土牆及邊坡崩塌、土石滑落等影響公眾通行<br>
           4. 樹木災害影響公眾通行道路通行問題<br>
           <div style="margin-top:8px; padding-top:8px; border-top:1px dashed #ffcdd2; font-weight:bold;">
-            ※ 其餘非山上區轄區及非與山上區供公眾通行道路結構安全或影響通行以外之衛生或路燈故障案件，不予受理通報，請逕撥打市府1999專線通報，感謝您的配合。
+            ※ 其餘非與供公眾通行道路結構安全或影響通行外之衛生或路燈故障案件，不予受理通報。
           </div>
         </div>
 
@@ -2902,7 +2940,7 @@
           <tr>
             <td colspan="8" style="text-align: left; padding: 15px 10px; white-space: nowrap; background: #fff;">
               <div style="display: flex; justify-content: space-between; width: 100%;">
-                <span>巡查人員：<input type="text" id="inspSign1" style="border:none; border-bottom:1px solid #000; outline:none; width:120px; background:transparent;"></span>
+                <span style="position:relative;">巡查人員：<input type="text" id="inspSign1" autocomplete="off" onfocus="showInspectorSuggest()" oninput="showInspectorSuggest()" onblur="hideInspectorSuggestDelayed()" style="border:none; border-bottom:1px solid #000; outline:none; width:120px; background:transparent;"><div id="inspectorSuggestBox" style="display:none;"></div></span>
                 <span>承辦人：<input type="text" id="inspSign2" style="border:none; width:120px; background:transparent;" disabled></span>
                 <span>單位主管：<input type="text" id="inspSign3" style="border:none; width:120px; background:transparent;" disabled></span>
               </div>
@@ -2928,11 +2966,72 @@
 // === 視窗控制與安全過濾 ===
 function openAiLogicModal() { document.getElementById('aiLogicModal').style.display = 'flex'; }
 function closeAiLogicModal() { document.getElementById('aiLogicModal').style.display = 'none'; }
+
+// ===== 巡查人員記憶功能（localStorage，最多 3 個）=====
+function getInspectorHistory() {
+  try {
+    const raw = localStorage.getItem("inspectorHistory");
+    return raw ? JSON.parse(raw) : [];
+  } catch(e) { return []; }
+}
+function saveInspectorHistory(list) {
+  try { localStorage.setItem("inspectorHistory", JSON.stringify(list.slice(0, 3))); } catch(e){}
+}
+function addInspectorToHistory(rawInput) {
+  if (!rawInput) return;
+  // 支援拆開：張三、李四 → 張三 和 李四 各自存
+  const names = String(rawInput).split(/[、,，\s]+/).map(s => s.trim()).filter(s => s.length > 0 && s.length < 20);
+  if (names.length === 0) return;
+  let list = getInspectorHistory();
+  names.forEach(n => {
+    list = list.filter(x => x !== n);  // 去重
+    list.unshift(n);                   // 放最前面
+  });
+  saveInspectorHistory(list);
+}
+function showInspectorSuggest() {
+  const box = document.getElementById("inspectorSuggestBox");
+  if (!box) return;
+  const list = getInspectorHistory();
+  if (list.length === 0) {
+    box.innerHTML = '<div class="isb-empty">尚無記憶名字（填寫並送出後會自動記住）</div>';
+  } else {
+    box.innerHTML = list.map((name, idx) =>
+      `<div class="isb-item" onmousedown="pickInspector(event, '${escapeHtml(name).replace(/'/g,"\\'")}')">
+         <span class="isb-name">${escapeHtml(name)}</span>
+         <span class="isb-del" onmousedown="delInspector(event, ${idx})" title="刪除">×</span>
+       </div>`
+    ).join('');
+  }
+  box.style.display = "block";
+}
+function hideInspectorSuggestDelayed() {
+  setTimeout(() => {
+    const box = document.getElementById("inspectorSuggestBox");
+    if (box) box.style.display = "none";
+  }, 200);
+}
+function pickInspector(ev, name) {
+  ev.preventDefault();
+  const inp = document.getElementById("inspSign1");
+  if (inp) inp.value = name;
+  document.getElementById("inspectorSuggestBox").style.display = "none";
+}
+function delInspector(ev, idx) {
+  ev.preventDefault();
+  ev.stopPropagation();
+  const list = getInspectorHistory();
+  list.splice(idx, 1);
+  saveInspectorHistory(list);
+  showInspectorSuggest();  // 刷新清單
+}
+// ===== 記憶功能結束 =====
+
 function escapeHtml(text) {
   if (!text) return "";
-  return text.replace(/&/g, "&")
-             .replace(/</g, "<")
-             .replace(/>/g, ">")
+  return text.replace(/&/g, "&amp;")
+             .replace(/</g, "&lt;")
+             .replace(/>/g, "&gt;")
              .replace(/"/g, "&quot;")
              .replace(/'/g, "&#039;");
 }
@@ -3348,7 +3447,7 @@ function createPopup(data) {
   const contractor = props['施工廠商'] || '-';
   const supervisor = props['監造廠商'] || '-';
   const priceDisplay = formatMoneyWan(props['決標金額'] || '0');
-  const desc = props['案情描述'] || '無';
+  const desc = escapeHtml(props['案情描述'] || '無');
   
   let pillClass = status.includes('施工')||status.includes('派工') ? 'pill-working' : (status.includes('搶修') ? 'pill-urgent' : 'pill-status');
   let step = (status.includes('完工') || status.includes('完成') || status.includes('結案')) ? 3 : (status.includes('未完成') || status.includes('派工') || status.includes('施工') ? 2 : 1);
@@ -3793,7 +3892,7 @@ async function fetchAndRefreshComments(storeId, caseId) {
   if(ratingText) ratingText.style.opacity = "0.5";
   
   try {
-    const res = await fetch(`${GOOGLE_SCRIPT_URL}?action=getComments&caseId=${caseId}&t=${Date.now()}`);
+    const res = await fetch(`${GOOGLE_SCRIPT_URL}?action=getComments&caseId=${caseId}&appKey=TainanMap2026_SecureKey_v1&t=${Date.now()}`);
     const json = await res.json();
     if (json.result === "success" && Array.isArray(json.data)) {
       const comments = json.data;
@@ -3839,7 +3938,7 @@ async function toggleRealtimeLayer(checkbox) {
   
   document.body.style.cursor = 'wait';
   try {
-    const res = await fetch(`${GOOGLE_SCRIPT_URL}?t=${Date.now()}`);
+    const res = await fetch(`${GOOGLE_SCRIPT_URL}?appKey=TainanMap2026_SecureKey_v1&t=${Date.now()}`);
     const data = await res.json();
     realtimeLayer.clearLayers();
     if(data.features) {
@@ -5322,7 +5421,7 @@ let DASHBOARD_REALTIME_CACHE = [];
 async function silentLoadRealtimeForDashboard() {
   if (GOOGLE_SCRIPT_URL.includes("您的SCRIPT_ID")) return;
   try {
-    const res = await fetch(`${GOOGLE_SCRIPT_URL}?t=${Date.now()}`);
+    const res = await fetch(`${GOOGLE_SCRIPT_URL}?appKey=TainanMap2026_SecureKey_v1&t=${Date.now()}`);
     const data = await res.json();
     if (data && data.features) {
       DASHBOARD_REALTIME_CACHE = data.features;
@@ -6100,7 +6199,16 @@ map.on('mousemove', e => {
     const t = twd97FromWgs84(e.latlng.lat, e.latlng.lng); 
     const el = document.getElementById('floatingCoords'); 
     el.style.display = 'block'; 
-    el.innerHTML = `TWD97: ${t.x}, ${t.y}`; 
+    // 即時顯示 TWD97 + WGS84
+    const lat = e.latlng.lat.toFixed(6);
+    const lng = e.latlng.lng.toFixed(6);
+    // 行政區用節流(每 150 毫秒才算一次),避免拖慢地圖
+    if (!window._villageThrottle || Date.now() - window._villageThrottle > 150) {
+      window._villageThrottle = Date.now();
+      window._lastVillage = getVillageName(e.latlng.lat, e.latlng.lng);
+    }
+    const village = window._lastVillage || '判定中...';
+    el.innerHTML = `TWD97: ${t.x}, ${t.y}<br>WGS84: ${lat}, ${lng}<br>行政區: ${village}`;
   }
   
   if(isMeasuring && measureStartLatLng) {
@@ -6971,7 +7079,7 @@ async function fetchNews() {
 
   try {
     // 向 GAS 發送請求，要求拿取 action=getNews 的資料
-    const res = await fetch(`${GOOGLE_SCRIPT_URL}?action=getNews&t=${Date.now()}`);
+    const res = await fetch(`${GOOGLE_SCRIPT_URL}?action=getNews&appKey=TainanMap2026_SecureKey_v1&t=${Date.now()}`);
     const json = await res.json();
     
     if (json.result === "success" && json.data && json.data.length > 0) {
@@ -7200,7 +7308,7 @@ window.fetchVendorPendingList = async function(pwd) {
         btn.disabled = true;
 
         try {
-            const res = await fetch(`${GOOGLE_SCRIPT_URL}?action=getCaseDetail&caseId=${caseId}`);
+            const res = await fetch(`${GOOGLE_SCRIPT_URL}?action=getCaseDetail&caseId=${caseId}&appKey=TainanMap2026_SecureKey_v1`);
             const json = await res.json();
             if(json.result === "success") {
                 document.getElementById('vendorCoord').innerText = `座標：${json.data.twd97 || '無紀錄'}`;
@@ -7649,7 +7757,7 @@ window.fetchVendorPendingList = async function(pwd) {
        }
        
        // 開啟與機關後台完全相同的驗收單網址 (帶入案件編號)
-       const printUrl = GOOGLE_SCRIPT_URL + "?action=acceptance&caseId=" + caseId;
+       const printUrl = GOOGLE_SCRIPT_URL + "?action=acceptance&caseId=" + caseId + "&appKey=TainanMap2026_SecureKey_v1";
        window.open(printUrl, "_blank");
    };
 // === 新增：開放資料 (Open Data) CSV 下載功能 ===
@@ -8053,6 +8161,7 @@ vendorPassword: window.inspAuthPwd || "",
     .then(res => {
       if(res.result === "success") {
         alert(" ✅  巡查報告提交成功！");
+        addInspectorToHistory(reportData.inspector);
         submitBtn.style.display = 'none'; 
         const pdfBtn = document.getElementById('btnInspPrint');
         if(pdfBtn) { 
@@ -8064,7 +8173,7 @@ vendorPassword: window.inspAuthPwd || "",
           pdfBtn.onclick = function() {
               if (res.row) {
                   // 開啟與機關後台完全相同的列印網址
-                  window.open(GOOGLE_SCRIPT_URL + "?action=printInspection&row=" + res.row, "_blank");
+                  window.open(GOOGLE_SCRIPT_URL + "?action=printInspection&row=" + res.row + "&appKey=TainanMap2026_SecureKey_v1", "_blank");
               } else {
                   alert("無法取得驗證列號，請聯繫管理員。");
               }
@@ -8265,7 +8374,13 @@ window.fetchPatrolList = async function() {
     listContent.innerHTML = '<div style="padding:15px; text-align:center; color:#666;"><i class="fas fa-spinner fa-spin"></i> 正在載入最新紀錄...</div>';
     
     try {
-        const res = await fetch(`${GOOGLE_SCRIPT_URL}?action=getPatrolList`);
+        let staffPwd = sessionStorage.getItem("staffPwd");
+if (!staffPwd) {
+  staffPwd = prompt("請輸入承辦人密碼");
+  if (!staffPwd) return;
+  sessionStorage.setItem("staffPwd", staffPwd);
+}
+const res = await fetch(`${GOOGLE_SCRIPT_URL}?action=getPatrolList&pwd=${encodeURIComponent(staffPwd)}`);
         const text = await res.text(); // 【防呆機制】先抓純文字
         
         try {
@@ -8287,7 +8402,7 @@ window.fetchPatrolList = async function() {
                          <div style="color:#6f42c1; font-weight:bold; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee; padding-bottom:8px; margin-bottom:8px;">
                             <span><i class="far fa-calendar-alt"></i> 巡查日期：${item.date || "無"}</span>
                             <div>
-                               <button onclick="window.open('${GOOGLE_SCRIPT_URL}?action=printInspection&row=${item.rowId}', '_blank')" style="background:#17a2b8; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-size:12px; margin-right:5px; box-shadow:0 1px 2px rgba(0,0,0,0.2); transition:0.2s;" onmouseover="this.style.background='#138496'" onmouseout="this.style.background='#17a2b8'"><i class="fas fa-print"></i> 產製報表</button>
+                               <button onclick="window.open(`${GOOGLE_SCRIPT_URL}?action=printInspection&row=${item.rowId}&appKey=TainanMap2026_SecureKey_v1`, '_blank')" style="background:#17a2b8; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-size:12px; margin-right:5px; box-shadow:0 1px 2px rgba(0,0,0,0.2); transition:0.2s;" onmouseover="this.style.background='#138496'" onmouseout="this.style.background='#17a2b8'"><i class="fas fa-print"></i> 產製報表</button>
                                
                                <button onclick="openPatrolEditModal(${index})" style="background:#28a745; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-size:12px; box-shadow:0 1px 2px rgba(0,0,0,0.2); transition:0.2s;" onmouseover="this.style.background='#218838'" onmouseout="this.style.background='#28a745'"><i class="fas fa-edit"></i> 編輯明細</button>
                             </div>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0729_V2)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0729_V6)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -1119,6 +1119,11 @@
 .progress-step { position: relative; z-index: 1; text-align: center; display: flex; flex-direction: column; align-items: center; width: 33%; }
 .step-circle { width: 24px; height: 24px; background: #e2e8f0; border: 2px solid #cbd5e1; border-radius: 50%; transition: all 0.3s; box-sizing: border-box; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; font-weight: bold; }
 .progress-step.active .step-circle { border-color: #f1c40f; background: #f1c40f; box-shadow: 0 0 0 3px rgba(241,196,15,0.3); }
+
+.progress-step.active-reject .step-circle { border-color: #94a3b8; background: #94a3b8; box-shadow: 0 0 0 3px rgba(148,163,184,0.3); }
+.progress-step.active-reject .step-label { color: #64748b; }
+.progress-step.active-reject .step-date { color: #94a3b8; }
+
 .progress-step.active .step-circle::after { content: '✓'; color: #fff; }
 .step-date { font-size: 10px; color: #94a3b8; margin-top: 4px; white-space: nowrap; font-family: monospace; }
 .step-label { font-size: 11px; font-weight: bold; color: #94a3b8; margin-bottom: 2px; }
@@ -2998,7 +3003,8 @@
           <tr>
             <th colspan="8" style="text-align: left; font-weight: normal; padding: 10px; background: #fff; border-bottom: 2px solid #000; border-top: 2px solid #000;">
               <div style="display: flex; justify-content: space-between; flex-wrap: wrap;">
-                <span>巡查單位：<input type="text" id="inspUnit" value="廠商" style="border:none; border-bottom:1px solid #000; outline:none; font-size:16px; width:200px; background:transparent;"></span>
+                <span>巡查單位：<input type="text" id="inspUnit" value="廠商" style="border:none; border-bottom:1px solid #000; outline:none; font-size:16px; width:200px; background:transparent;" onfocus="showUnitSuggest()" onblur="hideUnitSuggestDelayed()" autocomplete="off">
+<div id="unitSuggestBox" class="inspector-suggest-box" style="display:none;"></div></span>
                 <span>巡查類別：
                   <select id="inspType" style="border:none; outline:none; font-size:16px; background:transparent; cursor:pointer;">
                     <option value="經常/定期">■經常/定期 □特別</option>
@@ -3140,6 +3146,91 @@ function delInspector(ev, idx) {
 }
 // ===== 記憶功能結束 =====
 
+// ===== 巡查單位記憶功能 =====
+function getUnitHistory() {
+  try {
+    var raw = localStorage.getItem("unitHistory");
+    return raw ? JSON.parse(raw) : [];
+  } catch(e) { return []; }
+}
+function saveUnitHistory(list) {
+  try { localStorage.setItem("unitHistory", JSON.stringify(list.slice(0, 3))); } catch(e){}
+}
+function addUnitToHistory(rawInput) {
+  if (!rawInput) return;
+  var units = String(rawInput).split(/[、,，\s]+/);
+  var cleaned = [];
+  for (var i = 0; i < units.length; i++) {
+    var n = units[i].replace(/^\s+|\s+$/g, "");
+    if (n.length > 0 && n.length < 20) cleaned.push(n);
+  }
+  if (cleaned.length === 0) return;
+  var list = getUnitHistory();
+  for (var k = 0; k < cleaned.length; k++) {
+    var name = cleaned[k];
+    var filtered = [];
+    for (var j = 0; j < list.length; j++) {
+      if (list[j] !== name) filtered.push(list[j]);
+    }
+    filtered.unshift(name);
+    list = filtered;
+  }
+  saveUnitHistory(list);
+}
+function showUnitSuggest() {
+  var box = document.getElementById("unitSuggestBox");
+  if (!box) return;
+  var list = getUnitHistory();
+  box.innerHTML = "";
+  if (list.length === 0) {
+    var empty = document.createElement("div");
+    empty.className = "isb-empty";
+    empty.textContent = "尚無記憶單位（填寫並送出後會自動記住）";
+    box.appendChild(empty);
+  } else {
+    for (var i = 0; i < list.length; i++) {
+      (function(idx, name){
+        var item = document.createElement("div");
+        item.className = "isb-item";
+        var nameSpan = document.createElement("span");
+        nameSpan.className = "isb-name";
+        nameSpan.textContent = name;
+        var delSpan = document.createElement("span");
+        delSpan.className = "isb-del";
+        delSpan.textContent = "×";
+        delSpan.title = "刪除";
+        item.appendChild(nameSpan);
+        item.appendChild(delSpan);
+        item.onmousedown = function(ev) { pickUnit(ev, name); };
+        delSpan.onmousedown = function(ev) { ev.stopPropagation(); delUnit(ev, idx); };
+        box.appendChild(item);
+      })(i, list[i]);
+    }
+  }
+  box.style.display = "block";
+}
+function hideUnitSuggestDelayed() {
+  setTimeout(function() {
+    var box = document.getElementById("unitSuggestBox");
+    if (box) box.style.display = "none";
+  }, 200);
+}
+function pickUnit(ev, name) {
+  if (ev && ev.preventDefault) ev.preventDefault();
+  var inp = document.getElementById("inspUnit");
+  if (inp) inp.value = name;
+  document.getElementById("unitSuggestBox").style.display = "none";
+}
+function delUnit(ev, idx) {
+  if (ev && ev.preventDefault) ev.preventDefault();
+  if (ev && ev.stopPropagation) ev.stopPropagation();
+  var list = getUnitHistory();
+  list.splice(idx, 1);
+  saveUnitHistory(list);
+  showUnitSuggest();
+}
+// ===== 巡查單位記憶功能結束 =====
+
 function escapeHtml(text) {
   if (!text) return "";
   return text.replace(/&/g, "&amp;")
@@ -3268,6 +3359,14 @@ map.on('locateactivate', requestWakeLock);
 
 let REPAIR_CONFIG = [];
 let roadsLayer = null;
+
+// 載入台南市行政區邊界資料（用於山上區通報範圍限制）
+let tainanDistrictsData = null;
+fetch('tainan_districts.geojson')
+  .then(r => r.json())
+  .then(data => { tainanDistrictsData = data; })
+  .catch(e => console.warn('tainan_districts.geojson 載入失敗', e));
+
 let roadLayersArray = [];
 let REPAIR_DATA_CACHE = {};
 let ALL_CONTRACTORS = new Set();
@@ -3565,6 +3664,33 @@ function createPopup(data) {
   }
 
   const status = (props['案件狀態'] || '待處理').trim();
+
+// =====================================================
+  // 🔒 不受理案件處理邏輯
+  // =====================================================
+  if (status === '不受理') {
+    // 開關開啟時：直接不渲染這個點位，return不繼續執行
+    if (ENABLE_LOCATION_CHECK) return;
+    
+    // 開關關閉時：正常渲染點位，但泡泡窗加入不受理說明
+    // 取得AA欄的承辦人說明文字（props裡的欄位名稱第27欄）
+    const rejectNote = (props['不受理說明'] || '').trim();
+    
+    // 組合泡泡窗說明文字
+    const fixedText = '本案通報地點，非屬山上區公所轄管範圍，如有進一步通報需求，請逕撥打臺南市政府1999專線。';
+    
+    const rejectHtml = `
+      <div style="background:#fff3cd; border-left:4px solid #f39c12; padding:10px 12px; border-radius:6px; margin:10px 0; font-size:13px; color:#7d4e00;">
+        <div style="font-weight:bold; margin-bottom:6px;">⚠️ 本案不受理說明</div>
+        <div>${fixedText}</div>
+        ${rejectNote ? `<div style="margin-top:8px; padding-top:8px; border-top:1px dashed #f39c12; color:#555;">${rejectNote}</div>` : ''}
+      </div>`;
+    
+    // 將說明文字存到props，讓後續泡泡窗產生時可以取用
+    props['_rejectHtml'] = rejectHtml;
+  }
+  // =====================================================
+
   const contractor = props['施工廠商'] || '-';
   const supervisor = props['監造廠商'] || '-';
   const priceDisplay = formatMoneyWan(props['決標金額'] || '0');
@@ -3797,11 +3923,22 @@ function createPopup(data) {
           </div>
 
           <!-- 進度條 -->
+
           <div class="progress-container">
+
+            ${status === '不受理' ? `
+            <div class="progress-step active"><div class="step-circle"></div><div class="step-label">通報日</div><div class="step-date">${props['通報日期ROC'] || '-'}</div></div>
+            <div class="progress-step active"><div class="step-circle"></div><div class="step-label">不受理</div><div class="step-date">-</div></div>
+            ` : `
             <div class="progress-step active"><div class="step-circle"></div><div class="step-label">待處理</div><div class="step-date">${props['通報日期ROC'] || '-'}</div></div>
             <div class="progress-step ${step>=2 ? 'active' : ''}"><div class="step-circle"></div><div class="step-label" style="line-height:1.2;">已派工<br>施工中</div><div class="step-date">${props['派工日期'] || '-'}</div></div>
             <div class="progress-step ${step>=3 ? 'active' : ''}"><div class="step-circle"></div><div class="step-label">已完工</div><div class="step-date">${props['完工日期'] || '-'}</div></div>
+            `}
+
           </div>
+
+          ${props['_rejectHtml'] ? props['_rejectHtml'] : ''}
+
         </div>
 
         <!-- 第二頁：工程詳細資訊 -->
@@ -4636,6 +4773,53 @@ async function submitReport() {
     return; 
   }
   
+// =====================================================
+  // 🔒 地理範圍限制檢查（山上區才可通報）
+  // =====================================================
+  if (ENABLE_LOCATION_CHECK) {
+    // 取得目前定位座標文字
+    const wgs84Text = document.getElementById('reportWgs84') ? document.getElementById('reportWgs84').innerText : '';
+    
+    // 狀況二：定位沒開或失敗
+    if (!wgs84Text || 
+        wgs84Text.includes('定位中') || 
+        wgs84Text.includes('定位失敗') || 
+        wgs84Text.includes('不支援') || 
+        wgs84Text.includes('取得中')) {
+      alert("請開啟裝置定位以確認案件位置，本系統僅受理山上區轄內道路案件，如非屬山上轄區內案件，請逕撥打臺南市政府1999專線。");
+      return;
+    }
+
+    // 狀況一：定位有開，檢查是否在山上區內
+    try {
+      const parts = wgs84Text.split(',');
+      const userLat = parseFloat(parts[0].trim());
+      const userLng = parseFloat(parts[1].trim());
+      
+      // 從tainan_districts.geojson找出山上區的邊界
+      const shanshangFeature = (typeof tainanDistrictsData !== 'undefined')
+        ? tainanDistrictsData.features.find(f => f.properties.TOWN === '山上區')
+        : null;
+
+      if (shanshangFeature && typeof turf !== 'undefined') {
+        const userPoint = turf.point([userLng, userLat]);
+        const isInside = turf.booleanPointInPolygon(userPoint, shanshangFeature);
+        
+        if (!isInside) {
+          alert("您的位置非屬山上區公所轄管範圍，本系統僅受理山上區轄內道路案件，如有進一步通報需求，請逕撥打臺南市政府1999專線。");
+          return;
+        }
+      }
+    } catch(e) {
+      // 座標解析失敗，視同定位異常，擋掉
+      alert("請開啟裝置定位以確認案件位置，本系統僅受理山上區轄內道路案件，如非屬山上轄區內案件，請逕撥打臺南市政府1999專線。");
+      return;
+    }
+  }
+  // =====================================================
+
+
+
   if (Date.now() - reportStartTime < 3000) return alert("請勿頻繁送出，請檢查資料後再試");
   if (GOOGLE_SCRIPT_URL.includes("您的SCRIPT_ID")) return alert("請先設定 Google Apps Script URL！");
 
@@ -8445,6 +8629,7 @@ vendorPassword: window.inspAuthPwd || "",
       if(res.result === "success") {
         alert(" ✅  巡查報告提交成功！");
         addInspectorToHistory(reportData.inspector);
+addUnitToHistory(reportData.unit);
         submitBtn.style.display = 'none'; 
         const pdfBtn = document.getElementById('btnInspPrint');
         if(pdfBtn) { 
@@ -9239,6 +9424,14 @@ async function exportAllRiskGroups() {
   // =====================================================
   const ENABLE_DUPLICATE_CHECK = false;
 
+// =====================================================
+  // 🔒 通報地理範圍限制開關（山上區轄區內才可通報）
+  // 設為 true = 開啟限制，非山上區或未開定位者一律擋掉
+  // 設為 false = 關閉限制，任何地點皆可通報（簡報實作用）
+  // =====================================================
+  const ENABLE_LOCATION_CHECK = false;
+
+
   if (!ENABLE_DUPLICATE_CHECK) {
     const dupSection = document.getElementById('duplicateCheckSection');
     if (dupSection) dupSection.style.display = 'none';
@@ -9307,9 +9500,17 @@ function updateEcoDashboardStats() {
                 workingCount++;
                 window.DASH_WORKING_LIST.push({ props: props, sourceKey: sourceKey || '' });
           } else if (status.includes('待處理')) {
+
                 pendingCount++;
+
                 window.DASH_PENDING_LIST.push({ props: props, sourceKey: sourceKey || '' });
+
+          } else if (status.includes('不受理')) {
+
+                // 不受理案件：不計入任何統計，直接略過
+
           }
+
           // 其他無法分類的狀態（例如自訂特殊狀態）不計入
     };
 

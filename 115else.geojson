@@ -118,7 +118,7 @@
         ]
       },
       "properties": {
-        "案件編號": "115013-山上區玉峰里清水寺往中坑農側溝及南洲里38之100號農路改善工程",
+        "案件編號": "115013-玉峰里清水寺往中坑農側溝及南洲里38之100號農路改善工程",
         "完工日期": 1150731,
         "x1": 187529,
         "y1": 2555379,
@@ -143,7 +143,7 @@
         ]
       },
       "properties": {
-        "案件編號": "115013-山上區玉峰里清水寺往中坑農側溝及南洲里38之100號農路改善工程",
+        "案件編號": "115013-玉峰里清水寺往中坑農側溝及南洲里38之100號農路改善工程",
         "完工日期": 1150731,
         "x1": 183470,
         "y1": 2555446,
@@ -254,7 +254,132 @@
         "施工廠商": "通友營造股份有限公司",
         "監造廠商": null,
         "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzExODM3MzU=",
-        "施工前照片": "https://i.ibb.co/C308cfRF/115018-01.jpg"
+        "施工前照片": "https://i.ibb.co/C308cfRF/115018-01.jpg",
+        "施工後照片": null
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.38827356506707,
+          23.091405563989884
+        ]
+      },
+      "properties": {
+        "案件編號": "115022-牛稠埔段306-1地號道路下邊坡改善工程",
+        "完工日期": null,
+        "x1": 187332,
+        "y1": 2554536,
+        "派工時機": "一般案件",
+        "搶修類型": "擋土牆,紐澤西護欄",
+        "案件狀態": "已派工/施工中",
+        "決標金額": 920000,
+        "施工廠商": " 裕軒土木包工業",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzExOTU5MDg=",
+        "施工前照片": "https://i.ibb.co/JwDhsh05/105022-01.jpg",
+        "施工後照片": null
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.37848956049854,
+          23.08576859316433
+        ]
+      },
+      "properties": {
+        "案件編號": "115024-平陽里仙控麻農路擋土牆改善工程",
+        "完工日期": null,
+        "x1": 186327,
+        "y1": 2553916,
+        "派工時機": "一般案件",
+        "搶修類型": "擋土牆,混凝土路面,連續式護欄",
+        "案件狀態": "已派工/施工中",
+        "決標金額": 1300000,
+        "施工廠商": "尚林營造有限公司",
+        "監造廠商": "丞信工程顧問有限公司",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzEyMjA0ODY=",
+        "施工前照片": "https://i.ibb.co/5Xj7ZjyY/115024-01.jpg",
+        "施工後照片": null
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.34919042692454,
+          23.105526094942405
+        ]
+      },
+      "properties": {
+        "案件編號": "115025-明和里朝天宮廟旁社區道路改善工程",
+        "完工日期": null,
+        "x1": 183335,
+        "y1": 2556117,
+        "派工時機": "一般案件",
+        "搶修類型": "瀝青混凝土路面",
+        "案件狀態": "已派工/施工中",
+        "決標金額": 609000,
+        "施工廠商": "廣泰營造有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzEyMzI4NjE=",
+        "施工前照片": "https://i.ibb.co/vvQhYn6L/115025-01-01-01.jpg,https://i.ibb.co/BHgjH9PB/115025-01-02-01.jpg",
+        "施工後照片": null
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.34917714015735,
+          23.10625748716903
+        ]
+      },
+      "properties": {
+        "案件編號": "115025-明和里朝天宮廟旁社區道路改善工程",
+        "完工日期": null,
+        "x1": 183334,
+        "y1": 2556198,
+        "派工時機": "一般案件",
+        "搶修類型": "瀝青混凝土路面",
+        "案件狀態": "已派工/施工中",
+        "決標金額": 609000,
+        "施工廠商": "廣泰營造有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzEyMzI4NjE=",
+        "施工前照片": "https://i.ibb.co/G3bPVRvp/115025-02-01-01.jpg,https://i.ibb.co/67HV4qt8/115025-02-02-01.jpg",
+        "施工後照片": null
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.3497910998547,
+          23.106476742778653
+        ]
+      },
+      "properties": {
+        "案件編號": "115025-明和里朝天宮廟旁社區道路改善工程",
+        "完工日期": null,
+        "x1": 183397,
+        "y1": 2556222,
+        "派工時機": "一般案件",
+        "搶修類型": "瀝青混凝土路面",
+        "案件狀態": "已派工/施工中",
+        "決標金額": 609000,
+        "施工廠商": "廣泰營造有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzEyMzI4NjE=",
+        "施工前照片": "https://i.ibb.co/6csC2VVc/115025-03-01-01.jpg,https://i.ibb.co/27vRPfTV/115025-03-02-01.jpg"
       }
     }
   ]

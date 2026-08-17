@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0731_V1)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0817_V1)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -3504,7 +3504,7 @@ function getPhotosFromProps(props) {
   const rawPhotos = [];
   if(props['施工前照片']) rawPhotos.push(props['施工前照片']);
   if(props['施工後照片']) rawPhotos.push(props['施工後照片']);
-  return rawPhotos.join(';').split(/[;\n\r]+/).map(u => getDirectDriveUrl(u)).filter(u => u.length > 0);
+  return rawPhotos.join(';').split(/[;,\n\r]+/).map(u => u.trim()).map(u => getDirectDriveUrl(u)).filter(u => u.length > 0);
 }
 
 function formatMoneyWan(val) {

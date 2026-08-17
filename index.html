@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0817_V1)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0817_V2)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -2790,6 +2790,10 @@
         <span class="eco-stat-label">已完工案件</span>
         <span class="eco-stat-val val-done" id="dashDone">0</span>
     </div>
+<div class="eco-stat-item" style="margin-top:4px; border-top:1px dashed #ccc; padding-top:8px;">
+    <span class="eco-stat-label" style="font-size:12px; color:#666;">📍 維修點位</span>
+    <span class="eco-stat-val val-done" id="dashDonePoints" style="font-size:16px;">0</span>
+</div>
     <div class="eco-stat-item" style="margin-top:15px;">
         <span class="eco-stat-label">🌿 累計減碳量(含預估)</span>
         <span class="eco-stat-val val-carbon" id="dashCarbon">0 <span style="font-size:12px;">kg</span></span>
@@ -9632,6 +9636,7 @@ function updateEcoDashboardStats() {
     document.getElementById('dashPending').innerText = pendingCount;
      document.getElementById('dashWorking').innerText = workingCount;
      document.getElementById('dashDone').innerText = doneCount;
+document.getElementById('dashDonePoints').innerText = donePoints;
      document.getElementById('dashCarbon').innerHTML = carbonSaved + ' <span style="font-size:12px;">kg</span>';
      
      // 換算等值 A4 紙張數 (每張 0.0068 kg CO2e)

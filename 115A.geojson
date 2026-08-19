@@ -1,0 +1,37 @@
+{
+  "type": "FeatureCollection",
+  "name": "Converted_Data",
+  "crs": {
+    "type": "name",
+    "properties": {
+      "name": "urn:ogc:def:crs:OGC:1.3:CRS84"
+    }
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.38646363318229,
+          23.085862983529562
+        ]
+      },
+      "properties": {
+        "案件編號": "115年搶險搶修A工區第001案",
+        "完工日期": 1150307,
+        "x1": 187144,
+        "y1": 2553923,
+        "派工時機": "115年03月",
+        "搶修類型": "路面修復-坑洞填補",
+        "案件狀態": "已完工",
+        "決標金額": 21209,
+        "施工廠商": "裕軒土木包工業",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzEwNjAzNDk=",
+        "施工前照片": "https://i.ibb.co/5hJhWPHW/115-A-001-01.jpg",
+        "施工後照片": "https://i.ibb.co/wFDNysT4/115-A-001-02.jpg"
+      }
+    }
+  ]
+}

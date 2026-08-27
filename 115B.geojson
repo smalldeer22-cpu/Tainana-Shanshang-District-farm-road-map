@@ -88,31 +88,6 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120.39896254243087,
-          23.10445021268339
-        ]
-      },
-      "properties": {
-        "案件編號": "115年搶險搶修B工區第004案",
-        "完工日期": 1150529,
-        "x1": 188433,
-        "y1": 2555976,
-        "派工時機": "115年05月",
-        "搶修類型": "邊坡土石滑落",
-        "案件狀態": "已完工",
-        "決標金額": 53287,
-        "施工廠商": "其功營造工程股份有限公司",
-        "監造廠商": "鼎麒水土保持技師事務所",
-        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzEwNjAzNDk=",
-        "施工前照片": "https://drive.google.com/file/d/1WuFZWr6Iq6Btv6oxYYv1PMUsYi77lVFV/view?usp=drivesdk",
-        "施工後照片": "https://drive.google.com/file/d/1WuFZWr6Iq6Btv6oxYYv1PMUsYi77lVFV/view?usp=drivesdk"
-      }
-    },
-    {
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
           120.37981928270005,
           23.098036917725164
         ]

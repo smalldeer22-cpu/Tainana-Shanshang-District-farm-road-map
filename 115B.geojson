@@ -23,14 +23,14 @@
         "x1": 187430,
         "y1": 2555597,
         "派工時機": "115年02月",
-        "搶修類型": "路面修復-路緣坑洞修補",
+        "搶修類型": "設置交通錐",
         "案件狀態": "已完工",
         "決標金額": 9994,
         "施工廠商": "其功營造工程股份有限公司",
         "監造廠商": "鼎麒水土保持技師事務所",
         "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzEwNjAzNDk=",
-        "施工前照片": null,
-        "施工後照片": null
+        "施工前照片": "https://i.ibb.co/XkF9L2bB/115-B-001-01.jpg",
+        "施工後照片": "https://i.ibb.co/bj5733mg/115-B-001-02.jpg"
       }
     },
     {
@@ -54,8 +54,8 @@
         "施工廠商": "其功營造工程股份有限公司",
         "監造廠商": "鼎麒水土保持技師事務所",
         "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzEwNjAzNDk=",
-        "施工前照片": "https://i.ibb.co/4RZtSgNb/115-B-002-01.jpg",
-        "施工後照片": "https://i.ibb.co/bMXBsK4v/115-B-002-02.jpg"
+        "施工前照片": "https://i.ibb.co/wFPhmLTK/115-B-002-01.jpg",
+        "施工後照片": "https://i.ibb.co/RT2qbpfD/115-B-002-02.jpg"
       }
     },
     {
@@ -63,24 +63,524 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          120.33576962610434,
-          23.101135689970832
+          120.35775322472819,
+          23.101118301094626
         ]
       },
       "properties": {
         "案件編號": "115年搶險搶修B工區第003案",
         "完工日期": 1150319,
-        "x1": 181958,
-        "y1": 2555637,
+        "x1": 184210,
+        "y1": 2555625,
         "派工時機": "115年03月",
         "搶修類型": "排水溝-掏空填補",
         "案件狀態": "已完工",
-        "決標金額": 18540,
+        "決標金額": 18541,
         "施工廠商": "其功營造工程股份有限公司",
         "監造廠商": "鼎麒水土保持技師事務所",
         "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzEwNjAzNDk=",
         "施工前照片": "https://i.ibb.co/M5gwYnC7/115-B-003-01.jpg",
         "施工後照片": "https://i.ibb.co/vxgg4kJd/115-B-003-02.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.39896254243087,
+          23.10445021268339
+        ]
+      },
+      "properties": {
+        "案件編號": "115年搶險搶修B工區第004案",
+        "完工日期": 1150529,
+        "x1": 188433,
+        "y1": 2555976,
+        "派工時機": "115年05月",
+        "搶修類型": "邊坡土石滑落",
+        "案件狀態": "已完工",
+        "決標金額": 53287,
+        "施工廠商": "其功營造工程股份有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzEwNjAzNDk=",
+        "施工前照片": "https://drive.google.com/file/d/1WuFZWr6Iq6Btv6oxYYv1PMUsYi77lVFV/view?usp=drivesdk",
+        "施工後照片": "https://drive.google.com/file/d/1WuFZWr6Iq6Btv6oxYYv1PMUsYi77lVFV/view?usp=drivesdk"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.37981928270005,
+          23.098036917725164
+        ]
+      },
+      "properties": {
+        "案件編號": "115年搶險搶修B工區第005案",
+        "完工日期": 1150609,
+        "x1": 186469,
+        "y1": 2555274,
+        "派工時機": null,
+        "搶修類型": "樹木災害-倒樹鋸除",
+        "案件狀態": "已完工",
+        "決標金額": 34080,
+        "施工廠商": "其功營造工程股份有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzEwNjAzNDk=",
+        "施工前照片": "https://i.ibb.co/m57dh84f/115-B-005-01.jpg",
+        "施工後照片": "https://i.ibb.co/ymbsXS1M/115-B-005-02.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.39017006592053,
+          23.0972645163101
+        ]
+      },
+      "properties": {
+        "案件編號": "115年搶險搶修B工區第006案",
+        "完工日期": 1150610,
+        "x1": 187529,
+        "y1": 2555184,
+        "派工時機": null,
+        "搶修類型": "樹木災害-倒樹鋸除",
+        "案件狀態": "已完工",
+        "決標金額": 33635,
+        "施工廠商": "其功營造工程股份有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzEwNjAzNDk=",
+        "施工前照片": "https://i.ibb.co/XfN8Cr4T/115-B-006-01.jpg",
+        "施工後照片": "https://i.ibb.co/yc1WKD2W/115-B-006-02.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.38284819576096,
+          23.09955684072856
+        ]
+      },
+      "properties": {
+        "案件編號": "115年搶險搶修B工區第007案",
+        "完工日期": 1150615,
+        "x1": 186780,
+        "y1": 2555441,
+        "派工時機": null,
+        "搶修類型": "樹木災害-危竹鋸除",
+        "案件狀態": "已完工",
+        "決標金額": 12878,
+        "施工廠商": "其功營造工程股份有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzEwNjAzNDk=",
+        "施工前照片": "https://i.ibb.co/hR1Nn97C/115-B-007-01.jpg",
+        "施工後照片": "https://i.ibb.co/jk33VM4L/115-B-007-02.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.37371968022966,
+          23.093524803146494
+        ]
+      },
+      "properties": {
+        "案件編號": "115年搶險搶修B工區第008案",
+        "完工日期": 1150617,
+        "x1": 185842,
+        "y1": 2554777,
+        "派工時機": null,
+        "搶修類型": "路面修復-路緣坑洞修補",
+        "案件狀態": "已完工",
+        "決標金額": 26867,
+        "施工廠商": "其功營造工程股份有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzEwNjAzNDk=",
+        "施工前照片": "https://i.ibb.co/DDdb3GJ9/115-B-008-01.jpg",
+        "施工後照片": "https://i.ibb.co/MxQzhLMb/115-B-008-02.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.3904315318366,
+          23.104218830667907
+        ]
+      },
+      "properties": {
+        "案件編號": "115年搶險搶修B工區第009案",
+        "完工日期": 1150618,
+        "x1": 187559,
+        "y1": 2555954,
+        "派工時機": null,
+        "搶修類型": "路面修復-坑洞填補",
+        "案件狀態": "已完工",
+        "決標金額": 43744,
+        "施工廠商": "其功營造工程股份有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzEwNjAzNDk=",
+        "施工前照片": "https://i.ibb.co/SXSHZDHv/115-B-009-01.jpg",
+        "施工後照片": "https://i.ibb.co/HmkLryW/115-B-009-02.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.3890323841742,
+          23.08981014305887
+        ]
+      },
+      "properties": {
+        "案件編號": "115年搶險搶修B工區第010案",
+        "完工日期": 1150622,
+        "x1": 187409,
+        "y1": 2554359,
+        "派工時機": null,
+        "搶修類型": "樹木災害-倒竹鋸除",
+        "案件狀態": "已完工",
+        "決標金額": 12878,
+        "施工廠商": "其功營造工程股份有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzEwNjAzNDk=",
+        "施工前照片": "https://i.ibb.co/mCDcbm8G/115-B-010-01.jpg",
+        "施工後照片": "https://i.ibb.co/KjT4qjnS/115-B-010-02.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.33766244032499,
+          23.09735095809399
+        ]
+      },
+      "properties": {
+        "案件編號": "115年搶險搶修B工區第011案",
+        "完工日期": 1150628,
+        "x1": 182150,
+        "y1": 2555217,
+        "派工時機": null,
+        "搶修類型": "護岸坍塌修補",
+        "案件狀態": "已完工",
+        "決標金額": 198467,
+        "施工廠商": "其功營造工程股份有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzEwNjAzNDk=",
+        "施工前照片": "https://i.ibb.co/QFKq7RHM/115-B-011-01.jpg",
+        "施工後照片": "https://i.ibb.co/F4PXL9V5/115-B-011-02.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.38946488778042,
+          23.09994378011556
+        ]
+      },
+      "properties": {
+        "案件編號": "115年搶險搶修B工區第012案",
+        "完工日期": 1150625,
+        "x1": 187458,
+        "y1": 2555481,
+        "派工時機": null,
+        "搶修類型": "樹木災害-倒樹鋸除",
+        "案件狀態": "已完工",
+        "決標金額": 20204,
+        "施工廠商": "其功營造工程股份有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzEwNjAzNDk=",
+        "施工前照片": "https://i.ibb.co/BH5z2rCt/115-B-012-01.jpg",
+        "施工後照片": "https://i.ibb.co/b5Gpv9q1/115-B-012-02.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.38902442379637,
+          23.09157101596873
+        ]
+      },
+      "properties": {
+        "案件編號": "115年搶險搶修B工區第013案",
+        "完工日期": 1150626,
+        "x1": 187409,
+        "y1": 2554554,
+        "派工時機": null,
+        "搶修類型": "設置交通錐",
+        "案件狀態": "已完工",
+        "決標金額": 19321,
+        "施工廠商": "其功營造工程股份有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzEwNjAzNDk=",
+        "施工前照片": "https://i.ibb.co/0TSV5m8/115-B-013-01.jpg",
+        "施工後照片": "https://i.ibb.co/TMvRpzBr/115-B-013-02.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.39086637739791,
+          23.105204807962412
+        ]
+      },
+      "properties": {
+        "案件編號": "115年搶險搶修B工區第014案",
+        "完工日期": 1150627,
+        "x1": 187604,
+        "y1": 2556063,
+        "派工時機": null,
+        "搶修類型": "邊坡土石滑落",
+        "案件狀態": "已完工",
+        "決標金額": 23537,
+        "施工廠商": "其功營造工程股份有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzEwNjAzNDk=",
+        "施工前照片": "https://i.ibb.co/ds5fdwch/115-B-014-01.jpg",
+        "施工後照片": "https://i.ibb.co/HDbTVZgr/115-B-014-02.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.39910800341315,
+          23.095890064471735
+        ]
+      },
+      "properties": {
+        "案件編號": "115年搶險搶修B工區第015案",
+        "完工日期": 1150627,
+        "x1": 188444,
+        "y1": 2555028,
+        "派工時機": null,
+        "搶修類型": "邊坡土石滑落",
+        "案件狀態": "已完工",
+        "決標金額": 23091,
+        "施工廠商": "其功營造工程股份有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzEwNjAzNDk=",
+        "施工前照片": "https://i.ibb.co/x87bk9Gq/115-B-015-01.jpg",
+        "施工後照片": "https://i.ibb.co/zTxymM6v/115-B-015-02.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.39919161741403,
+          23.088061124899916
+        ]
+      },
+      "properties": {
+        "案件編號": "115年搶險搶修B工區第016案",
+        "完工日期": 1152628,
+        "x1": 188449,
+        "y1": 2554161,
+        "派工時機": null,
+        "搶修類型": "路面易滑-泥濘清除",
+        "案件狀態": "已完工",
+        "決標金額": 23537,
+        "施工廠商": "其功營造工程股份有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzEwNjAzNDk=",
+        "施工前照片": "https://i.ibb.co/ZR5km693/115-B-016-01.jpg",
+        "施工後照片": "https://i.ibb.co/6R5cCFKb/115-B-016-02.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.36885425365459,
+          23.09653959253705
+        ]
+      },
+      "properties": {
+        "案件編號": "115年搶險搶修B工區第017案",
+        "完工日期": 1150628,
+        "x1": 185345,
+        "y1": 2555113,
+        "派工時機": null,
+        "搶修類型": "路面易滑-積土清除",
+        "案件狀態": "已完工",
+        "決標金額": 9215,
+        "施工廠商": "其功營造工程股份有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzEwNjAzNDk=",
+        "施工前照片": "https://i.ibb.co/gLMkhzpF/115-B-017-01.jpg",
+        "施工後照片": "https://i.ibb.co/HT1QNm3V/115-B-017-02.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.39741564262712,
+          23.092325683521747
+        ]
+      },
+      "properties": {
+        "案件編號": "115年搶險搶修B工區第018案",
+        "完工日期": 1150628,
+        "x1": 188269,
+        "y1": 2554634,
+        "派工時機": null,
+        "搶修類型": "路面易滑-積土清除",
+        "案件狀態": "已完工",
+        "決標金額": 55065,
+        "施工廠商": "其功營造工程股份有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzEwNjAzNDk=",
+        "施工前照片": "https://i.ibb.co/6JFwQk3g/115-B-018-01-01.jpg",
+        "施工後照片": "https://i.ibb.co/dsnjYbTL/115-B-018-01-02.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.39907835806848,
+          23.095971224171056
+        ]
+      },
+      "properties": {
+        "案件編號": "115年搶險搶修B工區第018案",
+        "完工日期": 1150628,
+        "x1": 188441,
+        "y1": 2555037,
+        "派工時機": null,
+        "搶修類型": "路面易滑-積土清除",
+        "案件狀態": "已完工",
+        "決標金額": 55065,
+        "施工廠商": "其功營造工程股份有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzEwNjAzNDk=",
+        "施工前照片": "https://i.ibb.co/Y7VMNNTh/115-B-018-02-01.jpg",
+        "施工後照片": "https://i.ibb.co/3Hc7P2G/115-B-018-02-02.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.40019260057429,
+          23.10664021762328
+        ]
+      },
+      "properties": {
+        "案件編號": "115年搶險搶修B工區第019案",
+        "完工日期": 1150630,
+        "x1": 188560,
+        "y1": 2556218,
+        "派工時機": null,
+        "搶修類型": "路面易滑-積土清除",
+        "案件狀態": "已完工",
+        "決標金額": 44184,
+        "施工廠商": "其功營造工程股份有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzEwNjAzNDk=",
+        "施工前照片": "https://i.ibb.co/vvdvzq3b/115-B-019-01-01.jpg",
+        "施工後照片": "https://i.ibb.co/Z1740qGM/115-B-019-01-02.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.40283153535113,
+          23.108140219641573
+        ]
+      },
+      "properties": {
+        "案件編號": "115年搶險搶修B工區第019案",
+        "完工日期": 1150630,
+        "x1": 188831,
+        "y1": 2556383,
+        "派工時機": null,
+        "搶修類型": null,
+        "案件狀態": "已完工",
+        "決標金額": 44184,
+        "施工廠商": "其功營造工程股份有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzEwNjAzNDk=",
+        "施工前照片": null,
+        "施工後照片": null
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.35041197836291,
+          23.091046654075853
+        ]
+      },
+      "properties": {
+        "案件編號": "115年搶險搶修B工區第020案",
+        "完工日期": 1150629,
+        "x1": 183453,
+        "y1": 2554513,
+        "派工時機": null,
+        "搶修類型": "路面易滑-積土清除",
+        "案件狀態": "已完工",
+        "決標金額": 27533,
+        "施工廠商": "其功營造工程股份有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzEwNjAzNDk=",
+        "施工前照片": "https://i.ibb.co/7tBTyRs4/115-B-020-01-01.jpg,https://i.ibb.co/RkPjrVJw/115-B-020-02-01.jpg",
+        "施工後照片": "https://i.ibb.co/DHp8Dp66/115-B-020-01-02.jpg,https://i.ibb.co/ynpS93DQ/115-B-020-02-02.jpg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.38951899865162,
+          23.09012808470073
+        ]
+      },
+      "properties": {
+        "案件編號": "115年搶險搶修B工區第021案",
+        "完工日期": 1150630,
+        "x1": 187459,
+        "y1": 2554394,
+        "派工時機": null,
+        "搶修類型": "路面易滑-積土清除",
+        "案件狀態": "已完工",
+        "決標金額": 23091,
+        "施工廠商": "其功營造工程股份有限公司",
+        "監造廠商": "鼎麒水土保持技師事務所",
+        "採購網址": "https://web.pcc.gov.tw/tps/atm/AtmAwardWithoutSso/QueryAtmAwardDetail?pkAtmMain=NzEwNjAzNDk=",
+        "施工前照片": "https://i.ibb.co/Xrq4LGYZ/115-B-021-01.jpg",
+        "施工後照片": "https://i.ibb.co/twvRS0mN/115-B-021-02.jpg"
       }
     }
   ]

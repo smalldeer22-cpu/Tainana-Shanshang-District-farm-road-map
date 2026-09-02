@@ -1,0 +1,25 @@
+{
+  "name": "臺南市山上區公眾通行道路圖資系統",
+  "short_name": "山上道路圖資",
+  "description": "臺南市山上區公眾通行道路通報、查詢與管理系統",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#004080",
+  "orientation": "portrait-primary",
+  "lang": "zh-TW",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

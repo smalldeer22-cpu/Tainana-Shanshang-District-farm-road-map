@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0830_V1)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0902_V1)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -17,6 +17,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html-docx-js@0.3.1/dist/html-docx.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/exifr@7.1.3/dist/full.umd.js"></script>
 <style>
     /* 🌟 強制統整所有巡查表格的字體、大小與行高 */
     #inspTableBody td, 
@@ -4505,24 +4506,96 @@ async function loadAiModel() {
 }
 loadAiModel(); 
 
-// --- [修改後] 加入座標時間浮水印邏輯 ---
-window.previewImage = function(input, id) { 
-    document.getElementById('photoSourceModal').style.display = 'none'; 
-    if (input.files && input.files[0]) { 
-        compressImage(input.files[0], 1024, 0.8, function(dataUrl) { 
-            if (window.currentPhotoSource === 'camera') {
-                // 若為相機拍照，加上浮水印
-                applyWatermark(dataUrl, function(watermarkedUrl) {
-                    openPrivacyEditor(watermarkedUrl, id); 
-                });
-            } else {
-                // 若為相簿挑選，維持原圖
-                openPrivacyEditor(dataUrl, id); 
-            }
-        }); 
-    } 
-    input.value = ''; 
+// --- [0830V2 修改] 加入座標時間浮水印邏輯 + EXIF座標自動判斷 ---
+window.previewImage = function(input, id) {
+  document.getElementById('photoSourceModal').style.display = 'none';
+  if (input.files && input.files[0]) {
+    // 🌟 保留原始檔案，等一下要從裡面讀 EXIF 座標
+    const originalFile = input.files[0];
+    compressImage(originalFile, 1024, 0.8, function(dataUrl) {
+      if (window.currentPhotoSource === 'camera') {
+        // 若為相機拍照，加上浮水印（使用系統即時定位）
+        applyWatermark(dataUrl, function(watermarkedUrl) {
+          openPrivacyEditor(watermarkedUrl, id);
+        });
+      } else {
+        // 🌟 若為相簿上傳，先嘗試讀取照片內建的 EXIF 座標
+        tryReadExifAndProcess(originalFile, dataUrl, id);
+      }
+    });
+  }
+  input.value = '';
 };
+
+// 🌟 【新增】讀取相簿照片的 EXIF 座標，並決定是否更新座標與加浮水印
+function tryReadExifAndProcess(file, dataUrl, id) {
+  // 若 exifr 套件沒載入,退回原本行為(不加浮水印)
+  if (typeof exifr === 'undefined') {
+    openPrivacyEditor(dataUrl, id);
+    return;
+  }
+
+  exifr.gps(file).then(function(gps) {
+    if (gps && typeof gps.latitude === 'number' && typeof gps.longitude === 'number') {
+      // ✅ 照片有 EXIF 座標(通常是 Android 使用者)
+      const exifLat = gps.latitude;
+      const exifLng = gps.longitude;
+
+      // 取得目前系統定位座標(若有),用來計算兩者相差多遠
+      const wgs84Text = document.getElementById('reportWgs84').innerText;
+      let currentLat = null, currentLng = null;
+      const match = wgs84Text.match(/(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)/);
+      if (match) {
+        currentLat = parseFloat(match[1]);
+        currentLng = parseFloat(match[2]);
+      }
+
+      // 計算兩座標之間的距離(公尺)
+      let distanceMsg = '';
+      if (currentLat !== null && currentLng !== null) {
+        const dist = calcDistanceMeters(exifLat, exifLng, currentLat, currentLng);
+        distanceMsg = '(照片位置與您目前位置相距約 ' + Math.round(dist) + ' 公尺)\n';
+      }
+
+      // 🌟 不論相差遠近,一律以 EXIF 為準(照片是在現場拍的,最真實)
+      const twd = twd97FromWgs84(exifLat, exifLng);
+      document.getElementById('reportWgs84').innerText = exifLat.toFixed(6) + ', ' + exifLng.toFixed(6);
+      document.getElementById('reportTwd97').innerText = twd.x + ', ' + twd.y;
+
+      // 更新附近歷史案件比對(讓重複案件警示能正確運作)
+      if (typeof checkNearbyHistory === 'function') {
+        try { checkNearbyHistory(exifLat, exifLng); } catch(e) {}
+      }
+
+      alert('📷 已從照片自動讀取拍照現場座標\n' + distanceMsg + '\n系統將以照片座標為主,並印上浮水印。');
+
+      // 加浮水印(此時畫面上的座標已被更新為 EXIF 座標,浮水印會用新座標)
+      applyWatermark(dataUrl, function(watermarkedUrl) {
+        openPrivacyEditor(watermarkedUrl, id);
+      });
+    } else {
+      // ❌ 照片沒有 EXIF 座標(iPhone 或拍照時定位沒開)
+      // 維持原本行為:不加浮水印,案件定位仍用系統即時定位
+      openPrivacyEditor(dataUrl, id);
+    }
+  }).catch(function(err) {
+    // 讀取失敗,退回原本行為
+    console.warn('EXIF 讀取失敗:', err);
+    openPrivacyEditor(dataUrl, id);
+  });
+}
+
+// 🌟 【新增】計算兩個 WGS84 座標之間的距離(公尺) - Haversine 公式
+function calcDistanceMeters(lat1, lng1, lat2, lng2) {
+  const R = 6371000; // 地球半徑(公尺)
+  const toRad = function(deg) { return deg * Math.PI / 180; };
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+            Math.sin(dLng/2) * Math.sin(dLng/2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
 
 // 產生座標與時間浮水印
 function applyWatermark(dataUrl, callback) {
@@ -9437,7 +9510,7 @@ async function exportAllRiskGroups() {
   // 設為 true = 開啟限制，非山上區或未開定位者一律擋掉
   // 設為 false = 關閉限制，任何地點皆可通報（簡報實作用）
   // =====================================================
-  const ENABLE_LOCATION_CHECK = true;
+  const ENABLE_LOCATION_CHECK = false;
 
 
   if (!ENABLE_DUPLICATE_CHECK) {

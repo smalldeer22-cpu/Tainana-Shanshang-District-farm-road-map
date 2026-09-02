@@ -3,7 +3,10 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0902_V1)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0902_V2)</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#004080">
+<link rel="apple-touch-icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -4505,6 +4508,15 @@ async function loadAiModel() {
   } 
 }
 loadAiModel(); 
+
+// === PWA Service Worker 註冊 ===
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('./sw.js')
+      .then(function(reg) { console.log('PWA 已啟動'); })
+      .catch(function(err) { console.log('PWA 啟動失敗:', err); });
+  });
+}
 
 // --- [0830V2 修改] 加入座標時間浮水印邏輯 + EXIF座標自動判斷 ---
 window.previewImage = function(input, id) {

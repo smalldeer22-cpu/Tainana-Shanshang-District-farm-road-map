@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>臺南市山上區公眾通行道路圖資 (v.0902_V2)</title>
+<title>臺南市山上區公眾通行道路圖資 (v.0910_V1)</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#004080">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -2216,7 +2216,18 @@
           </div>
           <div style="display: flex; gap: 10px; margin-bottom: 10px;">
             <input type="text" id="reportName" placeholder="通報人姓名" style="flex:1; min-width:0; padding:10px; border:1px solid #ccc; border-radius:6px; box-sizing: border-box;">
-            <input type="tel" id="reportPhone" placeholder="聯絡電話" style="flex:1; min-width:0; padding:10px; border:1px solid #ccc; border-radius:6px; box-sizing: border-box;">
+            <input type="tel" id="reportPhone" placeholder="聯絡電話"
+style="flex:1; min-width:0; padding:10px; border:1px solid #ccc;
+border-radius:6px; box-sizing: border-box;">
+<script>
+// 【新增】頁面載入時，自動帶入上次記憶的聯絡人資料
+(function() {
+  const n = localStorage.getItem('contactName');
+  const p = localStorage.getItem('contactPhone');
+  if (n) document.getElementById('reportName').value = n;
+  if (p) document.getElementById('reportPhone').value = p;
+})();
+</script>
           </div>
           <div style="font-size: 11px; color: #666;">
             ※ 此資訊絕對保密，僅供案件聯繫，不會顯示於公開地圖上。
@@ -5016,6 +5027,12 @@ async function submitReport() {
      btn.disabled = false; 
      btn.innerHTML = originalText; 
    }
+// 【新增】送出成功後，儲存聯絡人資料到手機記憶
+const savedName = document.getElementById('reportName').value.trim();
+const savedPhone = document.getElementById('reportPhone').value.trim();
+if (savedName) localStorage.setItem('contactName', savedName);
+if (savedPhone) localStorage.setItem('contactPhone', savedPhone);
+
 } // <--- submitReport 函數在這裡漂亮地結束
 
 function saveMyHistory(caseId) {

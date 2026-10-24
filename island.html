@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>山上道路島｜臺南市山上區公眾通行道路圖資系統</title>
+<meta name="description" content="通報與巡查兩條源頭，匯流成派工、驗收，最後通往安全回家的路。" />
+<meta name="theme-color" content="#7B5FD6" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+<style>
+  /* ===== 山上道路島 · 配色（沿用主系統薰衣紫） ===== */
+  :root {
+    --c-primary:   #7B5FD6;
+    --c-primary-2: #9580E0;
+    --c-primary-4: #C9C0F4;
+    --c-bg-soft:   #F8F4FE;
+    --c-bg-card:   #FDFBFF;
+    --c-border:    #ECE5F5;
+    --c-text:      #2D2342;
+    --c-text-sub:  #756B89;
+    --c-source:    #9580E0;   /* 發現問題（源頭） */
+    --c-process:   #7B5FD6;   /* 處理問題 */
+    --c-watch:     #16A085;   /* 另一雙眼睛 */
+    --c-goal:      #E07B39;   /* 目標：安全回家的路 */
+    --panel-width: 360px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    font-family: 'Noto Sans TC', "Microsoft JhengHei", "Heiti TC", sans-serif;
+    font-weight: 500;
+    color: var(--c-text);
+    background: var(--c-bg-soft);
+    display: flex;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+  button { font-family: inherit; }
+
+  /* ===== 舞台（地圖＋島嶼） ===== */
+  #stage { position: relative; flex: 1; min-width: 0; overflow: hidden; }
+  #map { position: absolute; inset: 0; z-index: 1; background: #EFEAF7; }
+  .soft-tiles { filter: grayscale(0.55) sepia(0.12) brightness(1.06) contrast(0.92); }
+  #islandLayer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 500; pointer-events: none; transition: left 0.3s ease, width 0.3s ease; }
+  @media (min-width: 768px) { #stage.card-open #islandLayer { left: 392px; width: calc(100% - 392px); } }
+  #islandLayer .isle { pointer-events: auto; cursor: pointer; outline: none; }
+  .isle-body { transition: transform 0.2s ease; transform-origin: 0 0; }
+  .isle:hover .isle-body, .isle:focus-visible .isle-body { transform: scale(1.06); }
+  .isle-shape { fill: rgba(253,251,255,0.9); stroke-width: 3; transition: stroke-width 0.2s; }
+  .isle.is-active .isle-shape { stroke-width: 6; }
+  .isle.is-active .isle-body { filter: drop-shadow(0 6px 14px rgba(45,35,66,0.25)); }
+  .isle-icon { font-family: "Font Awesome 6 Free"; font-weight: 900; font-size: 24px; text-anchor: middle; }
+  .isle-name { font-size: 22px; font-weight: 700; fill: var(--c-text); text-anchor: middle; }
+  .isle-sub  { font-size: 15px; font-weight: 500; text-anchor: middle; }
+  .isle-num  { font-size: 13px; font-weight: 600; fill: var(--c-text-sub); text-anchor: middle; }
+  .type-source  .isle-shape { stroke: var(--c-source); }
+  .type-source  .isle-icon, .type-source  .isle-sub { fill: var(--c-source); }
+  .type-process .isle-shape { stroke: var(--c-process); }
+  .type-process .isle-icon, .type-process .isle-sub { fill: var(--c-process); }
+  .type-watch   .isle-shape { stroke: var(--c-watch); }
+  .type-watch   .isle-icon, .type-watch   .isle-sub { fill: var(--c-watch); }
+  .type-goal    .isle-shape { stroke: var(--c-goal); fill: #FFF6EF; }
+  .type-goal    .isle-icon, .type-goal    .isle-sub { fill: var(--c-goal); }
+
+  /* ===== 左上品牌卡 ===== */
+  .brand {
+    position: absolute; top: 16px; left: 16px; z-index: 900;
+    background: rgba(253,251,255,0.82);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--c-border); border-radius: 16px;
+    padding: 12px 18px; box-shadow: 0 4px 16px rgba(123,95,214,0.12);
+  }
+  .brand-eyebrow { font-size: 12px; color: var(--c-text-sub); letter-spacing: 1px; }
+  .brand-title { font-size: 26px; font-weight: 700; color: var(--c-primary); line-height: 1.25; margin: 2px 0; }
+  .brand-sub { font-size: 13px; color: var(--c-text-sub); }
+
+  /* ===== 說明卡 ===== */
+  .card {
+    position: absolute; z-index: 950;
+    top: 120px; left: 16px; width: 360px; max-height: calc(100% - 136px);
+    overflow-y: auto; -webkit-overflow-scrolling: touch;
+    background: rgba(253,251,255,0.95);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--c-border); border-radius: 18px;
+    box-shadow: 0 10px 30px rgba(45,35,66,0.18);
+    padding: 18px 20px 20px;
+    animation: cardIn 0.25s ease;
+  }
+  .card[hidden] { display: none; }
+  @keyframes cardIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  .card-close {
+    position: sticky; top: 0; float: right; margin: -6px -8px 0 0;
+    width: 34px; height: 34px; border-radius: 50%; border: none;
+    background: var(--c-bg-soft); color: var(--c-text-sub); font-size: 18px; cursor: pointer;
+  }
+  .card-close:hover { background: var(--c-border); color: var(--c-text); }
+  .card-head { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .card-icon {
+    width: 48px; height: 48px; border-radius: 14px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 20px; color: #fff;
+  }
+  .card-eyebrow { font-size: 12px; color: var(--c-text-sub); }
+  .card-title { font-size: 22px; font-weight: 700; margin: 2px 0 0; }
+  .card-who {
+    display: inline-block; font-size: 13px; padding: 4px 10px; border-radius: 999px;
+    background: var(--c-bg-soft); border: 1px solid var(--c-border); color: var(--c-text-sub); margin-bottom: 10px;
+  }
+  .card-plain { font-size: 15px; line-height: 1.75; margin: 0 0 14px; font-weight: 400; }
+  .card-section { font-size: 12px; color: var(--c-text-sub); margin: 14px 0 6px; letter-spacing: 1px; }
+  .feat { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-top: 1px solid var(--c-border); font-size: 14px; }
+  .feat-name { flex: 1; }
+  .tag { font-size: 12px; padding: 2px 9px; border-radius: 6px; white-space: nowrap; }
+  .tag-on    { background: #E8F5E9; color: #2E7D32; }
+  .tag-inner { background: #FFF4E0; color: #9A5B00; }
+  .tag-plan  { background: #F1EFF5; color: #756B89; }
+  .card-note {
+    font-size: 14px; line-height: 1.7; margin: 12px 0 0; padding: 10px 12px;
+    background: var(--c-bg-soft); border-radius: 10px; font-weight: 400;
+  }
+  .flow { margin-top: 10px; border: 1px solid var(--c-border); border-radius: 12px; overflow: hidden; }
+  .flow-line { padding: 10px 12px; font-size: 14px; line-height: 1.6; }
+  .flow-code { display: inline-block; font-size: 12px; font-weight: 700; color: var(--c-goal); margin-right: 6px; }
+  .flow-guard {
+    padding: 10px 12px; font-size: 14px; line-height: 1.7; font-weight: 400;
+    background: #FFF6EF; border-top: 1px solid #F6E1D2;
+  }
+  .flow-guard b { color: #B4561C; font-weight: 600; }
+  .card-foot { font-size: 12px; color: var(--c-text-sub); margin-top: 14px; }
+
+  /* ===== 右側說明欄 ===== */
+  #panel {
+    width: var(--panel-width); flex-shrink: 0; height: 100%; overflow-y: auto;
+    background: var(--c-bg-card); border-left: 1px solid var(--c-border);
+    padding: 24px 22px; z-index: 10;
+  }
+  .panel-title { font-size: 26px; font-weight: 700; margin: 0 0 8px; line-height: 1.35; }
+  .panel-desc { font-size: 14px; line-height: 1.8; color: var(--c-text-sub); margin: 0 0 16px; font-weight: 400; }
+  .panel-hint {
+    font-size: 14px; line-height: 1.7; padding: 12px 14px; border-radius: 12px;
+    background: var(--c-bg-soft); border: 1px solid var(--c-border); margin-bottom: 18px;
+  }
+  .legend { display: grid; gap: 8px; }
+  .legend-item { display: flex; align-items: center; gap: 10px; font-size: 14px; }
+  .legend-dot { width: 14px; height: 14px; border-radius: 4px; border: 3px solid; background: #fff; }
+
+  /* ===== 手機版 ===== */
+  @media (max-width: 767px) {
+    #panel { display: none; }
+    .brand { top: 10px; left: 10px; padding: 8px 12px; border-radius: 12px; }
+    .brand-title { font-size: 20px; }
+    .brand-sub { display: none; }
+    .card {
+      top: auto; bottom: 0; left: 0; right: 0; width: 100%;
+      max-height: 62%; border-radius: 18px 18px 0 0;
+      padding-bottom: calc(20px + env(safe-area-inset-bottom));
+    }
+  }
+</style>
+</head>
+<body>
+
+<div id="stage">
+  <div id="map"></div>
+  <svg id="islandLayer" preserveAspectRatio="xMidYMid meet" aria-label="山上道路島：五座功能島與終點"></svg>
+
+  <header class="brand">
+    <div class="brand-eyebrow">臺南市山上區公所</div>
+    <div class="brand-title">山上道路島</div>
+    <div class="brand-sub">公眾通行道路圖資系統 · 展示頁</div>
+  </header>
+
+  <div id="card" class="card" hidden role="dialog" aria-live="polite">
+    <button class="card-close" id="cardClose" aria-label="關閉說明卡">✕</button>
+    <div id="cardBody"></div>
+  </div>
+</div>
+
+<aside id="panel">
+  <h1 class="panel-title">把守護，連起來。</h1>
+  <p class="panel-desc">通報和巡查是兩條源頭，匯流成派工、驗收，最後通往安全回家的路；透明島是另一雙眼睛，看著每一段。</p>
+  <div class="panel-hint"><i class="fa-solid fa-hand-pointer" style="color:var(--c-primary);margin-right:6px"></i>點地圖上任何一座島，看看它做什麼、守護什麼。</div>
+  <div class="legend">
+    <div class="legend-item"><span class="legend-dot" style="border-color:var(--c-source)"></span>發現問題（兩條源頭）</div>
+    <div class="legend-item"><span class="legend-dot" style="border-color:var(--c-process)"></span>處理問題</div>
+    <div class="legend-item"><span class="legend-dot" style="border-color:var(--c-watch)"></span>另一雙眼睛</div>
+    <div class="legend-item"><span class="legend-dot" style="border-color:var(--c-goal)"></span>目標：安全回家的路</div>
+  </div>
+  <!-- 步驟 2：島嶼清單、協作線清單、搜尋框會放在這裡 -->
+</aside>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+// =====================================================================
+// 📝 文字內容區（以後要改說明文字，只改這一區；下面的程式不用動）
+// status 只能填：on（已上線）、inner（機關內部）、plan（規劃中）
+// =====================================================================
+const ISLANDS = [
+  {
+    id: 'report', num: '01', type: 'source', name: '通報島', role: '源頭一', icon: 'camera',
+    who: '里長、一般民眾',
+    plain: '在現場發現道路問題，拍照就能通報，系統會自動抓出照片裡的拍攝位置。',
+    features: [
+      ['輕量版通報（可安裝到手機桌面）', 'on'],
+      ['照片自動帶出現場位置', 'on'],
+      ['限山上區轄區內通報', 'on'],
+      ['LINE 機器人通報', 'plan']
+    ]
+  },
+  {
+    id: 'patrol', num: '02', type: 'source', name: '巡查島', role: '源頭二', icon: 'binoculars',
+    who: '開口契約廠商（定期巡查）',
+    plain: '廠商定期巡查道路，發現的問題跟通報一樣，變成一件案子送去派工。',
+    features: [
+      ['巡查報告', 'on'],
+      ['操作紀錄', 'on'],
+      ['流程完整提醒', 'on'],
+      ['QR code 驗證報告', 'on']
+    ]
+  },
+  {
+    id: 'dispatch', num: '03', type: 'process', name: '派工島', role: '匯流', icon: 'clipboard-list',
+    who: '承辦人、主管',
+    plain: '通報和巡查的案子都匯流到這裡。承辦受理後派工，系統幫忙提醒哪裡該優先處理。',
+    features: [
+      ['受理與派工（系統留紀錄）', 'on'],
+      ['不受理寫明原因並通知', 'on'],
+      ['預防性派工建議', 'on'],
+      ['首長決策輔助（紅黃綠燈）', 'on'],
+      ['派工前查附近維修紀錄', 'on'],
+      ['派工前重複檢核', 'inner'],
+      ['帳號密碼保護', 'on']
+    ],
+    note: '不受理也會寫明原因並通知，讓里長知道案子有被認真看過。'
+  },
+  {
+    id: 'accept', num: '04', type: 'process', name: '驗收島', role: '完成', icon: 'clipboard-check',
+    who: '廠商、機關',
+    plain: '施工完成後，廠商上傳施工前後照片與驗收資料，機關確認。',
+    features: [
+      ['廠商、機關各自登入', 'on'],
+      ['施工前後照片', 'on'],
+      ['驗收單列印', 'on']
+    ]
+  },
+  {
+    id: 'open', num: '05', type: 'watch', name: '透明島', role: '另一雙眼睛', icon: 'eye',
+    who: '一般民眾、議員、評審',
+    plain: '透明島不在流水線上，而是站在旁邊看著每一段。施工位置、照片與歷史紀錄都可以公開查詢。',
+    features: [
+      ['歷史施工查詢', 'on'],
+      ['里別維修統計', 'on'],
+      ['公眾通行道路查詢', 'on'],
+      ['案件分布一覽', 'on'],
+      ['熱點案件總表下載', 'on'],
+      ['開放資料', 'on']
+    ],
+    watches: ['report', 'patrol', 'dispatch', 'accept']
+  },
+  {
+    id: 'goal', num: '', type: 'goal', name: '安全回家的路', role: '終點', icon: 'house',
+    who: '每一位山上區的用路人',
+    plain: '路修好了，大家才能安全回家。這是整座山上道路島存在的理由。',
+    features: []
+  }
+];
+
+// 協作線：誰搬、搬什麼、從哪座島到哪座島、這條線守護什麼
+const FLOWS = [
+  { code: 'F1', from: 'report',   to: 'dispatch', walker: '里長',   carry: '現場照片＋位置',
+    guard: '照片帶著拍攝當下的位置，確保通報的就是現場狀況，里長不用再多做說明。' },
+  { code: 'F2', from: 'patrol',   to: 'dispatch', walker: '廠商',   carry: '巡查發現＋位置',
+    guard: '廠商巡查發現的問題也變成正式案件，每一步都留紀錄、報告可用 QR code 驗證，讓廠商巡查的辛苦被看見。' },
+  { code: 'F3', from: 'dispatch', to: 'accept',   walker: '承辦',   carry: '派工單',
+    guard: '每一件派工都留在系統、對得上通報或巡查紀錄，承辦被問起也有憑有據。' },
+  { code: 'F4', from: 'accept',   to: 'goal',     walker: '廠商',   carry: '施工前後照片＋驗收單',
+    guard: '廠商、機關各自登入填寫，誰做了什麼分得清楚，保障施工成果被正確記錄。' },
+  { code: 'F5', from: 'open',     to: 'dispatch', walker: '小幫手', carry: '歷史維修紀錄＋熱點評分',
+    guard: '派工前先看附近最近修過沒、哪裡反覆損壞，把經費用在最需要的地方，汛期前就能先處理。' }
+];
+
+const STATUS_LABEL = { on: '已上線', inner: '機關內部', plan: '規劃中' };
+const CARD_FOOT = '功能狀態以系統實際運作為準。';
+// ======================== 文字內容區結束 ========================
+
+
+// ===== 島嶼在畫面上的位置（橫向＝電腦，直向＝手機） =====
+const LAYOUTS = {
+  landscape: {
+    viewBox: [0, 0, 1000, 700], r: 78,
+    pos: { report: [170, 230], patrol: [170, 520], dispatch: [430, 375], accept: [660, 375], goal: [870, 375], open: [545, 165] }
+  },
+  portrait: {
+    viewBox: [0, 0, 540, 900], r: 74,
+    pos: { report: [135, 190], patrol: [405, 190], dispatch: [245, 400], accept: [245, 605], goal: [245, 800], open: [440, 505] }
+  }
+};
+const ICON_CODE = { 'camera': '', 'binoculars': '', 'clipboard-list': '', 'clipboard-check': '', 'eye': '', 'house': '' };
+const TYPE_COLOR = { source: 'var(--c-source)', process: 'var(--c-process)', watch: 'var(--c-watch)', goal: 'var(--c-goal)' };
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+function esc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+  });
+}
+function islandById(id) { return ISLANDS.find(function (i) { return i.id === id; }); }
+function hexPoints(r) {
+  const pts = [];
+  for (let k = 0; k < 6; k++) {
+    const a = Math.PI / 180 * (60 * k - 90);
+    pts.push((r * Math.cos(a)).toFixed(1) + ',' + (r * Math.sin(a)).toFixed(1));
+  }
+  return pts.join(' ');
+}
+
+// ===== 背景地圖：山上區 =====
+const map = L.map('map', {
+  zoomControl: false, dragging: false, scrollWheelZoom: false, doubleClickZoom: false,
+  boxZoom: false, keyboard: false, touchZoom: false, tap: false
+}).setView([23.1025, 120.3538], 13);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '© OpenStreetMap', className: 'soft-tiles'
+}).addTo(map);
+
+let shanshangBounds = null;
+function fitShanshang() {
+  map.invalidateSize();
+  if (shanshangBounds) map.fitBounds(shanshangBounds, { padding: [20, 20] });
+}
+fetch('tainan_districts.geojson')
+  .then(function (r) { return r.json(); })
+  .then(function (data) {
+    const f = data.features.find(function (x) { return x.properties && x.properties.TOWN === '山上區'; });
+    if (!f) return;
+    const rings = f.geometry.type === 'MultiPolygon'
+      ? f.geometry.coordinates.map(function (p) { return p[0]; })
+      : [f.geometry.coordinates[0]];
+    const holes = rings.map(function (ring) { return ring.map(function (c) { return [c[1], c[0]]; }); });
+    // 山上區以外淡淡蓋一層紫霧，讓山上區凸顯出來
+    L.polygon([[[-89, -179], [-89, 179], [89, 179], [89, -179]]].concat(holes), {
+      stroke: false, fillColor: '#F8F4FE', fillOpacity: 0.72, interactive: false
+    }).addTo(map);
+    const border = L.polygon(holes, {
+      color: '#7B5FD6', weight: 2.5, dashArray: '8 6', fillColor: '#FFFFFF', fillOpacity: 0.12, interactive: false
+    }).addTo(map);
+    shanshangBounds = border.getBounds();
+    fitShanshang();
+  })
+  .catch(function (e) { console.warn('tainan_districts.geojson 載入失敗（請確認檔案與本頁放在同一個資料夾）', e); });
+
+// ===== 畫出島嶼 =====
+const svg = document.getElementById('islandLayer');
+let currentLayout = '';
+let activeId = null;
+
+function renderIslands() {
+  const stage = document.getElementById('stage');
+  const portrait = stage.clientWidth / Math.max(stage.clientHeight, 1) < 1;
+  const key = portrait ? 'portrait' : 'landscape';
+  if (key === currentLayout) return;
+  currentLayout = key;
+  const L0 = LAYOUTS[key];
+  svg.setAttribute('viewBox', L0.viewBox.join(' '));
+  svg.innerHTML = '';
+
+  ISLANDS.forEach(function (isl) {
+    const p = L0.pos[isl.id];
+    const g = document.createElementNS(SVG_NS, 'g');
+    g.setAttribute('class', 'isle type-' + isl.type + (isl.id === activeId ? ' is-active' : ''));
+    g.setAttribute('transform', 'translate(' + p[0] + ',' + p[1] + ')');
+    g.setAttribute('tabindex', '0');
+    g.setAttribute('role', 'button');
+    g.setAttribute('aria-label', isl.name + '，' + isl.role);
+    g.dataset.id = isl.id;
+
+    let shape;
+    if (isl.type === 'goal') {
+      shape = '<rect class="isle-shape" x="-92" y="-52" width="184" height="104" rx="26"></rect>';
+    } else {
+      shape = '<polygon class="isle-shape" points="' + hexPoints(L0.r) + '"></polygon>';
+    }
+    const iconY = isl.type === 'goal' ? -16 : -26;
+    const nameY = isl.type === 'goal' ? 14 : 8;
+    const subY = isl.type === 'goal' ? 36 : 32;
+    g.innerHTML =
+      '<g class="isle-body">' + shape +
+      '<text class="isle-icon" y="' + iconY + '">' + ICON_CODE[isl.icon] + '</text>' +
+      '<text class="isle-name" y="' + nameY + '">' + esc(isl.name) + '</text>' +
+      '<text class="isle-sub" y="' + subY + '">' + esc(isl.role) + '</text>' +
+      (isl.num ? '<text class="isle-num" y="' + (-L0.r + 22) + '">' + esc(isl.num) + '</text>' : '') +
+      '</g>';
+
+    g.addEventListener('mousedown', function (ev) { ev.preventDefault(); });
+    g.addEventListener('click', function (ev) { ev.stopPropagation(); openCard(isl.id); });
+    g.addEventListener('keydown', function (ev) {
+      if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); openCard(isl.id); }
+    });
+    svg.appendChild(g);
+  });
+}
+
+// ===== 說明卡 =====
+const card = document.getElementById('card');
+const cardBody = document.getElementById('cardBody');
+
+function flowHtml(fl) {
+  const from = islandById(fl.from), to = islandById(fl.to);
+  return '<div class="flow">' +
+    '<div class="flow-line"><span class="flow-code">' + esc(fl.code) + '</span>' +
+    esc(fl.walker) + '搬「' + esc(fl.carry) + '」：' + esc(from.name) + ' → ' + esc(to.name) + '</div>' +
+    '<div class="flow-guard"><b>這條線守護什麼：</b>' + esc(fl.guard) + '</div>' +
+    '</div>';
+}
+
+function openCard(id) {
+  const isl = islandById(id);
+  if (!isl) return;
+  activeId = id;
+  svg.querySelectorAll('.isle').forEach(function (el) {
+    el.classList.toggle('is-active', el.dataset.id === id);
+  });
+
+  let h = '';
+  h += '<div class="card-head">' +
+       '<div class="card-icon" style="background:' + TYPE_COLOR[isl.type] + '"><i class="fa-solid fa-' + esc(isl.icon) + '"></i></div>' +
+       '<div><div class="card-eyebrow">' + (isl.num ? esc(isl.num) + ' · ' : '') + esc(isl.role) + '</div>' +
+       '<h2 class="card-title">' + esc(isl.name) + '</h2></div></div>';
+  h += '<div class="card-who"><i class="fa-solid fa-user-group" style="margin-right:6px"></i>誰用：' + esc(isl.who) + '</div>';
+  h += '<p class="card-plain">' + esc(isl.plain) + '</p>';
+
+  if (isl.features.length) {
+    h += '<div class="card-section">功能</div>';
+    isl.features.forEach(function (f) {
+      h += '<div class="feat"><span class="feat-name">' + esc(f[0]) + '</span>' +
+           '<span class="tag tag-' + esc(f[1]) + '">' + esc(STATUS_LABEL[f[1]] || f[1]) + '</span></div>';
+    });
+  }
+  if (isl.note) h += '<div class="card-note">' + esc(isl.note) + '</div>';
+
+  if (isl.watches) {
+    const names = isl.watches.map(function (w) { return islandById(w).name; }).join('、');
+    h += '<div class="card-section">看著</div>' +
+         '<div class="card-note"><i class="fa-solid fa-eye" style="color:var(--c-watch);margin-right:6px"></i>' +
+         esc(names) + '（只看、不搬東西）</div>';
+  }
+
+  const outFlows = FLOWS.filter(function (f) { return f.from === id; });
+  const inFlows = FLOWS.filter(function (f) { return f.to === id; });
+  if (outFlows.length) {
+    h += '<div class="card-section">送出的協作線</div>';
+    outFlows.forEach(function (f) { h += flowHtml(f); });
+  }
+  if (inFlows.length) {
+    h += '<div class="card-section">收到的協作線</div>';
+    inFlows.forEach(function (f) { h += flowHtml(f); });
+  }
+  h += '<div class="card-foot">' + esc(CARD_FOOT) + '</div>';
+
+  cardBody.innerHTML = h;
+  card.hidden = false;
+  document.getElementById('stage').classList.add('card-open');
+  card.scrollTop = 0;
+}
+
+function closeCard() {
+  card.hidden = true;
+  activeId = null;
+  document.getElementById('stage').classList.remove('card-open');
+  svg.querySelectorAll('.isle').forEach(function (el) { el.classList.remove('is-active'); });
+}
+document.getElementById('cardClose').addEventListener('click', closeCard);
+document.getElementById('map').addEventListener('click', closeCard);
+document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape') closeCard(); });
+
+// ===== 舞台固定不捲動（避免點島時畫面被瀏覽器自動捲走） =====
+const stageEl = document.getElementById('stage');
+stageEl.addEventListener('scroll', function () {
+  if (stageEl.scrollTop !== 0) stageEl.scrollTop = 0;
+  if (stageEl.scrollLeft !== 0) stageEl.scrollLeft = 0;
+});
+
+// ===== 啟動與視窗大小改變 =====
+renderIslands();
+let resizeTimer = null;
+window.addEventListener('resize', function () {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(function () { renderIslands(); fitShanshang(); }, 150);
+});
+</script>
+</body>
+</html>
